@@ -1,0 +1,32 @@
+[
+  {
+    "model_id": "llama-3.1-8b-instant",
+    "provider": "groq",
+    "task_id": "instruction",
+    "task_name": "Instruction Following",
+    "ttft_s": null,
+    "total_s": 0.3983197499765083,
+    "prompt_tokens": 57,
+    "output_tokens": 22,
+    "tokens_per_sec": 55.23200896088505,
+    "cost_usd": 0.0,
+    "response": "[\"Amman\", \"Berlin\", \"Kigali\", \"Ottawa\", \"Tokyo\"]",
+    "error": null,
+    "extra": {}
+  },
+  {
+    "model_id": "llama3-8b-8192",
+    "provider": "groq",
+    "task_id": "instruction",
+    "task_name": "Instruction Following",
+    "ttft_s": null,
+    "total_s": 0.1272058750037104,
+    "prompt_tokens": 0,
+    "output_tokens": 0,
+    "tokens_per_sec": 0,
+    "cost_usd": 0,
+    "response": "",
+    "error": "HTTP 400: {\"error\":{\"message\":\"The model `llama3-8b-8192` has been decommissioned and is no longer supported. Please refer to https://console.groq.com/docs/deprecations for a recommendation on which model to us",
+    "extra": {}
+  }
+]

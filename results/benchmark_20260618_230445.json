@@ -1,0 +1,17 @@
+[
+  {
+    "model_id": "gemma4:e4b",
+    "provider": "ollama",
+    "task_id": "instruction",
+    "task_name": "Instruction Following",
+    "ttft_s": null,
+    "total_s": 33.700363958021626,
+    "prompt_tokens": 38,
+    "output_tokens": 141,
+    "tokens_per_sec": 4.183931074917607,
+    "cost_usd": 4.2125454947527026e-05,
+    "response": "[\"Accra\", \"Beijing\", \"Cairo\", \"Delhi\", \"Dublin\"]",
+    "error": null,
+    "extra": {}
+  }
+]

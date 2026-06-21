@@ -1,0 +1,109 @@
+# Local model rankings — own benchmark run 2026-06-20
+# Source: results/benchmark_20260620_101129.json
+# Slot 0 = best for that category (used by best:<category>)
+# Models not ranked top in any category can be removed from Ollama to free disk space.
+
+categories:
+
+  reasoning:
+    - model: qwen2.5:7b
+      tokens_per_sec: 17.97
+      wall_clock_s: 19.4
+      note: "Correct and fast. deepseek is marginally faster in tok/s but produces 3000+ CoT tokens = 164s wall clock."
+    - model: deepseek-r1:8b
+      tokens_per_sec: 18.85
+      wall_clock_s: 164.6
+      note: "Chain-of-thought inflates total time massively for simple tasks."
+    - model: qwen2.5:14b
+      tokens_per_sec: 4.61
+      wall_clock_s: 60.0
+      note: "Slow, not competitive. Removed from Ollama 2026-06-21."
+
+  coding:
+    - model: qwen2.5:7b
+      tokens_per_sec: 24.05
+      wall_clock_s: 4.0
+    - model: deepseek-r1:8b
+      tokens_per_sec: 21.68
+      wall_clock_s: 41.8
+      note: "Verbose CoT inflates response time."
+    - model: qwen2.5:14b
+      tokens_per_sec: 8.76
+      wall_clock_s: 12.2
+      note: "Removed 2026-06-21."
+
+  summarization:
+    - model: qwen2.5:7b
+      tokens_per_sec: 21.67
+      wall_clock_s: 3.5
+    - model: deepseek-r1:8b
+      tokens_per_sec: 21.25
+      wall_clock_s: 12.5
+    - model: qwen2.5:14b
+      tokens_per_sec: 8.96
+      wall_clock_s: 7.0
+      note: "Removed 2026-06-21."
+
+  instruction:
+    - model: qwen2.5:7b
+      tokens_per_sec: 20.42
+      wall_clock_s: 1.3
+      note: "Concise output (27 tokens). deepseek generated 233 tokens for the same trivial task."
+    - model: deepseek-r1:8b
+      tokens_per_sec: 21.94
+      wall_clock_s: 10.6
+      note: "CoT overhead for trivial instruction-following tasks."
+    - model: qwen2.5:14b
+      tokens_per_sec: 8.18
+      wall_clock_s: 2.8
+      note: "Removed 2026-06-21."
+
+  math:
+    - model: qwen2.5:7b
+      tokens_per_sec: 25.61
+      wall_clock_s: 26.5
+    - model: deepseek-r1:8b
+      tokens_per_sec: 21.45
+      wall_clock_s: 38.4
+    - model: qwen2.5:14b
+      tokens_per_sec: 7.02
+      wall_clock_s: 85.5
+      note: "Removed 2026-06-21."
+
+  multilingual:
+    - model: qwen2.5:7b
+      tokens_per_sec: 22.68
+      wall_clock_s: 3.2
+    - model: deepseek-r1:8b
+      tokens_per_sec: 21.88
+      wall_clock_s: 17.9
+    - model: qwen2.5:14b
+      tokens_per_sec: 6.09
+      wall_clock_s: 11.3
+      note: "Removed 2026-06-21."
+
+  code_debug:
+    - model: qwen2.5:7b
+      tokens_per_sec: 21.77
+      wall_clock_s: 4.1
+    - model: deepseek-r1:8b
+      tokens_per_sec: 21.25
+      wall_clock_s: 15.6
+    - model: qwen2.5:14b
+      tokens_per_sec: 6.95
+      wall_clock_s: 11.8
+      note: "Removed 2026-06-21."
+
+  context:
+    - model: deepseek-r1:8b
+      tokens_per_sec: 19.24
+      wall_clock_s: 23.5
+      note: "Correct answer on context retrieval task (identified Pepper as youngest cat). qwen2.5:7b answered Mochi — wrong."
+    - model: qwen2.5:7b
+      tokens_per_sec: 16.08
+      wall_clock_s: 1.9
+      note: "Faster but gave the wrong answer on the context task."
+    - model: qwen2.5:14b
+      tokens_per_sec: 1.35
+      wall_clock_s: 28.1
+      note: "Removed 2026-06-21."

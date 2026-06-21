@@ -1,0 +1,20 @@
+[project]
+name = "local-models"
+version = "0.1.0"
+description = "LLM benchmark harness — local (Ollama) vs cloud (Groq, OpenRouter)"
+requires-python = ">=3.12"
+dependencies = [
+    "httpx>=0.28",
+    "rich>=13",
+    "python-dotenv>=1.0",
+    "fastapi>=0.115",
+    "uvicorn>=0.30",
+    "pyyaml>=6.0",
+]
+
+[project.scripts]
+benchmark = "run_benchmark:main"
+router = "router.__main__:main"
+
+[dependency-groups]
+dev = []

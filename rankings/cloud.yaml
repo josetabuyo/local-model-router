@@ -1,0 +1,84 @@
+# Cloud model rankings — external public benchmarks only
+# No live benchmark calls (quota protection policy)
+# Sources: Meta technical reports, official leaderboards
+# slot 0 = best for category (used as fallback when no local model is ranked)
+# Local models are always preferred over cloud when available (cost $0 vs latency)
+
+categories:
+
+  reasoning:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      mmlu: 88.0
+      source: "Meta Llama 3.3 70B technical report — https://ai.meta.com/blog/llama-3-3/"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      mmlu: 73.0
+      source: "Meta Llama 3.1 technical report — https://ai.meta.com/blog/meta-llama-3-1/"
+
+  coding:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      humaneval: 85.0
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      humaneval: 62.0
+      source: "Meta Llama 3.1 technical report"
+
+  math:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      math_500: 77.0
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      math_500: 51.9
+      source: "Meta Llama 3.1 technical report"
+
+  summarization:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      note: "70B class model, stronger instruction following"
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      source: "Meta Llama 3.1 technical report"
+
+  instruction:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      ifeval: 92.1
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      ifeval: 80.4
+      source: "Meta Llama 3.1 technical report"
+
+  multilingual:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      note: "70B, strong multilingual coverage"
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      source: "Meta Llama 3.1 technical report"
+
+  code_debug:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      humaneval: 85.0
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      humaneval: 62.0
+      source: "Meta Llama 3.1 technical report"
+
+  context:
+    - provider: groq
+      model: llama-3.3-70b-versatile
+      note: "70B class, stronger at retrieval from context"
+      source: "Meta Llama 3.3 70B technical report"
+    - provider: groq
+      model: llama-3.1-8b-instant
+      source: "Meta Llama 3.1 technical report"
