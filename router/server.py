@@ -3,7 +3,7 @@
 Endpoints
 ---------
 POST /local/v1/chat/completions   — Ollama only; hard error if no local model
-POST /cloud/v1/chat/completions   — Cloud only (Groq / OpenRouter); hard error if no cloud model
+POST /cloud/v1/chat/completions   — Cloud only (Groq / OpenRouter / NVIDIA NIM); hard error if no cloud model
 POST /v1/chat/completions         — Hybrid; strategy via X-Router-Strategy header
                                     'local-first' (default): try local, fall back to cloud
                                     'cloud-first':           try cloud, fall back to local

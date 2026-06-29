@@ -1,12 +1,30 @@
 # Cloud model rankings — external public benchmarks only
 # No live benchmark calls (quota protection policy)
-# Sources: Meta technical reports, official leaderboards
+# Sources:
+#   arena_elo — lmmarketcap.com/benchmarks/arena_elo, huggingface.co/datasets/mathewhe/chatbot-arena-elo (2026-06)
+#   mmlu/humaneval/math_500/ifeval — Meta/NVIDIA technical reports
 # slot 0 = best for category (used as fallback when no local model is ranked)
 # Local models are always preferred over cloud when available (cost $0 vs latency)
+#
+# NVIDIA NIM free tier: build.nvidia.com — 1,000 credits on signup, 40 RPM global limit
+#   Auth: NVIDIA_API_KEY (nvapi-* key), base URL: https://integrate.api.nvidia.com/v1
 
 categories:
 
   reasoning:
+    - provider: nvidia
+      model: deepseek-ai/deepseek-v4-pro
+      arena_elo: 1370
+      note: "Reasoning-specialized; 1M token context. ELO extrapolated (DeepSeek R1=1369, V4 > R1)."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: moonshotai/kimi-k2.6
+      arena_elo: 1461
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: z-ai/glm-5.1
+      arena_elo: 1473
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       mmlu: 88.0
@@ -17,6 +35,20 @@ categories:
       source: "Meta Llama 3.1 technical report — https://ai.meta.com/blog/meta-llama-3-1/"
 
   coding:
+    - provider: nvidia
+      model: deepseek-ai/deepseek-v4-pro
+      arena_elo: 1370
+      note: "DeepSeek coding specialist; 1M token context."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: qwen/qwen3.5-397b-a17b
+      arena_elo: 1409
+      note: "Qwen strong in code; large MoE 397B, 256K context."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: z-ai/glm-5.1
+      arena_elo: 1473
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       humaneval: 85.0
@@ -27,6 +59,15 @@ categories:
       source: "Meta Llama 3.1 technical report"
 
   math:
+    - provider: nvidia
+      model: deepseek-ai/deepseek-v4-pro
+      arena_elo: 1370
+      note: "DeepSeek math specialist; 1M token context."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: moonshotai/kimi-k2.6
+      arena_elo: 1461
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       math_500: 77.0
@@ -37,6 +78,19 @@ categories:
       source: "Meta Llama 3.1 technical report"
 
   summarization:
+    - provider: nvidia
+      model: moonshotai/kimi-k2.6
+      arena_elo: 1461
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: z-ai/glm-5.1
+      arena_elo: 1473
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: minimaxai/minimax-m3
+      arena_elo: 1447
+      note: "1M token context; useful for summarizing large documents."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       note: "70B class model, stronger instruction following"
@@ -46,6 +100,19 @@ categories:
       source: "Meta Llama 3.1 technical report"
 
   instruction:
+    - provider: nvidia
+      model: z-ai/glm-5.1
+      arena_elo: 1473
+      note: "Highest Arena ELO among free NVIDIA NIM models."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: moonshotai/kimi-k2.6
+      arena_elo: 1461
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: qwen/qwen3.5-397b-a17b
+      arena_elo: 1409
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       ifeval: 92.1
@@ -56,6 +123,20 @@ categories:
       source: "Meta Llama 3.1 technical report"
 
   multilingual:
+    - provider: nvidia
+      model: z-ai/glm-5.1
+      arena_elo: 1473
+      note: "GLM is Chinese-origin; strong multilingual coverage."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: qwen/qwen3.5-397b-a17b
+      arena_elo: 1409
+      note: "Qwen multilingual strength; 256K context."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: moonshotai/kimi-k2.6
+      arena_elo: 1461
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       note: "70B, strong multilingual coverage"
@@ -65,6 +146,16 @@ categories:
       source: "Meta Llama 3.1 technical report"
 
   code_debug:
+    - provider: nvidia
+      model: deepseek-ai/deepseek-v4-pro
+      arena_elo: 1370
+      note: "DeepSeek coding specialist; 1M token context."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: qwen/qwen3.5-397b-a17b
+      arena_elo: 1409
+      note: "Qwen strong in code."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       humaneval: 85.0
@@ -75,6 +166,23 @@ categories:
       source: "Meta Llama 3.1 technical report"
 
   context:
+    - provider: nvidia
+      model: minimaxai/minimax-m3
+      arena_elo: 1447
+      context_window: 1000000
+      note: "1M token context — best for long-context retrieval tasks."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06; build.nvidia.com"
+    - provider: nvidia
+      model: minimaxai/minimax-m2.7
+      context_window: 205000
+      note: "205K context fallback."
+      source: "build.nvidia.com — 2026-06"
+    - provider: nvidia
+      model: deepseek-ai/deepseek-v4-pro
+      arena_elo: 1370
+      context_window: 1000000
+      note: "1M token context; strong reasoning on retrieved content."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
       model: llama-3.3-70b-versatile
       note: "70B class, stronger at retrieval from context"

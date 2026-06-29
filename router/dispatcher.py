@@ -6,6 +6,17 @@ import httpx
 OLLAMA_BASE = "http://localhost:11434"
 GROQ_BASE = "https://api.groq.com/openai/v1"
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
+NVIDIA_BASE = "https://integrate.api.nvidia.com/v1"
+
+# Models that hang without explicit thinking=off. Client payload wins if it sets chat_template_kwargs.
+# DeepSeek V4 family and Kimi K2 use {"thinking": false}; Qwen3.5 uses {"enable_thinking": false}.
+_NVIDIA_THINKING_DEFAULTS: dict[str, dict] = {
+    "deepseek-ai/deepseek-v4-pro":   {"thinking": False},
+    "deepseek-ai/deepseek-v4-flash":  {"thinking": False},
+    "moonshotai/kimi-k2.6":           {"thinking": False},
+    "qwen/qwen3.5-397b-a17b":         {"enable_thinking": False},
+    "qwen/qwen3.5-122b-a10b":         {"enable_thinking": False},
+}
 
 
 class Dispatcher:
@@ -16,6 +27,8 @@ class Dispatcher:
             return await self._call_groq(model_id, payload)
         if provider == "openrouter":
             return await self._call_openrouter(model_id, payload)
+        if provider == "nvidia":
+            return await self._call_nvidia(model_id, payload)
         raise ValueError(f"Unknown provider '{provider}'")
 
     async def _call_ollama(self, model_id: str, payload: dict) -> dict:
@@ -59,6 +72,26 @@ class Dispatcher:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{OPENROUTER_BASE}/chat/completions",
+                json=body,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "User-Agent": "local-model-router/1.0",
+                },
+                timeout=120.0,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def _call_nvidia(self, model_id: str, payload: dict) -> dict:
+        api_key = os.getenv("NVIDIA_API_KEY", "")
+        if not api_key:
+            raise ValueError("NVIDIA_API_KEY is not set")
+        body = {**payload, "model": model_id}
+        if model_id in _NVIDIA_THINKING_DEFAULTS and "chat_template_kwargs" not in body:
+            body["chat_template_kwargs"] = _NVIDIA_THINKING_DEFAULTS[model_id]
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{NVIDIA_BASE}/chat/completions",
                 json=body,
                 headers={
                     "Authorization": f"Bearer {api_key}",
