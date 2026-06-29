@@ -23,29 +23,26 @@ class Registry:
         """Return (provider, model_id). Local preferred over cloud for best:<category>."""
         if model_str.startswith("best:"):
             category = model_str[5:]
-            local = self._try_best_local(category)
-            if local:
-                return local
-            cloud = self._try_best_cloud(category)
-            if cloud:
-                return cloud
+            chain = self._local_chain(category) or self._cloud_chain(category)
+            if chain:
+                return chain[0]
             raise ValueError(self._no_category_error(category))
         if "/" in model_str:
             provider, model_id = model_str.split("/", 1)
             return provider, model_id
         raise ValueError(self._format_error(model_str))
 
-    def resolve_local_only(self, model_str: str) -> tuple[str, str]:
-        """Resolves only to Ollama models. Raises if the model is cloud-only."""
+    def resolve_local_chain(self, model_str: str) -> list[tuple[str, str]]:
+        """Return all local entries in ranked order. Raises if none or if model is cloud-only."""
         if model_str.startswith("best:"):
             category = model_str[5:]
-            result = self._try_best_local(category)
-            if result is None:
+            chain = self._local_chain(category)
+            if not chain:
                 raise ValueError(
                     f"No local model ranked for category '{category}'. "
                     f"Available categories with local rankings: {self._local_categories()}"
                 )
-            return result
+            return chain
         if "/" in model_str:
             provider, model_id = model_str.split("/", 1)
             if provider not in LOCAL_PROVIDERS:
@@ -53,56 +50,56 @@ class Registry:
                     f"'{model_str}' targets a cloud provider. "
                     "The /local endpoint only accepts 'best:<category>' or 'ollama/<model>'."
                 )
-            return provider, model_id
+            return [(provider, model_id)]
         raise ValueError(self._format_error(model_str))
 
-    def resolve_cloud_only(self, model_str: str) -> tuple[str, str]:
-        """Resolves only to cloud models. Raises if the model is local-only."""
+    def resolve_cloud_chain(self, model_str: str) -> list[tuple[str, str]]:
+        """Return all cloud entries in ranked order. Raises if none or if model is local-only."""
         if model_str.startswith("best:"):
             category = model_str[5:]
-            result = self._try_best_cloud(category)
-            if result is None:
+            chain = self._cloud_chain(category)
+            if not chain:
                 raise ValueError(
                     f"No cloud model ranked for category '{category}'. "
                     f"Available categories with cloud rankings: {self._cloud_categories()}"
                 )
-            return result
+            return chain
         if "/" in model_str:
             provider, model_id = model_str.split("/", 1)
             if provider in LOCAL_PROVIDERS:
                 raise ValueError(
                     f"'{model_str}' is a local model. "
                     "The /cloud endpoint only accepts 'best:<category>' or a cloud provider prefix "
-                    "(e.g. 'groq/llama-3.3-70b-versatile')."
+                    "(e.g. 'nvidia/deepseek-ai/deepseek-v4-pro', 'groq/qwen/qwen3.6-27b')."
                 )
-            return provider, model_id
+            return [(provider, model_id)]
         raise ValueError(self._format_error(model_str))
 
     def resolve_chain(self, model_str: str, strategy: str = "local-first") -> list[tuple[str, str]]:
-        """Return an ordered list of (provider, model_id) to try in sequence.
+        """Return full ordered cascade chain to try in sequence.
 
-        Fallback only applies to best:<category> requests. Explicit provider/model
-        requests always return a single-element list (no automatic fallback).
+        For best:<category>: all local entries then all cloud entries (or reversed for cloud-first).
+        For explicit provider/model: single-element list, no fallback.
 
         strategy:
-          'local-first'  — try local (Ollama), fall back to cloud
-          'cloud-first'  — try cloud (Groq/OpenRouter), fall back to local
+          'local-first'  — all local entries, then all cloud entries (NVIDIA → Groq → OpenRouter)
+          'cloud-first'  — all cloud entries, then all local entries
         """
         if not model_str.startswith("best:"):
             return [self.resolve(model_str)]
 
         category = model_str[5:]
-        local = self._try_best_local(category)
-        cloud = self._try_best_cloud(category)
+        local_chain = self._local_chain(category)
+        cloud_chain = self._cloud_chain(category)
 
         if strategy == "local-first":
-            ordered = [x for x in [local, cloud] if x is not None]
+            full_chain = local_chain + cloud_chain
         else:
-            ordered = [x for x in [cloud, local] if x is not None]
+            full_chain = cloud_chain + local_chain
 
-        if not ordered:
+        if not full_chain:
             raise ValueError(self._no_category_error(category))
-        return ordered
+        return full_chain
 
     # ── Introspection helpers ──────────────────────────────────────────────
 
@@ -132,18 +129,13 @@ class Registry:
 
     # ── Private helpers ────────────────────────────────────────────────────
 
-    def _try_best_local(self, category: str) -> tuple[str, str] | None:
+    def _local_chain(self, category: str) -> list[tuple[str, str]]:
         entries = self._local.get("categories", {}).get(category, [])
-        if entries:
-            return "ollama", entries[0]["model"]
-        return None
+        return [("ollama", e["model"]) for e in entries]
 
-    def _try_best_cloud(self, category: str) -> tuple[str, str] | None:
+    def _cloud_chain(self, category: str) -> list[tuple[str, str]]:
         entries = self._cloud.get("categories", {}).get(category, [])
-        if entries:
-            e = entries[0]
-            return e.get("provider", "groq"), e["model"]
-        return None
+        return [(e.get("provider", "groq"), e["model"]) for e in entries]
 
     def _local_categories(self) -> list[str]:
         return sorted(self._local.get("categories", {}).keys())
@@ -161,5 +153,5 @@ class Registry:
         return (
             f"Unknown model format '{model_str}'. "
             "Use 'best:<category>' or '<provider>/<model_id>' "
-            "(e.g. 'best:coding', 'ollama/qwen2.5:7b', 'groq/llama-3.3-70b-versatile')"
+            "(e.g. 'best:coding', 'ollama/qwen2.5:7b', 'nvidia/deepseek-ai/deepseek-v4-pro')"
         )

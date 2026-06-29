@@ -2,11 +2,13 @@
 
 Endpoints
 ---------
-POST /local/v1/chat/completions   — Ollama only; hard error if no local model
-POST /cloud/v1/chat/completions   — Cloud only (Groq / OpenRouter / NVIDIA NIM); hard error if no cloud model
-POST /v1/chat/completions         — Hybrid; strategy via X-Router-Strategy header
-                                    'local-first' (default): try local, fall back to cloud
-                                    'cloud-first':           try cloud, fall back to local
+POST /local/v1/chat/completions   — Local (Ollama) only; cascades through all ranked local models.
+                                    Hard 400 if the model string resolves to a cloud provider.
+POST /cloud/v1/chat/completions   — Cloud only (NVIDIA NIM → Groq → OpenRouter cascade).
+                                    Hard 400 if the model string resolves to a local provider.
+POST /v1/chat/completions         — Hybrid full cascade; strategy via X-Router-Strategy header.
+                                    'local-first' (default): all local, then all cloud
+                                    'cloud-first':           all cloud, then all local
 
 GET  /v1/models                   — list all routable model identifiers
 GET  /v1/router/rankings/{cat}    — full ranked list for a category
@@ -123,7 +125,7 @@ async def category_rankings(category: str):
 
 @app.post("/local/v1/chat/completions")
 async def chat_local(request: Request):
-    """Route to the best local (Ollama) model for the requested category.
+    """Cascade through all ranked local (Ollama) models in order.
     Hard 400 if the model string resolves to a cloud provider.
     """
     try:
@@ -134,16 +136,16 @@ async def chat_local(request: Request):
     requested, payload = _extract_body(raw)
 
     try:
-        provider, model_id = registry.resolve_local_only(requested)
+        chain = registry.resolve_local_chain(requested)
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    return await _dispatch(provider, model_id, payload, endpoint="local", requested=requested)
+    return await _dispatch_chain(chain, payload, endpoint="local", requested=requested, strategy="local-only")
 
 
 @app.post("/cloud/v1/chat/completions")
 async def chat_cloud(request: Request):
-    """Route to the best cloud model for the requested category.
+    """Cascade through all ranked cloud models in order (NVIDIA NIM → Groq → OpenRouter).
     Hard 400 if the model string resolves to a local (Ollama) provider.
     """
     try:
@@ -154,11 +156,11 @@ async def chat_cloud(request: Request):
     requested, payload = _extract_body(raw)
 
     try:
-        provider, model_id = registry.resolve_cloud_only(requested)
+        chain = registry.resolve_cloud_chain(requested)
     except ValueError as e:
         raise HTTPException(400, str(e))
 
-    return await _dispatch(provider, model_id, payload, endpoint="cloud", requested=requested)
+    return await _dispatch_chain(chain, payload, endpoint="cloud", requested=requested, strategy="cloud-only")
 
 
 @app.post("/v1/chat/completions")

@@ -1,26 +1,27 @@
 # Cloud model rankings — external public benchmarks only
 # No live benchmark calls (quota protection policy)
 # Sources:
-#   arena_elo — lmmarketcap.com/benchmarks/arena_elo, huggingface.co/datasets/mathewhe/chatbot-arena-elo (2026-06)
+#   arena_elo — lmmarketcap.com/benchmarks/arena_elo (2026-06-29)
 #   groq scores — console.groq.com model pages (2026-06)
-#   Meta/NVIDIA technical reports
-# slot 0 = best for category (used as fallback when no local model is ranked)
-# Local models are always preferred over cloud when available (cost $0 vs latency)
+#   openrouter — openrouter.ai/models (2026-06-29)
+# slot 0 = best for category; cascade order: NVIDIA NIM → Groq → OpenRouter
 #
-# NVIDIA NIM free tier: build.nvidia.com — 1,000 credits on signup, 40 RPM global
-#   Auth: NVIDIA_API_KEY (nvapi-* key), base URL: https://integrate.api.nvidia.com/v1
+# Rate limits (free tier):
+#   NVIDIA NIM:   40 RPM global, 1 000 credits on signup — build.nvidia.com
+#   Groq:         30 RPM / 1 000 RPD / 8 K TPM per model
+#   OpenRouter:   20 RPM / 200 RPD per model
 #
-# Groq free tier: 30 RPM, 1K RPD, 8K TPM per model
-#   NOTE: llama-3.3-70b-versatile deprecated 2026-06-29, decommissioned 2026-08-16
-#   Replacements: openai/gpt-oss-120b and qwen/qwen3.6-27b
+# Auth env vars: NVIDIA_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY
+# NOTE: Groq llama-3.3-70b-versatile deprecated 2026-06-29, decommissioned 2026-08-16
 
 categories:
 
   reasoning:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
-      note: "Reasoning-specialized; 1M token context. ELO extrapolated (DeepSeek R1=1369, V4 > R1)."
+      note: "Reasoning-specialized; 1M token context. ELO extrapolated (DeepSeek R1=1369)."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: nvidia
       model: moonshotai/kimi-k2.6
@@ -30,9 +31,10 @@ categories:
       model: z-ai/glm-5.1
       arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile. Matches o4-mini. 500 tok/s."
+      note: "Matches o4-mini on many benchmarks. 500 tok/s."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: qwen/qwen3.6-27b
@@ -40,10 +42,37 @@ categories:
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
-      mmlu: 73.0
-      source: "Meta Llama 3.1 technical report — https://ai.meta.com/blog/meta-llama-3-1/"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-26b-a4b-it:free
+      arena_elo: 1438
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: openai/gpt-oss-120b:free
+      arena_elo: 1353
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   coding:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
@@ -52,28 +81,50 @@ categories:
     - provider: nvidia
       model: qwen/qwen3.5-397b-a17b
       arena_elo: 1409
-      note: "Qwen strong in code; large MoE 397B, 256K context."
+      note: "Qwen strong in code; MoE 397B, 256K context."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: nvidia
       model: z-ai/glm-5.1
       arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
       livecodebench_v6: 83.9
       swe_bench_verified: 77.2
-      note: "Strong coding benchmarks. Preferred over gpt-oss-120b for coding (explicit scores available)."
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: llama-3.1-8b-instant
-      humaneval: 62.0
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      note: "Strong coding and reasoning."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: openai/gpt-oss-120b:free
+      arena_elo: 1353
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   math:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
@@ -83,21 +134,44 @@ categories:
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
       aime_2026: 94.1
-      note: "94.1% on AIME 2026 — exceptional math. Preferred over gpt-oss-120b for math."
+      note: "94.1% AIME 2026 — exceptional math."
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: llama-3.1-8b-instant
-      math_500: 51.9
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      note: "Strong math and reasoning."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: openai/gpt-oss-120b:free
+      arena_elo: 1353
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   summarization:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
@@ -109,20 +183,44 @@ categories:
     - provider: nvidia
       model: minimaxai/minimax-m3
       arena_elo: 1447
-      note: "1M token context; useful for summarizing large documents."
+      context_window: 1000000
+      note: "1M token context; useful for very large documents."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: qwen/qwen3.6-27b
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: openai/gpt-oss-120b:free
+      arena_elo: 1353
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   instruction:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: z-ai/glm-5.1
       arena_elo: 1473
@@ -136,18 +234,41 @@ categories:
       model: qwen/qwen3.5-397b-a17b
       arena_elo: 1409
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: qwen/qwen3.6-27b
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-26b-a4b-it:free
+      arena_elo: 1438
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: openai/gpt-oss-120b:free
+      arena_elo: 1353
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   multilingual:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: z-ai/glm-5.1
       arena_elo: 1473
@@ -162,18 +283,42 @@ categories:
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: qwen/qwen3.6-27b
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      note: "Explicit multilingual strength noted."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-26b-a4b-it:free
+      arena_elo: 1438
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   code_debug:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
@@ -182,8 +327,8 @@ categories:
     - provider: nvidia
       model: qwen/qwen3.5-397b-a17b
       arena_elo: 1409
-      note: "Qwen strong in code."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
       livecodebench_v6: 83.9
@@ -191,38 +336,81 @@ categories:
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: llama-3.1-8b-instant
-      humaneval: 62.0
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: openai/gpt-oss-120b:free
+      arena_elo: 1353
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   context:
+    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
       model: minimaxai/minimax-m3
       arena_elo: 1447
       context_window: 1000000
-      note: "1M token context — best for long-context retrieval tasks."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06; build.nvidia.com"
+      note: "1M token context — best for long-context retrieval."
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: deepseek-ai/deepseek-v4-pro
+      arena_elo: 1370
+      context_window: 1000000
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: nvidia
       model: minimaxai/minimax-m2.7
       context_window: 205000
       note: "205K context fallback."
       source: "build.nvidia.com — 2026-06"
-    - provider: nvidia
-      model: deepseek-ai/deepseek-v4-pro
-      arena_elo: 1370
-      context_window: 1000000
-      note: "1M token context; strong reasoning on retrieved content."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
-      note: "Groq recommended replacement for llama-3.3-70b-versatile."
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: qwen/qwen3.6-27b
       source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
-      source: "Meta Llama 3.1 technical report"
+      arena_elo: 1211
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier) ─────────────────────────────────────────────
+    - provider: openrouter
+      model: nvidia/nemotron-3-super-120b-a12b:free
+      arena_elo: 1343
+      context_window: 1000000
+      note: "1M token context on OpenRouter free tier."
+      source: "openrouter.ai/models — 2026-06"
+    - provider: openrouter
+      model: qwen/qwen3-next-80b-a3b-instruct:free
+      arena_elo: 1401
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: google/gemma-4-31b-it:free
+      arena_elo: 1451
+      context_window: 262144
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: openrouter
+      model: meta-llama/llama-3.3-70b-instruct:free
+      arena_elo: 1243
+      context_window: 131072
+      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
