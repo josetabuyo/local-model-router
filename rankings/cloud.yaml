@@ -2,12 +2,17 @@
 # No live benchmark calls (quota protection policy)
 # Sources:
 #   arena_elo — lmmarketcap.com/benchmarks/arena_elo, huggingface.co/datasets/mathewhe/chatbot-arena-elo (2026-06)
-#   mmlu/humaneval/math_500/ifeval — Meta/NVIDIA technical reports
+#   groq scores — console.groq.com model pages (2026-06)
+#   Meta/NVIDIA technical reports
 # slot 0 = best for category (used as fallback when no local model is ranked)
 # Local models are always preferred over cloud when available (cost $0 vs latency)
 #
-# NVIDIA NIM free tier: build.nvidia.com — 1,000 credits on signup, 40 RPM global limit
+# NVIDIA NIM free tier: build.nvidia.com — 1,000 credits on signup, 40 RPM global
 #   Auth: NVIDIA_API_KEY (nvapi-* key), base URL: https://integrate.api.nvidia.com/v1
+#
+# Groq free tier: 30 RPM, 1K RPD, 8K TPM per model
+#   NOTE: llama-3.3-70b-versatile deprecated 2026-06-29, decommissioned 2026-08-16
+#   Replacements: openai/gpt-oss-120b and qwen/qwen3.6-27b
 
 categories:
 
@@ -26,9 +31,13 @@ categories:
       arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      mmlu: 88.0
-      source: "Meta Llama 3.3 70B technical report — https://ai.meta.com/blog/llama-3-3/"
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile. Matches o4-mini. 500 tok/s."
+      source: "Groq deprecation notice 2026-06-29"
+    - provider: groq
+      model: qwen/qwen3.6-27b
+      gpqa_diamond: 87.8
+      source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
       mmlu: 73.0
@@ -50,9 +59,15 @@ categories:
       arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      humaneval: 85.0
-      source: "Meta Llama 3.3 70B technical report"
+      model: qwen/qwen3.6-27b
+      livecodebench_v6: 83.9
+      swe_bench_verified: 77.2
+      note: "Strong coding benchmarks. Preferred over gpt-oss-120b for coding (explicit scores available)."
+      source: "console.groq.com — 2026-06"
+    - provider: groq
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: llama-3.1-8b-instant
       humaneval: 62.0
@@ -69,9 +84,14 @@ categories:
       arena_elo: 1461
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      math_500: 77.0
-      source: "Meta Llama 3.3 70B technical report"
+      model: qwen/qwen3.6-27b
+      aime_2026: 94.1
+      note: "94.1% on AIME 2026 — exceptional math. Preferred over gpt-oss-120b for math."
+      source: "console.groq.com — 2026-06"
+    - provider: groq
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: llama-3.1-8b-instant
       math_500: 51.9
@@ -92,9 +112,12 @@ categories:
       note: "1M token context; useful for summarizing large documents."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      note: "70B class model, stronger instruction following"
-      source: "Meta Llama 3.3 70B technical report"
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
+    - provider: groq
+      model: qwen/qwen3.6-27b
+      source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
       source: "Meta Llama 3.1 technical report"
@@ -114,12 +137,14 @@ categories:
       arena_elo: 1409
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      ifeval: 92.1
-      source: "Meta Llama 3.3 70B technical report"
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
+    - provider: groq
+      model: qwen/qwen3.6-27b
+      source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
-      ifeval: 80.4
       source: "Meta Llama 3.1 technical report"
 
   multilingual:
@@ -138,9 +163,12 @@ categories:
       arena_elo: 1461
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      note: "70B, strong multilingual coverage"
-      source: "Meta Llama 3.3 70B technical report"
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
+    - provider: groq
+      model: qwen/qwen3.6-27b
+      source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
       source: "Meta Llama 3.1 technical report"
@@ -157,9 +185,14 @@ categories:
       note: "Qwen strong in code."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      humaneval: 85.0
-      source: "Meta Llama 3.3 70B technical report"
+      model: qwen/qwen3.6-27b
+      livecodebench_v6: 83.9
+      swe_bench_verified: 77.2
+      source: "console.groq.com — 2026-06"
+    - provider: groq
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
     - provider: groq
       model: llama-3.1-8b-instant
       humaneval: 62.0
@@ -184,9 +217,12 @@ categories:
       note: "1M token context; strong reasoning on retrieved content."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: groq
-      model: llama-3.3-70b-versatile
-      note: "70B class, stronger at retrieval from context"
-      source: "Meta Llama 3.3 70B technical report"
+      model: openai/gpt-oss-120b
+      note: "Groq recommended replacement for llama-3.3-70b-versatile."
+      source: "Groq deprecation notice 2026-06-29"
+    - provider: groq
+      model: qwen/qwen3.6-27b
+      source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
       source: "Meta Llama 3.1 technical report"
