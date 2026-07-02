@@ -18,6 +18,7 @@ categories:
 
   reasoning:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
@@ -26,10 +27,6 @@ categories:
     - provider: nvidia
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: z-ai/glm-5.1
-      arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
@@ -73,6 +70,7 @@ categories:
 
   coding:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
@@ -82,10 +80,6 @@ categories:
       model: qwen/qwen3.5-397b-a17b
       arena_elo: 1409
       note: "Qwen strong in code; MoE 397B, 256K context."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: z-ai/glm-5.1
-      arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
@@ -172,13 +166,10 @@ categories:
 
   summarization:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
     - provider: nvidia
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: z-ai/glm-5.1
-      arena_elo: 1473
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: nvidia
       model: minimaxai/minimax-m3
@@ -221,18 +212,16 @@ categories:
 
   instruction:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
+    # NOTE: kimi-k2.6 is a reasoning model; with max_tokens=10 cuts off chain-of-thought → garbage. Demoted.
     - provider: nvidia
-      model: z-ai/glm-5.1
-      arena_elo: 1473
-      note: "Highest Arena ELO among free NVIDIA NIM models."
+      model: qwen/qwen3.5-397b-a17b
+      arena_elo: 1409
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: nvidia
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: qwen/qwen3.5-397b-a17b
-      arena_elo: 1409
+      note: "Reasoning model — avoid tasks with max_tokens<50"
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
@@ -269,11 +258,7 @@ categories:
 
   multilingual:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
-    - provider: nvidia
-      model: z-ai/glm-5.1
-      arena_elo: 1473
-      note: "GLM is Chinese-origin; strong multilingual coverage."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
     - provider: nvidia
       model: qwen/qwen3.5-397b-a17b
       arena_elo: 1409
