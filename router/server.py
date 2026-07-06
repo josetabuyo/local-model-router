@@ -13,6 +13,11 @@ POST /v1/chat/completions         — Hybrid full cascade; strategy via X-Router
 GET  /v1/models                   — list all routable model identifiers
 GET  /v1/router/rankings/{cat}    — full ranked list for a category
 GET  /health                      — liveness check
+
+Cascade failure conditions (tries next model on any of these):
+  - HTTP error (non-2xx)
+  - Network / timeout exception
+  - Empty content in choices[0].message.content (e.g. content moderation, silent rate-limit)
 """
 from dotenv import load_dotenv
 
@@ -64,6 +69,14 @@ async def _dispatch(provider: str, model_id: str, payload: dict, endpoint: str, 
     return JSONResponse(result)
 
 
+def _extract_content(result: dict) -> str:
+    """Return the text content from the first choice, or '' if absent/empty."""
+    try:
+        return result["choices"][0]["message"]["content"] or ""
+    except (KeyError, IndexError, TypeError):
+        return ""
+
+
 async def _dispatch_chain(
     chain: list[tuple[str, str]],
     payload: dict,
@@ -71,7 +84,7 @@ async def _dispatch_chain(
     requested: str,
     strategy: str,
 ) -> JSONResponse:
-    """Try each (provider, model_id) in order; return on first success."""
+    """Try each (provider, model_id) in order; return on first non-empty success."""
     errors: list[str] = []
     for i, (provider, model_id) in enumerate(chain):
         try:
@@ -85,6 +98,10 @@ async def _dispatch_chain(
             errors.append(f"{provider}/{model_id}: {e}")
             continue
 
+        if not _extract_content(result):
+            errors.append(f"{provider}/{model_id}: empty content in response (finish_reason={result.get('choices', [{}])[0].get('finish_reason', 'unknown')})")
+            continue
+
         result["model"] = f"{provider}/{model_id}"
         result["x_router"] = {
             "endpoint": endpoint,
@@ -92,7 +109,7 @@ async def _dispatch_chain(
             "resolved": f"{provider}/{model_id}",
             "strategy": strategy,
             "fallback_used": i > 0,
-            **({"primary_error": errors[0], "primary_attempted": f"{chain[0][0]}/{chain[0][1]}"} if i > 0 else {}),
+            **({"errors": errors, "primary_attempted": f"{chain[0][0]}/{chain[0][1]}"} if i > 0 else {}),
         }
         return JSONResponse(result)
 
