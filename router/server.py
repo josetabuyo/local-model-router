@@ -18,11 +18,14 @@ Cascade failure conditions (tries next model on any of these):
   - HTTP error (non-2xx)
   - Network / timeout exception
   - Empty content in choices[0].message.content (e.g. content moderation, silent rate-limit)
+  - Content that is only a <think>...</think> block (reasoning model, all tokens consumed by
+    the thought trace before the actual answer — treated as empty after stripping)
 """
 from dotenv import load_dotenv
 
 load_dotenv()
 
+import re
 import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
@@ -80,11 +83,23 @@ async def _dispatch(provider: str, model_id: str, payload: dict, endpoint: str, 
 
 
 def _extract_content(result: dict) -> str:
-    """Return the text content from the first choice, or '' if absent/empty."""
+    """Return the usable text content from the first choice, or '' if absent/empty.
+
+    Strips complete <think>...</think> blocks emitted by reasoning models (Qwen3,
+    DeepSeek, Kimi) so the cascade sees the actual answer.  If the block is
+    incomplete (truncated by a low max_tokens budget before the answer arrived),
+    the remaining '<think>' prefix is also treated as empty so the cascade
+    falls through to the next provider.
+    """
     try:
-        return result["choices"][0]["message"]["content"] or ""
+        content = result["choices"][0]["message"]["content"] or ""
     except (KeyError, IndexError, TypeError):
         return ""
+    content = re.sub(r"<think>.*?</think>", "", content, flags=re.DOTALL).strip()
+    # Incomplete think block — answer never arrived (e.g. max_tokens too low).
+    if "<think>" in content:
+        return ""
+    return content
 
 
 async def _dispatch_chain(

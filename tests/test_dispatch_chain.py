@@ -18,6 +18,26 @@ def test_extract_content_normal():
     assert _extract_content(_choices("hello")) == "hello"
 
 
+def test_extract_content_think_block_stripped():
+    """Complete <think> block is stripped; real answer is returned."""
+    assert _extract_content(_choices("<think>reasoning...</think>comercio")) == "comercio"
+
+
+def test_extract_content_think_only_is_empty():
+    """Response that is only a <think> block (no answer) → treated as empty."""
+    assert _extract_content(_choices("<think>full thought, no answer</think>")) == ""
+
+
+def test_extract_content_incomplete_think_is_empty():
+    """Truncated think block (max_tokens consumed before answer) → treated as empty."""
+    assert _extract_content(_choices("<think>I need to cla")) == ""
+
+
+def test_extract_content_think_with_whitespace():
+    """Whitespace between think block and answer is stripped cleanly."""
+    assert _extract_content(_choices("<think>...</think>\n\nservicio")) == "servicio"
+
+
 def test_extract_content_empty_string():
     assert _extract_content(_choices("")) == ""
 

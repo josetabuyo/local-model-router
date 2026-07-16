@@ -211,43 +211,26 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   instruction:
+    # Reasoning models (qwen3.6-27b, kimi-k2.6, gpt-oss-120b) excluded:
+    # their <think> blocks consume the entire token budget on low max_tokens
+    # requests (e.g. single-word classifiers). Router now strips <think> blocks
+    # before the empty-content check, but best to keep reasoning models out of
+    # this category altogether. Use best:reasoning for tasks that want CoT.
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
-    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
-    # NOTE: kimi-k2.6 is a reasoning model; with max_tokens=10 cuts off chain-of-thought → garbage. Demoted.
     - provider: nvidia
       model: qwen/qwen3.5-397b-a17b
       arena_elo: 1409
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: moonshotai/kimi-k2.6
-      arena_elo: 1461
-      note: "Reasoning model — avoid tasks with max_tokens<50"
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── Groq ───────────────────────────────────────────────────────────────
-    - provider: groq
-      model: openai/gpt-oss-120b
-      source: "Groq deprecation notice 2026-06-29"
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      source: "console.groq.com — 2026-06"
     - provider: groq
       model: llama-3.1-8b-instant
       arena_elo: 1211
+      note: "Fast, no reasoning trace, reliable for low-max_tokens classifiers."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: google/gemma-4-26b-a4b-it:free
-      arena_elo: 1438
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
