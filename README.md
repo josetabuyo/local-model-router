@@ -273,7 +273,26 @@ If a fallback was triggered:
 GET /health                        # liveness check + available categories
 GET /v1/models                     # list all routable model identifiers
 GET /v1/router/rankings/{category} # full ranked list for a category
+GET /v1/router/cache               # cache stats (entries, max_entries, ttl_seconds)
 ```
+
+---
+
+## Response cache
+
+`best:<category>` requests are cached — identical repeated calls (same category, same
+messages/params) are served from memory instead of re-hitting a provider. Explicit
+`provider/model` requests are never cached, since those are assumed intentional.
+
+Bounded on two axes so it can't grow unbounded under load:
+
+| Env var | Default | Meaning |
+|---------|---------|---------|
+| `CACHE_ENABLED` | `true` | Disable to always dispatch live |
+| `CACHE_TTL_SECONDS` | `86400` (1 day) | Entry lifetime |
+| `CACHE_MAX_ENTRIES` | `500` | Hard cap; oldest entry evicted (LRU) once full |
+
+Cache hits are marked in the response: `x_router.cached: true`.
 
 ---
 

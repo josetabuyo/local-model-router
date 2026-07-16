@@ -30,12 +30,14 @@ import httpx
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
+from router.cache import CACHE_ENABLED, ResponseCache, make_key
 from router.dispatcher import Dispatcher
 from router.registry import Registry
 
 app = FastAPI(title="local-model-router", version="1.0.0")
 registry = Registry()
 dispatcher = Dispatcher()
+cache = ResponseCache()
 
 # Per-provider timeouts used when the chain has more than one entry.
 # Shorter than the standalone defaults so the cascade can complete within
@@ -109,7 +111,21 @@ async def _dispatch_chain(
     requested: str,
     strategy: str,
 ) -> JSONResponse:
-    """Try each (provider, model_id) in order; return on first non-empty success."""
+    """Try each (provider, model_id) in order; return on first non-empty success.
+
+    Responses to 'best:<category>' requests are cached (bounded, TTL'd — see
+    router.cache) since those are the calls test/benchmark traffic repeats
+    verbatim. Explicit provider/model requests always dispatch live.
+    """
+    cache_key = None
+    if CACHE_ENABLED and requested.startswith("best:"):
+        cache_key = make_key(endpoint, strategy, requested, payload)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            hit = dict(cached)
+            hit["x_router"] = {**hit["x_router"], "cached": True}
+            return JSONResponse(hit)
+
     errors: list[str] = []
     cascade = len(chain) > 1
     for i, (provider, model_id) in enumerate(chain):
@@ -137,8 +153,11 @@ async def _dispatch_chain(
             "resolved": f"{provider}/{model_id}",
             "strategy": strategy,
             "fallback_used": i > 0,
+            "cached": False,
             **({"errors": errors, "primary_attempted": f"{chain[0][0]}/{chain[0][1]}"} if i > 0 else {}),
         }
+        if cache_key is not None:
+            cache.set(cache_key, result)
         return JSONResponse(result)
 
     raise HTTPException(502, {"message": "All providers in the chain failed", "errors": errors})
@@ -158,6 +177,11 @@ async def list_models():
         "object": "list",
         "data": [{"id": m, "object": "model", "owned_by": "router"} for m in registry.list_models()],
     }
+
+
+@app.get("/v1/router/cache")
+async def cache_stats():
+    return cache.stats()
 
 
 @app.get("/v1/router/rankings/{category}")
