@@ -34,6 +34,16 @@ app = FastAPI(title="local-model-router", version="1.0.0")
 registry = Registry()
 dispatcher = Dispatcher()
 
+# Per-provider timeouts used when the chain has more than one entry.
+# Shorter than the standalone defaults so the cascade can complete within
+# a reasonable wall-clock budget (e.g. a client with --max-time 90).
+_CASCADE_TIMEOUTS: dict[str, float] = {
+    "nvidia": 45.0,
+    "groq": 30.0,
+    "openrouter": 45.0,
+    "ollama": 180.0,
+}
+
 # ── Utility ───────────────────────────────────────────────────────────────────
 
 
@@ -86,14 +96,17 @@ async def _dispatch_chain(
 ) -> JSONResponse:
     """Try each (provider, model_id) in order; return on first non-empty success."""
     errors: list[str] = []
+    cascade = len(chain) > 1
     for i, (provider, model_id) in enumerate(chain):
+        timeout = _CASCADE_TIMEOUTS.get(provider) if cascade else None
         try:
-            result = await dispatcher.call(provider, model_id, payload)
+            result = await dispatcher.call(provider, model_id, payload, timeout=timeout)
         except httpx.HTTPStatusError as e:
             errors.append(f"{provider}/{model_id}: HTTP {e.response.status_code} — {e.response.text[:200]}")
             continue
         except ValueError as e:
-            raise HTTPException(400, str(e))
+            errors.append(f"{provider}/{model_id}: {e}")
+            continue
         except Exception as e:
             errors.append(f"{provider}/{model_id}: {e}")
             continue

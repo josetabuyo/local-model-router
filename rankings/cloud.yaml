@@ -257,49 +257,30 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   multilingual:
-    # ── NVIDIA NIM ─────────────────────────────────────────────────────────
-    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
-    - provider: nvidia
-      model: qwen/qwen3.5-397b-a17b
-      arena_elo: 1409
-      note: "Qwen multilingual strength; 256K context."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: moonshotai/kimi-k2.6
-      arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    # ── Groq ───────────────────────────────────────────────────────────────
-    - provider: groq
-      model: openai/gpt-oss-120b
-      source: "Groq deprecation notice 2026-06-29"
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      source: "console.groq.com — 2026-06"
+    # Speed-first ordering (Luganense conversational latency, 2026-07-16):
+    # Groq LPU answers in 2-8s vs 40-60s for NVIDIA 397B. Quality fallback retained.
+    # Trimmed from 9 entries to 4 — long tail was accumulating timeout penalties.
+    # ── Groq (fast LPU) ────────────────────────────────────────────────────
     - provider: groq
       model: llama-3.1-8b-instant
       arena_elo: 1211
+      note: "Primary: Groq LPU 2-8s. Sufficient for conversational multilingual."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      note: "Explicit multilingual strength noted."
+    - provider: groq
+      model: qwen/qwen3.6-27b
+      note: "Balanced quality/speed on Groq LPU."
+      source: "console.groq.com — 2026-06"
+    # ── NVIDIA NIM (quality fallback) ──────────────────────────────────────
+    - provider: nvidia
+      model: qwen/qwen3.5-397b-a17b
+      arena_elo: 1409
+      note: "Quality fallback; 40-60s typical. 256K context."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── OpenRouter (free tier last resort) ─────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: google/gemma-4-26b-a4b-it:free
-      arena_elo: 1438
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
 
   code_debug:
