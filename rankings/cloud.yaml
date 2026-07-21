@@ -13,6 +13,15 @@
 #
 # Auth env vars: NVIDIA_API_KEY, GROQ_API_KEY, OPENROUTER_API_KEY
 # NOTE: Groq llama-3.3-70b-versatile deprecated 2026-06-29, decommissioned 2026-08-16
+# NOTE: z-ai/glm-5.2 added 2026-07-19 — successor to glm-5.1 (EOL 2026-07-02),
+#   free on NVIDIA NIM since 2026-07-02. 753B MoE, 1M context, top open-weight
+#   coding model (SWE-bench Pro 62.1, Terminal-Bench 2.1 81.0). MIT license.
+#   Source: docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07
+# WATCH: Kimi K3 (2.8T, released 2026-07-16, #3 on Artificial Analysis) is
+#   paid-only so far (OpenRouter moonshotai/kimi-k3, $3/$15 per Mtok). Weights
+#   due ~2026-07-27 — recheck build.nvidia.com then for a free NIM listing.
+#   Microsoft MAI-Thinking-1/MAI-Code-1 (Build 2026) have no free tier and are
+#   not on NVIDIA NIM — skip until a free/cheap provider picks them up.
 
 categories:
 
@@ -70,7 +79,13 @@ categories:
 
   coding:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
-    # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
+    - provider: nvidia
+      model: z-ai/glm-5.2
+      swe_bench_pro: 62.1
+      terminal_bench_2_1: 81.0
+      context_window: 1000000
+      note: "Top open-weight coding model as of 2026-07; replaces glm-5.1 (EOL). MIT license."
+      source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
@@ -269,6 +284,13 @@ categories:
   code_debug:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
+      model: z-ai/glm-5.2
+      swe_bench_pro: 62.1
+      terminal_bench_2_1: 81.0
+      context_window: 1000000
+      note: "Top open-weight coding model as of 2026-07; replaces glm-5.1 (EOL). MIT license."
+      source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
+    - provider: nvidia
       model: deepseek-ai/deepseek-v4-pro
       arena_elo: 1370
       note: "DeepSeek coding specialist; 1M token context."
@@ -314,6 +336,11 @@ categories:
 
   context:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    - provider: nvidia
+      model: z-ai/glm-5.2
+      context_window: 1000000
+      note: "1M token context; selectable reasoning effort, strong on long-horizon agentic tasks."
+      source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
     - provider: nvidia
       model: minimaxai/minimax-m3
       arena_elo: 1447
