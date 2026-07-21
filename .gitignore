@@ -14,6 +14,7 @@ wheels/
 
 # Local logs and session state
 session/
+.agent.json
 
 # Internal planning docs
 HANDOFF.md
