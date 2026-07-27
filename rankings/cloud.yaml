@@ -17,11 +17,60 @@
 #   free on NVIDIA NIM since 2026-07-02. 753B MoE, 1M context, top open-weight
 #   coding model (SWE-bench Pro 62.1, Terminal-Bench 2.1 81.0). MIT license.
 #   Source: docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07
+# NOTE 2026-07-21: OpenRouter free-tier catalog rotated — verified live against
+#   GET https://openrouter.ai/api/v1/models (no key required, filtered to
+#   id.endswith(':free')). Three slugs used below had gone paid-only and were
+#   404ing every cascade call: qwen/qwen3-next-80b-a3b-instruct:free,
+#   openai/gpt-oss-120b:free, meta-llama/llama-3.3-70b-instruct:free. Replaced
+#   with currently-free slugs from that same live listing (google/gemma-4-*:free
+#   and nvidia/nemotron-3-super-120b-a12b:free were re-checked and are still
+#   live, unchanged). New slots have no arena_elo — these models aren't on
+#   lmmarketcap yet — so they carry a plain descriptive note instead of a
+#   fabricated score.
 # WATCH: Kimi K3 (2.8T, released 2026-07-16, #3 on Artificial Analysis) is
 #   paid-only so far (OpenRouter moonshotai/kimi-k3, $3/$15 per Mtok). Weights
 #   due ~2026-07-27 — recheck build.nvidia.com then for a free NIM listing.
 #   Microsoft MAI-Thinking-1/MAI-Code-1 (Build 2026) have no free tier and are
 #   not on NVIDIA NIM — skip until a free/cheap provider picks them up.
+# EVALUATED 2026-07-23 (OpenRouter "task-aware routing" email, mid-July 2026
+#   changelog) — none of these fit the free-tier cascade policy, not added:
+#   - openrouter/auto-beta: meta-router, $0 routing fee but bills at the
+#     underlying model's rate (i.e. not itself free) and picks the model
+#     black-box per request. Conflicts with this project's design (we own
+#     the ranking/cascade logic in this file); skip.
+#   - moonshotai/kimi-k3: confirmed paid-only, $3/$15 per Mtok, no free
+#     hosted route yet. Same conclusion as the note above — still watching
+#     for a free NIM listing after weights drop.
+#   - kwaipilot/kat-coder-air-v2.5 (and -pro-v2.5): cheap but not free —
+#     $0.15/$0.60 per Mtok, 256K context. Good agentic-coding scores but no
+#     ":free" OpenRouter slug exists; recheck if one appears.
+# NOTE 2026-07-23: OpenRouter free catalog re-scanned live (curl .../api/v1/models,
+#   filtered ':free', 15 hits). Two new adds: poolside/laguna-s-2.1:free (coding,
+#   coding/code_debug — 118B-A8B, SWE-Bench Multilingual 78.5, strong agentic
+#   coding for its size) and inclusionai/ling-3.0-flash:free (reasoning/
+#   instruction — 124B-A5.1B, ~Sonnet-4.6 class). Ling-3.0-flash is a TIME-
+#   LIMITED launch promo, free only through 2026-08-03 — recheck
+#   openrouter.ai/api/v1/models around then and drop/replace it if it goes paid.
+#   Also live but not added (off-category or redundant): poolside/laguna-xs-2.1
+#   and laguna-m.1 (smaller Laguna variants, no clear category gap yet),
+#   nvidia/nemotron-3.5-content-safety:free (classifier, not general chat),
+#   nvidia/nemotron-nano-12b-v2-vl:free (vision-language, no vision category
+#   here), nvidia/nemotron-nano-9b-v2:free (small/fast, no speed-ranked
+#   category besides multilingual which is already Groq-first).
+# NOTE 2026-07-27: Added `cheapest:<category>` and `fastest:<category>` as
+#   model-string modes alongside `best:<category>` (see router/registry.py).
+#   `cheapest` keeps free-tier entries first (in curated order) then appends
+#   any `paid: true` entries sorted ascending by blended $/Mtok — free entries
+#   are always tried first, paid ones are a last resort. `fastest` reorders
+#   free-tier entries only by provider speed (Groq > NVIDIA NIM > OpenRouter),
+#   with per-model overrides where we have documented real numbers. Paid
+#   entries are excluded from `best:`/hybrid cascades automatically via the
+#   `paid: true` flag — they only ever surface through `cheapest:`.
+#   This is what finally puts the two paid coding models evaluated above to
+#   use: kwaipilot/kat-coder-air-v2.5 ($0.15/$0.60, cheapest paid rung) and
+#   moonshotai/kimi-k3 ($3/$15, priciest/last rung) are now in `coding` and
+#   `code_debug` as `paid: true` fallback entries — reachable only via
+#   `cheapest:coding` / `cheapest:code_debug` once every free option fails.
 
 categories:
 
@@ -52,6 +101,11 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
+      model: inclusionai/ling-3.0-flash:free
+      context_window: 262144
+      note: "New 2026-07-23, hybrid-reasoning MoE, 124B total/5.1B active. Roughly Sonnet-4.6 quality per early third-party reports. TIME-LIMITED PROMO — free only through 2026-08-03; recheck pricing after that date or cascade calls will start 402ing."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
@@ -62,20 +116,20 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free
+      context_window: 256000
+      note: "Reasoning-tagged Nemotron variant. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: openai/gpt-oss-120b:free
-      arena_elo: 1353
+      model: openai/gpt-oss-20b:free
       context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces gpt-oss-120b:free, which went paid-only; 20b is the current free tier of this family."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-super-120b-a12b:free
+      context_window: 1000000
+      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
 
   coding:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -111,26 +165,49 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      note: "Strong coding and reasoning."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: poolside/laguna-s-2.1:free
+      swe_bench_multilingual: 78.5
+      terminal_bench_2_1: 70.2
+      context_window: 1000000
+      note: "New 2026-07-21. 118B MoE, 8B active, thinking mode on. Beats models 10x its size on agentic coding; best OpenRouter free-tier coding option found so far. Use thinking mode — non-thinking drops Terminal-Bench to 60.4."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    - provider: openrouter
+      model: cohere/north-mini-code:free
+      context_window: 256000
+      note: "Coding-specialized Cohere model. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07). Uses hidden reasoning tokens before the answer — give it enough max_tokens headroom or it hits finish_reason=length with empty content."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-120b:free
-      arena_elo: 1353
+      model: openai/gpt-oss-20b:free
       context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces gpt-oss-120b:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-super-120b-a12b:free
+      context_window: 1000000
+      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # ── OpenRouter (paid — cheapest:coding fallback only, see NOTE 2026-07-27) ──
+    - provider: openrouter
+      model: kwaipilot/kat-coder-air-v2.5
+      paid: true
+      cost_per_mtok_in: 0.15
+      cost_per_mtok_out: 0.60
+      context_window: 256000
+      note: "Cheapest paid rung. Agentic coding model, evaluated 2026-07-23. Only reached via cheapest:coding once every free option above fails."
+      source: "openrouter.ai/kwaipilot/kat-coder-air-v2.5 — verified 2026-07-27"
+    - provider: openrouter
+      model: moonshotai/kimi-k3
+      paid: true
+      cost_per_mtok_in: 3.0
+      cost_per_mtok_out: 15.0
+      context_window: 262144
+      note: "Priciest/last rung. 2.8T MoE, #3 on Artificial Analysis (2026-07-16). Only reached via cheapest:coding as the final fallback."
+      source: "openrouter.ai/moonshotai/kimi-k3 — verified 2026-07-27"
 
   math:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -158,26 +235,25 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      note: "Strong math and reasoning."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-nano-30b-a3b:free
+      context_window: 256000
+      note: "Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-120b:free
-      arena_elo: 1353
+      model: openai/gpt-oss-20b:free
       context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces gpt-oss-120b:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-super-120b-a12b:free
+      context_window: 1000000
+      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
 
   summarization:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -210,20 +286,20 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-nano-30b-a3b:free
+      context_window: 256000
+      note: "Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: openai/gpt-oss-120b:free
-      arena_elo: 1353
+      model: openai/gpt-oss-20b:free
       context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces gpt-oss-120b:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-super-120b-a12b:free
+      context_window: 1000000
+      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
 
   instruction:
     # Reasoning models (qwen3.6-27b, kimi-k2.6, gpt-oss-120b) excluded:
@@ -244,15 +320,20 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
+      model: inclusionai/ling-3.0-flash:free
+      context_window: 262144
+      note: "New 2026-07-23, hybrid-reasoning MoE, 124B total/5.1B active. Roughly Sonnet-4.6 quality per early third-party reports. TIME-LIMITED PROMO — free only through 2026-08-03; recheck pricing after that date or cascade calls will start 402ing."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-120b:free
-      arena_elo: 1353
+      model: openai/gpt-oss-20b:free
       context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces gpt-oss-120b:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
 
   multilingual:
     # Speed-first ordering (Luganense conversational latency, 2026-07-16):
@@ -314,25 +395,49 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: poolside/laguna-s-2.1:free
+      swe_bench_multilingual: 78.5
+      terminal_bench_2_1: 70.2
+      context_window: 1000000
+      note: "New 2026-07-21. 118B MoE, 8B active, thinking mode on. Beats models 10x its size on agentic coding/debugging; best OpenRouter free-tier option found so far."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    - provider: openrouter
+      model: cohere/north-mini-code:free
+      context_window: 256000
+      note: "Coding-specialized Cohere model. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07). Uses hidden reasoning tokens before the answer — give it enough max_tokens headroom or it hits finish_reason=length with empty content."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-120b:free
-      arena_elo: 1353
+      model: openai/gpt-oss-20b:free
       context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces gpt-oss-120b:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-3-super-120b-a12b:free
+      context_window: 1000000
+      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # ── OpenRouter (paid — cheapest:code_debug fallback only, see NOTE 2026-07-27) ──
+    - provider: openrouter
+      model: kwaipilot/kat-coder-air-v2.5
+      paid: true
+      cost_per_mtok_in: 0.15
+      cost_per_mtok_out: 0.60
+      context_window: 256000
+      note: "Cheapest paid rung. Agentic coding model, evaluated 2026-07-23. Only reached via cheapest:code_debug once every free option above fails."
+      source: "openrouter.ai/kwaipilot/kat-coder-air-v2.5 — verified 2026-07-27"
+    - provider: openrouter
+      model: moonshotai/kimi-k3
+      paid: true
+      cost_per_mtok_in: 3.0
+      cost_per_mtok_out: 15.0
+      context_window: 262144
+      note: "Priciest/last rung. 2.8T MoE, #3 on Artificial Analysis (2026-07-16). Only reached via cheapest:code_debug as the final fallback."
+      source: "openrouter.ai/moonshotai/kimi-k3 — verified 2026-07-27"
 
   context:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -370,23 +475,23 @@ categories:
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
+      model: nvidia/nemotron-3-ultra-550b-a55b:free
+      context_window: 1000000
+      note: "Largest model on OpenRouter's free tier (550B MoE); best-fit replacement for qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07) in this category."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       arena_elo: 1343
       context_window: 1000000
       note: "1M token context on OpenRouter free tier."
       source: "openrouter.ai/models — 2026-06"
     - provider: openrouter
-      model: qwen/qwen3-next-80b-a3b-instruct:free
-      arena_elo: 1401
-      context_window: 262144
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: meta-llama/llama-3.3-70b-instruct:free
-      arena_elo: 1243
-      context_window: 131072
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: nvidia/nemotron-nano-9b-v2:free
+      context_window: 128000
+      note: "Smallest free-tier fallback. Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
+      source: "openrouter.ai/api/v1/models — verified 2026-07-21"

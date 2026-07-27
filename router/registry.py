@@ -7,6 +7,39 @@ RANKINGS_DIR = Path(__file__).parent.parent / "rankings"
 
 LOCAL_PROVIDERS = {"ollama"}
 
+# Model-string prefixes that select a category, and how to order that
+# category's ranked entries. 'best' is the curated quality order already in
+# the yaml. 'cheapest' and 'fastest' re-sort the same entries by cost/speed.
+_MODES = ("best", "cheapest", "fastest")
+
+# Base speed ranking per provider (lower = faster), used by 'fastest:<category>'.
+# Groq's LPU hardware beats NVIDIA NIM and OpenRouter's proxied backends on
+# every model we've measured — see rankings/cloud.yaml multilingual notes
+# (Groq 2-8s vs NVIDIA 40-60s for comparable quality tiers).
+_PROVIDER_SPEED_RANK: dict[str, int] = {"groq": 0, "nvidia": 2, "openrouter": 3}
+
+# Per-model overrides where we have documented actual throughput/latency
+# (see rankings/cloud.yaml notes) that contradicts the provider default —
+# e.g. a specific NIM model known to be much slower than typical NIM latency.
+_SPEED_OVERRIDES: dict[tuple[str, str], int] = {
+    ("groq", "llama-3.1-8b-instant"): -1,   # smallest Groq model; fastest entry in the whole cascade
+    ("groq", "openai/gpt-oss-120b"): 0,      # ~500 tok/s, per Groq's own deprecation notice benchmarks
+    ("nvidia", "qwen/qwen3.5-397b-a17b"): 4,  # 40-60s typical (multilingual notes) — slow even for NIM
+}
+
+
+def _blended_cost(entry: dict) -> float:
+    """Average of $/Mtok in and out. 0 for free-tier entries (the common case)."""
+    return (entry.get("cost_per_mtok_in", 0.0) + entry.get("cost_per_mtok_out", 0.0)) / 2
+
+
+def _speed_rank(entry: dict) -> int:
+    provider = entry.get("provider", "groq")
+    override = _SPEED_OVERRIDES.get((provider, entry["model"]))
+    if override is not None:
+        return override
+    return _PROVIDER_SPEED_RANK.get(provider, 9)
+
 
 class Registry:
     def __init__(self):
@@ -20,10 +53,10 @@ class Registry:
     # ── Public resolution methods ──────────────────────────────────────────
 
     def resolve(self, model_str: str) -> tuple[str, str]:
-        """Return (provider, model_id). Local preferred over cloud for best:<category>."""
-        if model_str.startswith("best:"):
-            category = model_str[5:]
-            chain = self._local_chain(category) or self._cloud_chain(category)
+        """Return (provider, model_id). Local preferred over cloud for <mode>:<category>."""
+        mode, category = self._parse(model_str)
+        if mode is not None:
+            chain = self._local_chain(category, mode) or self._cloud_chain(category, mode)
             if chain:
                 return chain[0]
             raise ValueError(self._no_category_error(category))
@@ -34,9 +67,9 @@ class Registry:
 
     def resolve_local_chain(self, model_str: str) -> list[tuple[str, str]]:
         """Return all local entries in ranked order. Raises if none or if model is cloud-only."""
-        if model_str.startswith("best:"):
-            category = model_str[5:]
-            chain = self._local_chain(category)
+        mode, category = self._parse(model_str)
+        if mode is not None:
+            chain = self._local_chain(category, mode)
             if not chain:
                 raise ValueError(
                     f"No local model ranked for category '{category}'. "
@@ -48,16 +81,16 @@ class Registry:
             if provider not in LOCAL_PROVIDERS:
                 raise ValueError(
                     f"'{model_str}' targets a cloud provider. "
-                    "The /local endpoint only accepts 'best:<category>' or 'ollama/<model>'."
+                    "The /local endpoint only accepts '<best|cheapest|fastest>:<category>' or 'ollama/<model>'."
                 )
             return [(provider, model_id)]
         raise ValueError(self._format_error(model_str))
 
     def resolve_cloud_chain(self, model_str: str) -> list[tuple[str, str]]:
         """Return all cloud entries in ranked order. Raises if none or if model is local-only."""
-        if model_str.startswith("best:"):
-            category = model_str[5:]
-            chain = self._cloud_chain(category)
+        mode, category = self._parse(model_str)
+        if mode is not None:
+            chain = self._cloud_chain(category, mode)
             if not chain:
                 raise ValueError(
                     f"No cloud model ranked for category '{category}'. "
@@ -69,7 +102,7 @@ class Registry:
             if provider in LOCAL_PROVIDERS:
                 raise ValueError(
                     f"'{model_str}' is a local model. "
-                    "The /cloud endpoint only accepts 'best:<category>' or a cloud provider prefix "
+                    "The /cloud endpoint only accepts '<best|cheapest|fastest>:<category>' or a cloud provider prefix "
                     "(e.g. 'nvidia/deepseek-ai/deepseek-v4-pro', 'groq/qwen/qwen3.6-27b')."
                 )
             return [(provider, model_id)]
@@ -78,19 +111,20 @@ class Registry:
     def resolve_chain(self, model_str: str, strategy: str = "local-first") -> list[tuple[str, str]]:
         """Return full ordered cascade chain to try in sequence.
 
-        For best:<category>: all local entries then all cloud entries (or reversed for cloud-first).
+        For <mode>:<category>: all local entries then all cloud entries (or reversed for cloud-first),
+        each tier ordered per 'mode' (best/cheapest/fastest — see _local_chain/_cloud_chain).
         For explicit provider/model: single-element list, no fallback.
 
         strategy:
           'local-first'  — all local entries, then all cloud entries (NVIDIA → Groq → OpenRouter)
           'cloud-first'  — all cloud entries, then all local entries
         """
-        if not model_str.startswith("best:"):
+        mode, category = self._parse(model_str)
+        if mode is None:
             return [self.resolve(model_str)]
 
-        category = model_str[5:]
-        local_chain = self._local_chain(category)
-        cloud_chain = self._cloud_chain(category)
+        local_chain = self._local_chain(category, mode)
+        cloud_chain = self._cloud_chain(category, mode)
 
         if strategy == "local-first":
             full_chain = local_chain + cloud_chain
@@ -111,7 +145,8 @@ class Registry:
     def list_models(self) -> list[str]:
         models: set[str] = set()
         for category in self.categories():
-            models.add(f"best:{category}")
+            for mode in _MODES:
+                models.add(f"{mode}:{category}")
         for entries in self._local.get("categories", {}).values():
             for e in entries:
                 models.add(f"ollama/{e['model']}")
@@ -129,13 +164,43 @@ class Registry:
 
     # ── Private helpers ────────────────────────────────────────────────────
 
-    def _local_chain(self, category: str) -> list[tuple[str, str]]:
+    def _parse(self, model_str: str) -> tuple[str | None, str | None]:
+        """Split '<mode>:<category>' into (mode, category), or (None, None) if not that shape."""
+        for mode in _MODES:
+            prefix = f"{mode}:"
+            if model_str.startswith(prefix):
+                return mode, model_str[len(prefix):]
+        return None, None
+
+    def _local_chain(self, category: str, mode: str = "best") -> list[tuple[str, str]]:
+        # Local (Ollama) entries have no pricing tiers and speed depends entirely
+        # on the user's own hardware — mode doesn't reorder this tier, only
+        # whether it's tried at all (it always is, for every mode).
         entries = self._local.get("categories", {}).get(category, [])
         return [("ollama", e["model"]) for e in entries]
 
-    def _cloud_chain(self, category: str) -> list[tuple[str, str]]:
+    def _cloud_chain(self, category: str, mode: str = "best") -> list[tuple[str, str]]:
         entries = self._cloud.get("categories", {}).get(category, [])
+        if mode == "cheapest":
+            entries = self._sort_cheapest(entries)
+        elif mode == "fastest":
+            entries = self._sort_fastest(entries)
+        else:
+            # 'best' (curated quality order) never touches paid fallback entries
+            # automatically — those only surface via 'cheapest:<category>'.
+            entries = [e for e in entries if not e.get("paid")]
         return [(e.get("provider", "groq"), e["model"]) for e in entries]
+
+    def _sort_cheapest(self, entries: list[dict]) -> list[dict]:
+        """Free entries first (stable, curated order), then paid entries ascending by $/Mtok."""
+        free = [e for e in entries if not e.get("paid")]
+        paid = sorted((e for e in entries if e.get("paid")), key=_blended_cost)
+        return free + paid
+
+    def _sort_fastest(self, entries: list[dict]) -> list[dict]:
+        """Free-tier entries only, reordered by measured/known provider speed (fastest first)."""
+        free = [e for e in entries if not e.get("paid")]
+        return sorted(free, key=_speed_rank)
 
     def _local_categories(self) -> list[str]:
         return sorted(self._local.get("categories", {}).keys())

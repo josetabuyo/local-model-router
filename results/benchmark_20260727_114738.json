@@ -1,0 +1,47 @@
+[
+  {
+    "model_id": "qwen2.5-coder:7b",
+    "provider": "ollama",
+    "task_id": "code_debug",
+    "task_name": "Code Debug",
+    "ttft_s": null,
+    "total_s": 8.232722540851682,
+    "prompt_tokens": 127,
+    "output_tokens": 89,
+    "tokens_per_sec": 10.810518580988504,
+    "cost_usd": 1.0290903176064604e-05,
+    "response": "```python\ndef binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```",
+    "error": null,
+    "extra": {}
+  },
+  {
+    "model_id": "deepseek-r1:8b",
+    "provider": "ollama",
+    "task_id": "code_debug",
+    "task_name": "Code Debug",
+    "ttft_s": null,
+    "total_s": 109.41487520886585,
+    "prompt_tokens": 101,
+    "output_tokens": 2168,
+    "tokens_per_sec": 19.81449045078587,
+    "cost_usd": 0.0001367685940110823,
+    "response": "To fix the bug in the binary search function, the key issue is how the left and right pointers are updated:\n\n1. When the middle element is less than the target, the left pointer should be set to mid + 1, not mid. This ensures the search space is correctly narrowed down to the right half.\n2. The else part (when the middle element is greater than the target) is already correctly setting right to mid, which is necessary to include mid or not based on the sorted array.\n\nThe corrected function properly handles the search space by adjusting these pointers, ensuring the target is found efficiently if present, or -1 if not found.\n\n```python\ndef binary_search(arr, target):\n    left, right = 0, len(arr)\n    while left < right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid\n    return -1\n```",
+    "error": null,
+    "extra": {}
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "code_debug",
+    "task_name": "Code Debug",
+    "ttft_s": null,
+    "total_s": 8.37867141701281,
+    "prompt_tokens": 127,
+    "output_tokens": 89,
+    "tokens_per_sec": 10.622209127247354,
+    "cost_usd": 1.0473339271266013e-05,
+    "response": "```python\ndef binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```",
+    "error": null,
+    "extra": {}
+  }
+]

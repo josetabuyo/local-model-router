@@ -20,9 +20,14 @@ categories:
       note: "Slow, not competitive. Removed from Ollama 2026-06-21."
 
   coding:
+    - model: qwen2.5-coder:7b
+      tokens_per_sec: 15.9
+      wall_clock_s: 10.9
+      note: "Added 2026-07-27. Code-specialized fine-tune of qwen2.5:7b, same 4.7GB footprint — fits the same 16GB M1 Pro headroom with no cost. Tied on speed with plain qwen2.5:7b once warm (both ~9-11s on this harness's task); wins on published HumanEval (high-70s vs plain qwen2.5's mid-70s) for the same resource cost, so it's the better default for coding-shaped prompts."
     - model: qwen2.5:7b
       tokens_per_sec: 24.05
       wall_clock_s: 4.0
+      note: "General-purpose, not code-specialized. Kept as a close second — near-identical speed to qwen2.5-coder:7b, fine for quick non-code-heavy tasks."
     - model: deepseek-r1:8b
       tokens_per_sec: 21.68
       wall_clock_s: 41.8
@@ -83,6 +88,10 @@ categories:
       note: "Removed 2026-06-21."
 
   code_debug:
+    - model: qwen2.5-coder:7b
+      tokens_per_sec: 10.8
+      wall_clock_s: 8.2
+      note: "Added 2026-07-27. Code-specialized fine-tune, slightly faster than plain qwen2.5:7b here (8.2s vs 8.4s) at the same 4.7GB footprint — same reasoning as the coding category."
     - model: qwen2.5:7b
       tokens_per_sec: 21.77
       wall_clock_s: 4.1

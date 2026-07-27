@@ -1,6 +1,6 @@
 # local-model-router
 
-An OpenAI-compatible HTTP proxy that routes requests to the **best available LLM** — local (Ollama) or cloud (Groq, OpenRouter) — based on per-category benchmarks you own and control.
+An OpenAI-compatible HTTP proxy that routes requests to the **best available LLM** — local (Ollama) or cloud (NVIDIA NIM, Groq, OpenRouter) — based on per-category benchmarks you own and control.
 
 ```bash
 # ask for the best model for coding — router decides, you don't change a line of code
@@ -31,7 +31,8 @@ your app  →  local-model-router (port 11435)
           ┌──────────┼──────────┐
           │          │          │
       /local      /cloud      /v1
-     (Ollama)   (Groq etc)  (hybrid)
+     (Ollama)  (NIM/Groq/  (hybrid)
+                OpenRouter)
           │          │          │
       rankings/  rankings/  tries both
       local.yaml cloud.yaml in order
@@ -73,10 +74,21 @@ Models tested and removed (not competitive enough to justify disk space):
 
 ### Cloud
 
-| Model | Provider | Speed | Notes |
-|-------|----------|-------|-------|
-| `llama-3.3-70b-versatile` | Groq | ~185 tok/s | Top cloud model across all categories |
-| `llama-3.1-8b-instant` | Groq | ~206 tok/s | Faster but weaker quality |
+Ranked by published benchmarks (no live calls — see [benchmark policy](#benchmark-policy)). Cascade order: **NVIDIA NIM → Groq → OpenRouter**.
+
+| Model | Provider | Top categories | Notes |
+|-------|----------|-----------------|-------|
+| `z-ai/glm-5.2` | NVIDIA NIM | coding, code_debug, context | 753B MoE, 1M context, MIT license. Top open-weight coding model (SWE-bench Pro 62.1). Successor to `glm-5.1` (EOL 2026-07-02) |
+| `moonshotai/kimi-k2.6` | NVIDIA NIM | reasoning, math | Arena ELO 1461 |
+| `qwen/qwen3.5-397b-a17b` | NVIDIA NIM | coding, math, instruction | MoE 397B, 256K context |
+| `deepseek-ai/deepseek-v4-pro` | NVIDIA NIM | reasoning, coding, math, context | 1M token context |
+| `minimaxai/minimax-m3` | NVIDIA NIM | summarization, context | 1M token context, best for long documents |
+| `qwen/qwen3.6-27b` | Groq | coding, math, code_debug | 94.1% AIME 2026; 83.9 LiveCodeBench v6 |
+| `llama-3.1-8b-instant` | Groq | multilingual, instruction | Fastest; primary for latency-sensitive multilingual (2-8s vs 40-60s NIM fallback) |
+| `openai/gpt-oss-120b` | Groq | reasoning, summarization, context | ~500 tok/s. **Deprecated 2026-06-29, decommissioned 2026-08-16** |
+| `google/gemma-4-31b-it:free` | OpenRouter | reasoning, coding, math, summarization | Arena ELO 1451; 262K context; free-tier last resort |
+
+> `llama-3.3-70b-versatile` (previously the top Groq model) was deprecated 2026-06-29 and is being phased out of the rankings.
 
 ---
 
@@ -155,10 +167,15 @@ uv run python test_connection.py
 
 ### Get API keys (optional — needed for cloud endpoints)
 
+**NVIDIA NIM** — free tier, top-ranked models for most categories:
+1. Go to [build.nvidia.com](https://build.nvidia.com) → sign up
+2. Generate an API key
+3. Free tier: 40 RPM global, 1 000 credits on signup
+
 **Groq** — free tier, very fast inference:
 1. Go to [console.groq.com](https://console.groq.com) → sign up
 2. API Keys → Create API Key
-3. Free tier includes `llama-3.3-70b-versatile` and `llama-3.1-8b-instant`
+3. Free tier includes `qwen/qwen3.6-27b`, `openai/gpt-oss-120b`, and `llama-3.1-8b-instant`
 
 **OpenRouter** — access to many open-source models:
 1. Go to [openrouter.ai](https://openrouter.ai) → sign up
@@ -172,6 +189,7 @@ Copy `.env.example` to `.env` and fill in your keys:
 ```bash
 cp .env.example .env
 # then edit .env:
+# NVIDIA_API_KEY=nvapi-...
 # GROQ_API_KEY=gsk_...
 # OPENROUTER_API_KEY=sk-or-...
 ```
@@ -216,7 +234,7 @@ curl http://localhost:11435/cloud/v1/chat/completions \
 # Explicit cloud model
 curl http://localhost:11435/cloud/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -d '{"model": "groq/llama-3.3-70b-versatile", "messages": [{"role": "user", "content": "Hello"}]}'
+  -d '{"model": "groq/qwen/qwen3.6-27b", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
 
 ### `POST /v1/chat/completions` — Hybrid
@@ -262,7 +280,7 @@ If a fallback was triggered:
     "fallback_used": true,
     "primary_attempted": "ollama/qwen2.5:7b",
     "primary_error": "httpx.ConnectError: ...",
-    "resolved": "groq/llama-3.3-70b-versatile"
+    "resolved": "groq/qwen/qwen3.6-27b"
   }
 }
 ```
@@ -302,7 +320,8 @@ Cache hits are marked in the response: `x_router.cached: true`.
 |--------|---------|---------|
 | `best:<category>` | `best:coding` | Top-ranked model for that category |
 | `ollama/<model>` | `ollama/qwen2.5:7b` | Explicit local model |
-| `groq/<model>` | `groq/llama-3.3-70b-versatile` | Explicit Groq model |
+| `nvidia/<model>` | `nvidia/z-ai/glm-5.2` | Explicit NVIDIA NIM model |
+| `groq/<model>` | `groq/qwen/qwen3.6-27b` | Explicit Groq model |
 | `openrouter/<model>` | `openrouter/google/gemma-4-31b-it:free` | Explicit OpenRouter model |
 
 Available categories: `reasoning`, `coding`, `math`, `summarization`, `instruction`, `multilingual`, `code_debug`, `context`
@@ -394,11 +413,10 @@ llm = ChatOpenAI(
 
 ## Roadmap
 
-See [`plans/nvidia-nim.md`](plans/nvidia-nim.md) for the detailed plan on adding Nvidia NIM as a provider (Llama 405B, Phi-3 128k, Nemotron).
+NVIDIA NIM is now live as a provider (see [`plans/nvidia-nim.md`](plans/nvidia-nim.md) for the original plan) — it leads the cascade for most categories in `rankings/cloud.yaml`.
 
 Near-term:
 - [ ] Streaming support (`stream: true`)
-- [ ] Nvidia NIM provider
 - [ ] `context_long` benchmark category (50k–100k token tasks)
 - [ ] `best:fast` meta-category — always routes to the fastest available model regardless of quality tier
 
