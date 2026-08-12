@@ -84,25 +84,33 @@ técnicamente "gratis" y open-weight, pero no entran cómodos en esta máquina e
 máquina) — todo lo de abajo son specs/benchmarks publicados por los fabricantes o terceros, sin
 verificar acá todavía.
 
-### Daily driver (instalado y pinneado en RAM — 2026-08-12)
+### Política de memoria: default estándar para todos, pin manual caso a caso
 
-**`qwen3.5:9b` está instalado y cargado en memoria de forma permanente** (`keep_alive: -1`,
-confirmado con `ollama ps` → `UNTIL: Forever`, 8.5 GB en RAM con KV cache). Elegido por ser
-rápido+bueno dentro del presupuesto de 16GB: 6.6 GB en disco, 256K contexto, multimodal, y según
-benchmarks reportados iguala/supera a modelos mucho más grandes (gpt-oss-120b) en varios tests
-de lenguaje y agentic. Costo: ~8.5 GB de RAM ocupados todo el tiempo, dejando ~7.5 GB para
-macOS + apps + el resto de los modelos (que sí siguen con auto-descarga a los 5 min, sin cambios).
+**Regla única, sin excepciones automáticas por tamaño:** todo modelo que se instale acá — chico
+o grande, presente o futuro — usa el default de Ollama (auto-descarga tras ~5 min sin uso). El
+único costo es recargar de disco a RAM (unos segundos) si pasó mucho tiempo sin llamarlo. Esto
+es standard y consistente para cualquier modelo; el router tampoco distingue nada (`dispatcher.py`
+nunca manda `keep_alive`, así que siempre hereda este mismo default).
 
-**Este pin es solo de runtime** — si Ollama se reinicia (reboot, `brew services restart`,
-crash), se pierde y hay que re-pinnearlo con:
+Lo único que rompe esa regla es una **decisión manual y puntual**: elegir un modelo específico
+para dejarlo pinneado en RAM (`keep_alive: -1`, no se descarga nunca solo). No es un tier ni una
+política — es "hoy decidimos dejar prendido a X", y podría cambiar mañana a otro modelo, grande
+o chico, según qué convenga probar.
+
+**Decisión actual (2026-08-12): `qwen3.5:9b` pinneado.** Confirmado con `ollama ps` →
+`UNTIL: Forever`, 8.5 GB en RAM. Costo: esos 8.5 GB ocupados todo el tiempo, dejando ~7.5 GB
+para macOS + apps + el resto de los modelos (que siguen con el default, sin cambios).
+
+Pin manual, aplicable a cualquier modelo que se decida (no solo a este):
 
 ```bash
 curl -s http://localhost:11434/api/chat -H "Content-Type: application/json" -d \
-  '{"model":"qwen3.5:9b","messages":[{"role":"user","content":"ping"}],"keep_alive":-1,"stream":false}'
+  '{"model":"<modelo>","messages":[{"role":"user","content":"ping"}],"keep_alive":-1,"stream":false}'
 ```
 
-`ollama ps` muestra qué está cargado y por cuánto tiempo (`Forever` = pinneado, un número =
-tiempo restante hasta auto-descarga).
+El pin es solo de runtime — si Ollama se reinicia (reboot, `brew services restart`, crash), se
+pierde y hay que repetir el comando de arriba. `ollama ps` muestra qué está cargado y por cuánto
+(`Forever` = pinneado manualmente, un número = tiempo restante hasta auto-descarga default).
 
 **Tier A — mismo footprint, sin riesgo (5-7 GB):**
 
@@ -118,10 +126,12 @@ tiempo restante hasta auto-descarga).
 | `gemma4:12b` | `ollama pull gemma4:12b` | 7.6 GB | 256K, multimodal | MMLU Pro 77.2, GPQA Diamond 78.8, AIME 77.5 — explícitamente posicionado por Google para laptops de 16GB |
 | `JetBrains/mellum2-thinking` (Mellum2-12B-A2.5B) | vía HF GGUF, no está en `ollama.com/library` todavía | 7.0 GB (MXFP4) / 8.1 GB (Q4_K_M) | — | especialista en código, MoE 12B/2.5B activos → rápido pese al tamaño nominal. LiveCodeBench v6 69.9, mejor que lo que tenemos hoy para coding. **Requiere importar el GGUF manualmente (`ollama create` con Modelfile), no hay pull directo todavía.** |
 
-**Tier C — "el más poderoso", solo bajo demanda (~13 GB, no instalado):**
+**Tier C — "el más poderoso", listo para bajar cuando se quiera probar (~13 GB, no instalado):**
 
-No instalado a propósito — llenaría casi toda la RAM y no debe quedar pinneado. Cuando quieras
-probarlo, un solo comando:
+No instalado todavía — no porque haya una regla contra pinnear modelos grandes, sino porque
+simplemente no lo decidimos usar todavía. Mismo default que cualquier otro si se instala
+(auto-descarga a los 5 min); si en algún momento se decide dejarlo pinneado en vez de
+`qwen3.5:9b`, es la misma decisión manual de siempre, sin distinción por tamaño. Un comando:
 
 ```bash
 ollama pull gpt-oss:20b && ollama run gpt-oss:20b
@@ -129,7 +139,7 @@ ollama pull gpt-oss:20b && ollama run gpt-oss:20b
 
 | Modelo | Pull | Disco | Nota |
 |---|---|---|---|
-| `gpt-oss:20b` | `ollama pull gpt-oss:20b` | ~13 GB (MXFP4 nativo) | OpenAI dice que 16GB es el piso "bare minimum" — casi llena toda la RAM. Usar sin `keep_alive:-1` (dejar el default de 5 min) para que se libere solo después de la sesión de prueba; cerrar otras apps pesadas mientras corre. |
+| `gpt-oss:20b` | `ollama pull gpt-oss:20b` | ~13 GB (MXFP4 nativo) | OpenAI dice que 16GB es el piso "bare minimum" — casi llena toda la RAM. Si se pinnea junto con `qwen3.5:9b`, ambos compiten por los mismos 16GB — evaluar en el momento si conviene despinnear uno. |
 
 **Descartados para esta máquina (15-17+ GB, no entran con margen):** `gemma4:26b` (MoE),
 `qwen3.6:27b`, `meta/muse-glimmer-30b`, `qwen3-coder:30b-a3b` (19 GB), `devstral:24b` (14 GB) —
@@ -205,15 +215,13 @@ ollama ps                      # modelos cargados en memoria
 
 ## Próximos pasos
 
-- [x] Instalar y pinnear en RAM un daily driver chico rápido+bueno — `qwen3.5:9b`, `keep_alive: -1`.
+- [x] Default estándar (auto-descarga ~5min) para todo modelo, sin distinción automática por
+      tamaño; decisión manual puntual de cuál pinnear. Hoy: `qwen3.5:9b` pinneado (`keep_alive: -1`).
 - [ ] Correr el harness propio (`rankings/local.yaml`) contra `qwen3.5:9b` para tener números
       reales de esta máquina — pendiente, sin apuro ("haremos pruebas luego de qué jugo le
       podemos sacar diariamente").
-- [ ] Si `qwen3.5:9b` rinde bien de forma sostenida, evaluar si conviene además pinnear
-      `qwen2.5-coder:7b` (coding) — por ahora solo el generalista queda siempre prendido.
-- [ ] Si en algún momento se prueba `gpt-oss:20b` (Tier C) u otro modelo grande, dejarlo con el
-      `keep_alive` default (NO pinnear) para que se libere solo — evitar que dos modelos grandes
-      queden compitiendo por los mismos 16GB de forma permanente.
+- [ ] La decisión de qué queda pinneado se revisa manualmente cada vez que se prueba un modelo
+      nuevo (grande o chico) — no hay regla fija, se decide en el momento según qué convenga.
 - [ ] Si Tier A/B rinde bien, evaluar si vale la fricción de armar el Modelfile para
       `JetBrains/mellum2-thinking` como reemplazo de coding.
 - [ ] `gemma4:26b`, `qwen3.6:27b` y `meta/muse-glimmer-30b` quedan descartados para esta máquina
