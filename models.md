@@ -84,13 +84,31 @@ técnicamente "gratis" y open-weight, pero no entran cómodos en esta máquina e
 máquina) — todo lo de abajo son specs/benchmarks publicados por los fabricantes o terceros, sin
 verificar acá todavía.
 
-### Candidatos trending (agosto 2026), por nivel de riesgo de memoria
+### Daily driver (instalado y pinneado en RAM — 2026-08-12)
 
-**Tier A — mismo footprint que lo instalado, sin riesgo (5-7 GB):**
+**`qwen3.5:9b` está instalado y cargado en memoria de forma permanente** (`keep_alive: -1`,
+confirmado con `ollama ps` → `UNTIL: Forever`, 8.5 GB en RAM con KV cache). Elegido por ser
+rápido+bueno dentro del presupuesto de 16GB: 6.6 GB en disco, 256K contexto, multimodal, y según
+benchmarks reportados iguala/supera a modelos mucho más grandes (gpt-oss-120b) en varios tests
+de lenguaje y agentic. Costo: ~8.5 GB de RAM ocupados todo el tiempo, dejando ~7.5 GB para
+macOS + apps + el resto de los modelos (que sí siguen con auto-descarga a los 5 min, sin cambios).
+
+**Este pin es solo de runtime** — si Ollama se reinicia (reboot, `brew services restart`,
+crash), se pierde y hay que re-pinnearlo con:
+
+```bash
+curl -s http://localhost:11434/api/chat -H "Content-Type: application/json" -d \
+  '{"model":"qwen3.5:9b","messages":[{"role":"user","content":"ping"}],"keep_alive":-1,"stream":false}'
+```
+
+`ollama ps` muestra qué está cargado y por cuánto tiempo (`Forever` = pinneado, un número =
+tiempo restante hasta auto-descarga).
+
+**Tier A — mismo footprint, sin riesgo (5-7 GB):**
 
 | Modelo | Pull | Disco (Q4) | Contexto | Por qué |
 |---|---|---|---|---|
-| `qwen3.5:9b` | `ollama pull qwen3.5:9b` | 6.6 GB | 256K, multimodal (imagen+video) | según reportes iguala o supera a gpt-oss-120b (13x más grande) en varios benchmarks de lenguaje/agentic; índice agéntico 55.5 |
+| `qwen3.5:9b` ✅ instalado | `ollama pull qwen3.5:9b` | 6.6 GB | 256K, multimodal (imagen+video) | daily driver actual, ver arriba |
 | `ministral-3:8b` | `ollama pull ministral-3:8b` | 6.0 GB | multimodal (visión) | AIME24 86%, GPQA Diamond 66.8%, fuerte en idiomas europeos — buen candidato para multilingual |
 
 **Tier B — estirando el presupuesto, pero razonable (7-9 GB):**
@@ -100,11 +118,18 @@ verificar acá todavía.
 | `gemma4:12b` | `ollama pull gemma4:12b` | 7.6 GB | 256K, multimodal | MMLU Pro 77.2, GPQA Diamond 78.8, AIME 77.5 — explícitamente posicionado por Google para laptops de 16GB |
 | `JetBrains/mellum2-thinking` (Mellum2-12B-A2.5B) | vía HF GGUF, no está en `ollama.com/library` todavía | 7.0 GB (MXFP4) / 8.1 GB (Q4_K_M) | — | especialista en código, MoE 12B/2.5B activos → rápido pese al tamaño nominal. LiveCodeBench v6 69.9, mejor que lo que tenemos hoy para coding. **Requiere importar el GGUF manualmente (`ollama create` con Modelfile), no hay pull directo todavía.** |
 
-**Tier C — al límite, solo si se cierra todo lo demás (~13 GB):**
+**Tier C — "el más poderoso", solo bajo demanda (~13 GB, no instalado):**
+
+No instalado a propósito — llenaría casi toda la RAM y no debe quedar pinneado. Cuando quieras
+probarlo, un solo comando:
+
+```bash
+ollama pull gpt-oss:20b && ollama run gpt-oss:20b
+```
 
 | Modelo | Pull | Disco | Nota |
 |---|---|---|---|
-| `gpt-oss:20b` | `ollama pull gpt-oss:20b` | ~13 GB (MXFP4 nativo) | OpenAI dice que 16GB es el piso "bare minimum" — casi llena toda la RAM, no queda margen para nada más corriendo. No recomendado como daily driver acá. |
+| `gpt-oss:20b` | `ollama pull gpt-oss:20b` | ~13 GB (MXFP4 nativo) | OpenAI dice que 16GB es el piso "bare minimum" — casi llena toda la RAM. Usar sin `keep_alive:-1` (dejar el default de 5 min) para que se libere solo después de la sesión de prueba; cerrar otras apps pesadas mientras corre. |
 
 **Descartados para esta máquina (15-17+ GB, no entran con margen):** `gemma4:26b` (MoE),
 `qwen3.6:27b`, `meta/muse-glimmer-30b`, `qwen3-coder:30b-a3b` (19 GB), `devstral:24b` (14 GB) —
@@ -117,21 +142,23 @@ todos buenos modelos, pero pensados para Macs de 24-32GB+ o GPUs dedicadas de 24
 | `bge-m3` | `ollama pull bge-m3` | reemplazo moderno de `nomic-embed-text`, mejor en MTEB, buen soporte multilingüe/híbrido |
 | `mxbai-embed-large` | `ollama pull mxbai-embed-large` | alternativa, buen ranking MTEB en inglés |
 
-### Recomendación concreta
+### Estado y próxima decisión
 
-Con el presupuesto de esta máquina, lo que más vale la pena probar (no solo leer specs) es:
-1. **`qwen3.5:9b`** — candidato a reemplazar/complementar `qwen2.5:7b` como generalista; mismo
-   rango de tamaño, contexto mucho más grande (256K vs el actual), y multimodal.
-2. **`gemma4:12b`** — si el benchmark propio confirma los números de reasoning publicados, es
-   candidato fuerte para las categorías `reasoning`/`math` donde hoy gana `qwen2.5:7b` por
-   default más que por ser claramente el mejor.
-3. Coding se queda con `qwen2.5-coder:7b` por ahora — Mellum2 es prometedor pero no tiene pull
+Decidido manualmente (no hay lógica automática de "chico vs. grande" en el router — el
+`dispatcher.py` nunca manda `keep_alive`, así que toda esta gestión de memoria es externa/manual):
+
+1. ✅ **`qwen3.5:9b` instalado y pinneado** como daily driver — ver arriba.
+2. ⏳ **`gpt-oss:20b`** documentado como "el más poderoso" para esta máquina, listo para bajar
+   con un comando cuando haga falta, sin instalar de antemano.
+3. `gemma4:12b` queda anotado como candidato Tier B pero no instalado — no hay urgencia mientras
+   `qwen3.5:9b` cubra bien el uso diario.
+4. Coding se queda con `qwen2.5-coder:7b` por ahora — Mellum2 es prometedor pero no tiene pull
    directo en Ollama todavía (hay que armar el Modelfile a mano), no vale la fricción sin antes
    confirmar que el resultado es mejor.
 
-Todo esto son specs publicadas, no medición propia — el paso siguiente lógico es correr el
-harness de `rankings/local.yaml` contra `qwen3.5:9b` y `gemma4:12b` para tener números reales
-en esta máquina antes de decidir si reemplazan algo.
+Todo esto son specs publicadas, no medición propia. Cuando se quiera, correr el harness de
+`rankings/local.yaml` contra `qwen3.5:9b` (y eventualmente `gemma4:12b`/`gpt-oss:20b`) da
+números reales de esta máquina — pendiente, no urgente por ahora.
 
 ---
 
@@ -178,8 +205,15 @@ ollama ps                      # modelos cargados en memoria
 
 ## Próximos pasos
 
-- [ ] Correr el harness propio (`rankings/local.yaml`) contra `qwen3.5:9b` y `gemma4:12b` (Tier
-      A/B, entran cómodos en 16GB) para tener números reales antes de reemplazar algo instalado.
+- [x] Instalar y pinnear en RAM un daily driver chico rápido+bueno — `qwen3.5:9b`, `keep_alive: -1`.
+- [ ] Correr el harness propio (`rankings/local.yaml`) contra `qwen3.5:9b` para tener números
+      reales de esta máquina — pendiente, sin apuro ("haremos pruebas luego de qué jugo le
+      podemos sacar diariamente").
+- [ ] Si `qwen3.5:9b` rinde bien de forma sostenida, evaluar si conviene además pinnear
+      `qwen2.5-coder:7b` (coding) — por ahora solo el generalista queda siempre prendido.
+- [ ] Si en algún momento se prueba `gpt-oss:20b` (Tier C) u otro modelo grande, dejarlo con el
+      `keep_alive` default (NO pinnear) para que se libere solo — evitar que dos modelos grandes
+      queden compitiendo por los mismos 16GB de forma permanente.
 - [ ] Si Tier A/B rinde bien, evaluar si vale la fricción de armar el Modelfile para
       `JetBrains/mellum2-thinking` como reemplazo de coding.
 - [ ] `gemma4:26b`, `qwen3.6:27b` y `meta/muse-glimmer-30b` quedan descartados para esta máquina
