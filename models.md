@@ -60,6 +60,15 @@ proveedor en la cascada.
 
 ## 3. Modelos locales (Ollama)
 
+**Hardware real de esta máquina: 16 GB RAM unificada, 10 cores (8P+2E), probablemente M1 Pro.**
+Esto importa mucho más que "cuánto pesa el modelo en disco": en un Mac la RAM es *unificada*
+(CPU+GPU comparten el mismo pool), así que macOS + apps + Ollama compiten por los mismos 16 GB.
+Regla práctica: dejar ~5-6 GB para el sistema deja un presupuesto real de **8-10 GB para el
+modelo** en uso cómodo; hasta ~13 GB es "apretado pero anda"; por encima de eso, riesgo de swap
+o de que Ollama directamente falle al cargar. Esto descarta de entrada a varios modelos que
+había anotado antes como candidatos (gemma4:26b, qwen3.6:27b, muse-glimmer:30b — todos 15-17 GB):
+técnicamente "gratis" y open-weight, pero no entran cómodos en esta máquina en particular.
+
 ### Instalados y benchmarkeados (`rankings/local.yaml`, corrida propia 2026-06-20/07-27)
 
 | Modelo | Tamaño disco | tok/s (bench) | Gana en | Nota |
@@ -71,22 +80,58 @@ proveedor en la cascada.
 
 `models.md` (versión vieja) decía que solo había `gemma4:e4b` instalado — **eso ya no es así**;
 `gemma4:e4b` ni siquiera está instalado hoy. Los tres de arriba son los reales, confirmado con
-`ollama list`.
+`ollama list`. Son también los únicos con benchmark propio (tok/s + wall-clock medidos en esta
+máquina) — todo lo de abajo son specs/benchmarks publicados por los fabricantes o terceros, sin
+verificar acá todavía.
 
-### Candidatos nuevos a evaluar (agosto 2026, para Apple Silicon, <32GB)
+### Candidatos trending (agosto 2026), por nivel de riesgo de memoria
 
-| Modelo | Pull | Params | Disco (Q4) | Contexto | Por qué |
-|---|---|---|---|---|---|
-| `gemma4:12b` o `gemma4:26b` (MoE, 4B activos) | `ollama pull gemma4:12b` | 12B / 26B-A4B | ~13GB / ~15-17GB | 131K | mejora sobre gemma4:e4b si sobra memoria; la versión MoE es rápida pese al tamaño |
-| **Muse Glimmer** (Meta) | `ollama pull muse-glimmer:30b-q4_K_M` | 30B denso | ~17GB | 131K | recién salido (10/08), pensado para agentes locales; build Q4 apunta a 24GB de RAM. **Verificar disponibilidad real del pull** — el research agent no pudo confirmar 100% que ya esté publicado en la library. |
-| `qwen3.6:27b` | `ollama pull qwen3.6:27b` | 27B denso | ~16-17GB | 262K | sucesor de qwen2.5-coder para coding, benchmarks fuertes pero no verificados en fuente oficial — **probar antes de confiar** |
-| `deepseek-r1:14b` | `ollama pull deepseek-r1:14b` | 14B | ~9GB | — | un escalón arriba del `deepseek-r1:8b` actual, mismo patrón (CoT verboso) |
-| `mxbai-embed-large` o `bge-m3` | `ollama pull bge-m3` | — | chico | — | reemplazo moderno de `nomic-embed-text`, mejor en MTEB y multilingüe |
+**Tier A — mismo footprint que lo instalado, sin riesgo (5-7 GB):**
 
-**No confirmado en fuente primaria** (solo third-party/blogs): los números exactos de
-qwen3.6-27b y la disponibilidad exacta del pull de Muse Glimmer. Antes de instalar algo nuevo,
-correr el harness propio (`rankings/local.yaml` se genera con benchmark real, no con specs de
-paper) para ver si realmente rinde en este Mac.
+| Modelo | Pull | Disco (Q4) | Contexto | Por qué |
+|---|---|---|---|---|
+| `qwen3.5:9b` | `ollama pull qwen3.5:9b` | 6.6 GB | 256K, multimodal (imagen+video) | según reportes iguala o supera a gpt-oss-120b (13x más grande) en varios benchmarks de lenguaje/agentic; índice agéntico 55.5 |
+| `ministral-3:8b` | `ollama pull ministral-3:8b` | 6.0 GB | multimodal (visión) | AIME24 86%, GPQA Diamond 66.8%, fuerte en idiomas europeos — buen candidato para multilingual |
+
+**Tier B — estirando el presupuesto, pero razonable (7-9 GB):**
+
+| Modelo | Pull | Disco (Q4) | Contexto | Por qué |
+|---|---|---|---|---|
+| `gemma4:12b` | `ollama pull gemma4:12b` | 7.6 GB | 256K, multimodal | MMLU Pro 77.2, GPQA Diamond 78.8, AIME 77.5 — explícitamente posicionado por Google para laptops de 16GB |
+| `JetBrains/mellum2-thinking` (Mellum2-12B-A2.5B) | vía HF GGUF, no está en `ollama.com/library` todavía | 7.0 GB (MXFP4) / 8.1 GB (Q4_K_M) | — | especialista en código, MoE 12B/2.5B activos → rápido pese al tamaño nominal. LiveCodeBench v6 69.9, mejor que lo que tenemos hoy para coding. **Requiere importar el GGUF manualmente (`ollama create` con Modelfile), no hay pull directo todavía.** |
+
+**Tier C — al límite, solo si se cierra todo lo demás (~13 GB):**
+
+| Modelo | Pull | Disco | Nota |
+|---|---|---|---|
+| `gpt-oss:20b` | `ollama pull gpt-oss:20b` | ~13 GB (MXFP4 nativo) | OpenAI dice que 16GB es el piso "bare minimum" — casi llena toda la RAM, no queda margen para nada más corriendo. No recomendado como daily driver acá. |
+
+**Descartados para esta máquina (15-17+ GB, no entran con margen):** `gemma4:26b` (MoE),
+`qwen3.6:27b`, `meta/muse-glimmer-30b`, `qwen3-coder:30b-a3b` (19 GB), `devstral:24b` (14 GB) —
+todos buenos modelos, pero pensados para Macs de 24-32GB+ o GPUs dedicadas de 24GB VRAM.
+
+### Embeddings
+
+| Modelo | Pull | Por qué |
+|---|---|---|
+| `bge-m3` | `ollama pull bge-m3` | reemplazo moderno de `nomic-embed-text`, mejor en MTEB, buen soporte multilingüe/híbrido |
+| `mxbai-embed-large` | `ollama pull mxbai-embed-large` | alternativa, buen ranking MTEB en inglés |
+
+### Recomendación concreta
+
+Con el presupuesto de esta máquina, lo que más vale la pena probar (no solo leer specs) es:
+1. **`qwen3.5:9b`** — candidato a reemplazar/complementar `qwen2.5:7b` como generalista; mismo
+   rango de tamaño, contexto mucho más grande (256K vs el actual), y multimodal.
+2. **`gemma4:12b`** — si el benchmark propio confirma los números de reasoning publicados, es
+   candidato fuerte para las categorías `reasoning`/`math` donde hoy gana `qwen2.5:7b` por
+   default más que por ser claramente el mejor.
+3. Coding se queda con `qwen2.5-coder:7b` por ahora — Mellum2 es prometedor pero no tiene pull
+   directo en Ollama todavía (hay que armar el Modelfile a mano), no vale la fricción sin antes
+   confirmar que el resultado es mejor.
+
+Todo esto son specs publicadas, no medición propia — el paso siguiente lógico es correr el
+harness de `rankings/local.yaml` contra `qwen3.5:9b` y `gemma4:12b` para tener números reales
+en esta máquina antes de decidir si reemplazan algo.
 
 ---
 
@@ -133,10 +178,12 @@ ollama ps                      # modelos cargados en memoria
 
 ## Próximos pasos
 
-- [ ] Correr el harness propio (`rankings/local.yaml`) contra `qwen3.6:27b`, `gemma4:26b` y
-      Muse Glimmer si el pull está disponible, antes de darlos por buenos.
-- [ ] Confirmar disponibilidad real de `muse-glimmer:30b` en Ollama library (research agent no
-      pudo confirmarlo al 100%).
+- [ ] Correr el harness propio (`rankings/local.yaml`) contra `qwen3.5:9b` y `gemma4:12b` (Tier
+      A/B, entran cómodos en 16GB) para tener números reales antes de reemplazar algo instalado.
+- [ ] Si Tier A/B rinde bien, evaluar si vale la fricción de armar el Modelfile para
+      `JetBrains/mellum2-thinking` como reemplazo de coding.
+- [ ] `gemma4:26b`, `qwen3.6:27b` y `meta/muse-glimmer-30b` quedan descartados para esta máquina
+      (16GB) — no re-evaluar salvo upgrade de RAM.
 - [ ] Evaluar Gemini free tier y Mistral La Plateforme como 4to eslabón del cascade cloud.
 - [ ] Verificar si `nemotron-3.5-lightning:free` tiene traza de razonamiento antes de
       considerarlo para `instruction` u otras categorías sensibles a `<think>` blocks.
