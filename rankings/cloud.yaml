@@ -57,6 +57,36 @@
 #   nvidia/nemotron-nano-12b-v2-vl:free (vision-language, no vision category
 #   here), nvidia/nemotron-nano-9b-v2:free (small/fast, no speed-ranked
 #   category besides multilingual which is already Groq-first).
+# NOTE 2026-08-03: Live-verified against GET integrate.api.nvidia.com/v1/models
+#   and per-model chat completion calls. Two entries were silently 410ing in
+#   production: qwen/qwen3.5-397b-a17b and minimaxai/minimax-m2.7 both hit
+#   EOL 2026-07-27 ("has reached its end of life ... no longer available").
+#   Removed from coding, instruction, multilingual, context. Two new free
+#   NVIDIA NIM models added: deepseek-ai/deepseek-v4-flash (Terminal-Bench 2.1
+#   82.7, beats v4-pro's 72.1 and glm-5.2's 81.0 on DeepSeek's own agent/coding
+#   suite, 13B active/1M context — techtimes.com/articles/322513, verified
+#   live 2026-08-03) replaces deepseek-v4-pro in coding/code_debug (kept in
+#   reasoning/math/summarization/context, untested there); and
+#   thinkingmachines/inkling (975B MoE/41B active, Apache 2.0, SWE-bench 77.6,
+#   #12 in Instruction Following per public leaderboard — thinkingmachines.ai/
+#   model-card/inkling, verified live 2026-08-03) added to reasoning and
+#   instruction. Evaluated but not added: stepfun-ai/step-3.7-flash (198B MoE,
+#   SWE-Bench Pro 56.3 — weaker than glm-5.2/deepseek-v4-flash already in
+#   coding); nvidia/nemotron-nano-3-30b-a3b (listed in /v1/models but 404s on
+#   chat completions — not yet live).
+# NOTE 2026-08-12: Meta released Muse Glimmer 2026-08-10 — first open-weight
+#   agentic model from Meta Superintelligence Labs (Apache 2.0), distilled
+#   from Muse Spark 1.2. 30B dense, 131K context, free on NVIDIA NIM
+#   (meta/muse-glimmer-30b — docs.api.nvidia.com/nim/reference/meta-muse-glimmer-30b,
+#   build.nvidia.com/meta/muse-glimmer-30b). Scores: AA-LCR (long-context
+#   reasoning) 80.0 vs Gemma4-31b's 68.3 and Qwen3.6-27b's 73.3; reasoning
+#   +5 over Gemma4-31b; MCP-Atlas (agentic/tool-use) 75.5 vs Qwen3.6-27b's
+#   62.5 and Gemma4-31b's 54.2 — matches 1T-param Kimi K2.5 with 33x fewer
+#   params. Added to reasoning, instruction, coding, code_debug (agentic
+#   tool-use score is the strongest fit there). Not added to context — 131K
+#   is far below the 1M-context entries already covering that category.
+#   Source: developer.nvidia.com/blog/run-local-agentic-ai-workflows-with-metas-muse-glimmer-on-nvidia,
+#   artificialanalysis.ai/articles/muse-glimmer — verified 2026-08-12.
 # NOTE 2026-07-27: Added `cheapest:<category>` and `fastest:<category>` as
 #   model-string modes alongside `best:<category>` (see router/registry.py).
 #   `cheapest` keeps free-tier entries first (in curated order) then appends
@@ -86,6 +116,14 @@ categories:
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    - provider: nvidia
+      model: thinkingmachines/inkling
+      note: "New 2026-07-15. 975B MoE, 41B active, 1M context, Apache 2.0, native multimodal (text/image/audio). SWE-bench 77.6. Not the top scorer but strong general reasoning base."
+      source: "thinkingmachines.ai/model-card/inkling — verified live 2026-08-03"
+    - provider: nvidia
+      model: meta/muse-glimmer-30b
+      note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. AA-LCR (long-context reasoning) 80.0 vs Gemma4-31b's 68.3; reasoning +5 over Gemma4-31b despite far smaller size."
+      source: "artificialanalysis.ai/articles/muse-glimmer — verified 2026-08-12"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -141,15 +179,15 @@ categories:
       note: "Top open-weight coding model as of 2026-07; replaces glm-5.1 (EOL). MIT license."
       source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-pro
-      arena_elo: 1370
-      note: "DeepSeek coding specialist; 1M token context."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: deepseek-ai/deepseek-v4-flash
+      terminal_bench_2_1: 82.7
+      context_window: 1000000
+      note: "New 2026-07-31 (build V4-Flash-0731). 13B active, 1M context. Beats deepseek-v4-pro (72.1) and glm-5.2 (81.0) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category."
+      source: "techtimes.com/articles/322513 — verified live 2026-08-03"
     - provider: nvidia
-      model: qwen/qwen3.5-397b-a17b
-      arena_elo: 1409
-      note: "Qwen strong in code; MoE 397B, 256K context."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: meta/muse-glimmer-30b
+      note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. MCP-Atlas (agentic/tool-use) 75.5 vs Qwen3.6-27b's 62.5 and Gemma4-31b's 54.2 — matches 1T-param Kimi K2.5 with 33x fewer params. Distilled from Muse Spark 1.2; built to run on consumer GPU."
+      source: "developer.nvidia.com/blog/run-local-agentic-ai-workflows-with-metas-muse-glimmer-on-nvidia — verified 2026-08-12"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
@@ -309,9 +347,13 @@ categories:
     # this category altogether. Use best:reasoning for tasks that want CoT.
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
-      model: qwen/qwen3.5-397b-a17b
-      arena_elo: 1409
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: thinkingmachines/inkling
+      note: "New 2026-07-15. 975B MoE, 41B active, 1M context, Apache 2.0. Ranks #12 in Instruction Following on public leaderboard. Replaces qwen/qwen3.5-397b-a17b (EOL 2026-07-27)."
+      source: "thinkingmachines.ai/model-card/inkling — verified live 2026-08-03"
+    - provider: nvidia
+      model: meta/muse-glimmer-30b
+      note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. Reasoning +5 over Gemma4-31b at less than 1/3 the params; no <think> block, safe for low-max_tokens use."
+      source: "artificialanalysis.ai/articles/muse-glimmer — verified 2026-08-12"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: llama-3.1-8b-instant
@@ -351,9 +393,9 @@ categories:
       source: "console.groq.com — 2026-06"
     # ── NVIDIA NIM (quality fallback) ──────────────────────────────────────
     - provider: nvidia
-      model: qwen/qwen3.5-397b-a17b
-      arena_elo: 1409
-      note: "Quality fallback; 40-60s typical. 256K context."
+      model: moonshotai/kimi-k2.6
+      arena_elo: 1461
+      note: "Quality fallback; replaces qwen/qwen3.5-397b-a17b (EOL 2026-07-27)."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     # ── OpenRouter (free tier last resort) ─────────────────────────────────
     - provider: openrouter
@@ -372,14 +414,15 @@ categories:
       note: "Top open-weight coding model as of 2026-07; replaces glm-5.1 (EOL). MIT license."
       source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-pro
-      arena_elo: 1370
-      note: "DeepSeek coding specialist; 1M token context."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: deepseek-ai/deepseek-v4-flash
+      terminal_bench_2_1: 82.7
+      context_window: 1000000
+      note: "New 2026-07-31 (build V4-Flash-0731). 13B active, 1M context. Beats deepseek-v4-pro (72.1) and glm-5.2 (81.0) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category."
+      source: "techtimes.com/articles/322513 — verified live 2026-08-03"
     - provider: nvidia
-      model: qwen/qwen3.5-397b-a17b
-      arena_elo: 1409
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: meta/muse-glimmer-30b
+      note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. MCP-Atlas (agentic/tool-use) 75.5 vs Qwen3.6-27b's 62.5 and Gemma4-31b's 54.2 — matches 1T-param Kimi K2.5 with 33x fewer params. Distilled from Muse Spark 1.2; built to run on consumer GPU."
+      source: "developer.nvidia.com/blog/run-local-agentic-ai-workflows-with-metas-muse-glimmer-on-nvidia — verified 2026-08-12"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
@@ -457,11 +500,7 @@ categories:
       arena_elo: 1370
       context_window: 1000000
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: minimaxai/minimax-m2.7
-      context_window: 205000
-      note: "205K context fallback."
-      source: "build.nvidia.com — 2026-06"
+    # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — three NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
