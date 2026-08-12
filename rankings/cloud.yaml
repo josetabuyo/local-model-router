@@ -87,6 +87,35 @@
 #   is far below the 1M-context entries already covering that category.
 #   Source: developer.nvidia.com/blog/run-local-agentic-ai-workflows-with-metas-muse-glimmer-on-nvidia,
 #   artificialanalysis.ai/articles/muse-glimmer — verified 2026-08-12.
+# NOTE 2026-08-12 (urgent fixes, live-verified against console.groq.com and
+#   openrouter.ai/api/v1/models):
+#   1. Groq deprecates llama-3.1-8b-instant AND llama-3.3-70b-versatile on
+#      2026-08-16 (announced 2026-06-17, console.groq.com/docs/deprecations).
+#      llama-3.1-8b-instant was the Groq fast/last-resort entry in 8 of 9
+#      categories — replaced everywhere with Groq's official migration
+#      target openai/gpt-oss-20b, EXCEPT in `instruction`, which swapped to
+#      llama/llama-4-scout-17b-16e-instruct instead: gpt-oss-20b shares the
+#      gpt-oss-120b reasoning family this category already excludes for
+#      <think>-block token burn on low-max_tokens calls; Scout is a
+#      non-reasoning Llama 4 MoE instruct model and doesn't have that problem.
+#      llama-3.3-70b-versatile is not used anywhere in this file — no action.
+#   2. inclusionai/ling-3.0-flash:free's time-limited promo (flagged in the
+#      2026-07-23 note above) ended 2026-08-03 as warned; confirmed gone from
+#      the live OpenRouter free catalog. Removed from `reasoning` (replaced
+#      with nvidia/nemotron-3.5-lightning:free, new 2026-08-11, 30B MoE/3B
+#      active, fast agentic — blogs.nvidia.com/blog/nemotron-lightning-
+#      switchyard-rtx-dgx) and from `instruction` (removed, not replaced —
+#      Lightning's reasoning-trace behavior isn't yet verified and this
+#      category can't risk another <think>-block regression).
+#   Live-checked and still fine, no action needed: all other OpenRouter
+#   :free slugs used in this file (gemma-4-31b/26b-it, gpt-oss-20b,
+#   nemotron-3-{nano-30b-a3b,nano-omni-30b-a3b-reasoning,super-120b-a12b,
+#   ultra-550b-a55b,nano-9b-v2}, poolside/laguna-s-2.1, cohere/north-mini-code)
+#   — all 16 currently live. NVIDIA NIM models (glm-5.2, deepseek-v4-flash/
+#   pro, kimi-k2.6, minimax-m3, inkling, muse-glimmer-30b) — no EOLs found.
+#   Kimi K3 weights are open (custom license) but still no free NIM/Groq
+#   listing; MAI-Thinking-1/MAI-Code-1 still enterprise-only. Both remain
+#   correctly un-added per existing WATCH note.
 # NOTE 2026-07-27: Added `cheapest:<category>` and `fastest:<category>` as
 #   model-string modes alongside `best:<category>` (see router/registry.py).
 #   `cheapest` keeps free-tier entries first (in curated order) then appends
@@ -134,15 +163,15 @@ categories:
       gpqa_diamond: 87.8
       source: "console.groq.com — 2026-06"
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
-      model: inclusionai/ling-3.0-flash:free
-      context_window: 262144
-      note: "New 2026-07-23, hybrid-reasoning MoE, 124B total/5.1B active. Roughly Sonnet-4.6 quality per early third-party reports. TIME-LIMITED PROMO — free only through 2026-08-03; recheck pricing after that date or cascade calls will start 402ing."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+      model: nvidia/nemotron-3.5-lightning:free
+      context_window: 131072
+      note: "Replaces inclusionai/ling-3.0-flash:free — that promo ended 2026-08-03 as this file warned, confirmed gone from the live free catalog 2026-08-12. Lightning is new 2026-08-11, 30B MoE/3B active, ~4x faster output and 30% faster agentic completion vs class peers per NVIDIA's PinchBench."
+      source: "openrouter.ai/api/v1/models — live-verified 2026-08-12; blogs.nvidia.com/blog/nemotron-lightning-switchyard-rtx-dgx"
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
@@ -198,9 +227,9 @@ categories:
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
       model: poolside/laguna-s-2.1:free
@@ -268,9 +297,9 @@ categories:
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
       model: nvidia/nemotron-3-nano-30b-a3b:free
@@ -314,9 +343,9 @@ categories:
       model: qwen/qwen3.6-27b
       source: "console.groq.com — 2026-06"
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
@@ -356,16 +385,15 @@ categories:
       source: "artificialanalysis.ai/articles/muse-glimmer — verified 2026-08-12"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      note: "Fast, no reasoning trace, reliable for low-max_tokens classifiers."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: llama/llama-4-scout-17b-16e-instruct
+      note: "Replaces llama-3.1-8b-instant (deprecated by Groq 2026-08-16). NOT gpt-oss-20b — same reasoning family as gpt-oss-120b, which this category already excludes for <think>-block token burn. Scout is a non-reasoning Llama 4 MoE instruct model, fits the no-reasoning-trace requirement here."
+      source: "console.groq.com/docs/models — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: inclusionai/ling-3.0-flash:free
-      context_window: 262144
-      note: "New 2026-07-23, hybrid-reasoning MoE, 124B total/5.1B active. Roughly Sonnet-4.6 quality per early third-party reports. TIME-LIMITED PROMO — free only through 2026-08-03; recheck pricing after that date or cascade calls will start 402ing."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    # NOTE: inclusionai/ling-3.0-flash:free removed — TIME-LIMITED PROMO ended
+    #   2026-08-03 as this file warned, confirmed gone from live free catalog
+    #   2026-08-12. Not replaced with nemotron-3.5-lightning:free (added to
+    #   `reasoning`) since its reasoning-trace behavior isn't yet verified and
+    #   this category deliberately excludes anything with a <think> block.
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
@@ -383,10 +411,9 @@ categories:
     # Trimmed from 9 entries to 4 — long tail was accumulating timeout penalties.
     # ── Groq (fast LPU) ────────────────────────────────────────────────────
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      note: "Primary: Groq LPU 2-8s. Sufficient for conversational multilingual."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant (deprecated by Groq 2026-08-16). Primary: Groq LPU, still sub-10s typical. Sufficient for conversational multilingual."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     - provider: groq
       model: qwen/qwen3.6-27b
       note: "Balanced quality/speed on Groq LPU."
@@ -433,9 +460,9 @@ categories:
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
       model: poolside/laguna-s-2.1:free
@@ -509,9 +536,9 @@ categories:
       model: qwen/qwen3.6-27b
       source: "console.groq.com — 2026-06"
     - provider: groq
-      model: llama-3.1-8b-instant
-      arena_elo: 1211
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: openai/gpt-oss-20b
+      note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
+      source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     - provider: openrouter
       model: nvidia/nemotron-3-ultra-550b-a55b:free
