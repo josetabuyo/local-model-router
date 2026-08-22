@@ -130,6 +130,45 @@
 #   moonshotai/kimi-k3 ($3/$15, priciest/last rung) are now in `coding` and
 #   `code_debug` as `paid: true` fallback entries — reachable only via
 #   `cheapest:coding` / `cheapest:code_debug` once every free option fails.
+# NOTE 2026-08-22 (model-scout daily audit): live probes against
+#   integrate.api.nvidia.com/v1/chat/completions (not just /v1/models listing —
+#   catches models still listed but dead) found two NEW EOLs since the last
+#   audit: z-ai/glm-5.2 on NVIDIA NIM (EOL 2026-08-21, used in coding/
+#   code_debug/context) and deepseek-ai/deepseek-v4-flash on NVIDIA NIM (EOL
+#   2026-08-07, used in coding/code_debug) — the latter's dated build id
+#   deepseek-ai/deepseek-v4-flash-0731 is still live and is what these entries
+#   now point to. glm-5.2 itself is NOT dead everywhere — it's still free on
+#   OpenRouter (z-ai/glm-5.2:free) — only the NVIDIA NIM listing died.
+#   Replacement for glm-5.2's NVIDIA slot in coding/code_debug/context:
+#   moonshotai/kimi-k3 (2.8T MoE, #3 Artificial Analysis 2026-07-16), whose
+#   weights went open 2026-07-26. It was still paid-only on OpenRouter as of
+#   the 2026-07-27 audit, but a live probe today confirms NVIDIA NIM now
+#   serves it for free (200 OK) — this is NOT yet documented in NIM's public
+#   model catalog or docs.api.nvidia.com, verified only by direct API call.
+#   Recheck in a future audit that this holds and isn't a temporary/unlisted
+#   state. Since kimi-k3 is now free via NIM, the `paid: true` OpenRouter
+#   kimi-k3 fallback entries (added 2026-07-27 in coding/code_debug) are
+#   removed as redundant — kwaipilot/kat-coder-air-v2.5 remains the sole
+#   `cheapest:*` paid rung.
+#   Cross-checked kimi-k3 against both required ranking sources (per updated
+#   model-scout policy: LMArena direct as primary, Artificial Analysis as
+#   independent backup, not just lmmarketcap aggregation) — LMArena added it
+#   to Text/Code/Agent Arena leaderboards 2026-07 (#1 Frontend Code Arena);
+#   Artificial Analysis Intelligence Index v4.1.1 (2026-08-20) scores it 60,
+#   tied top open-weight model with GLM-5.3, behind only Opus 5/Fable 5/
+#   GPT-5.6 Sol. Both sources agree it's a legitimate top-tier upgrade over
+#   glm-5.2, not just a self-reported number.
+#   New provider candidates found via open web search (not yet integrated —
+#   each needs a new API key, left as a proposal in plans/new-cloud-providers.md
+#   rather than added blindly): Cerebras (free tier, ~1M tokens/day, no card,
+#   LPU-speed like Groq) and Google Gemini API (free tier, large context, no
+#   card). Both worth a follow-up integration pass.
+#   Local model check (Ollama, this machine's 16GB RAM / Apple Silicon
+#   constraint): no upgrade found over the currently pinned qwen3.5:9b
+#   daily-driver (installed 2026-08-12). General "best local LLM 2026" search
+#   results were SEO-blog aggregators citing stale picks (Llama 3.1 8B, Phi-4,
+#   Qwen 3 7B) already superseded by what's installed — not actionable,
+#   discarded per this project's policy against trusting blog specifics.
 
 categories:
 
@@ -201,18 +240,16 @@ categories:
   coding:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
-      model: z-ai/glm-5.2
-      swe_bench_pro: 62.1
-      terminal_bench_2_1: 81.0
+      model: moonshotai/kimi-k3
       context_window: 1000000
-      note: "Top open-weight coding model as of 2026-07; replaces glm-5.1 (EOL). MIT license."
-      source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
+      note: "Replaces z-ai/glm-5.2 (EOL 2026-08-21 on NVIDIA NIM). 2.8T MoE, #3 Artificial Analysis (2026-07-16), free on NIM since weights opened 2026-07-26 — not yet in NIM's public docs, verified by direct probe."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-22"
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash
+      model: deepseek-ai/deepseek-v4-flash-0731
       terminal_bench_2_1: 82.7
       context_window: 1000000
-      note: "New 2026-07-31 (build V4-Flash-0731). 13B active, 1M context. Beats deepseek-v4-pro (72.1) and glm-5.2 (81.0) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category."
-      source: "techtimes.com/articles/322513 — verified live 2026-08-03"
+      note: "13B active, 1M context. Beats deepseek-v4-pro (72.1) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category. Model id fixed 2026-08-22: unsuffixed deepseek-ai/deepseek-v4-flash hit EOL 2026-08-07; the dated build id (-0731) is the one still live."
+      source: "techtimes.com/articles/322513; id fix verified live 2026-08-22"
     - provider: nvidia
       model: meta/muse-glimmer-30b
       note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. MCP-Atlas (agentic/tool-use) 75.5 vs Qwen3.6-27b's 62.5 and Gemma4-31b's 54.2 — matches 1T-param Kimi K2.5 with 33x fewer params. Distilled from Muse Spark 1.2; built to run on consumer GPU."
@@ -267,14 +304,6 @@ categories:
       context_window: 256000
       note: "Cheapest paid rung. Agentic coding model, evaluated 2026-07-23. Only reached via cheapest:coding once every free option above fails."
       source: "openrouter.ai/kwaipilot/kat-coder-air-v2.5 — verified 2026-07-27"
-    - provider: openrouter
-      model: moonshotai/kimi-k3
-      paid: true
-      cost_per_mtok_in: 3.0
-      cost_per_mtok_out: 15.0
-      context_window: 262144
-      note: "Priciest/last rung. 2.8T MoE, #3 on Artificial Analysis (2026-07-16). Only reached via cheapest:coding as the final fallback."
-      source: "openrouter.ai/moonshotai/kimi-k3 — verified 2026-07-27"
 
   math:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -434,18 +463,16 @@ categories:
   code_debug:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
-      model: z-ai/glm-5.2
-      swe_bench_pro: 62.1
-      terminal_bench_2_1: 81.0
+      model: moonshotai/kimi-k3
       context_window: 1000000
-      note: "Top open-weight coding model as of 2026-07; replaces glm-5.1 (EOL). MIT license."
-      source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
+      note: "Replaces z-ai/glm-5.2 (EOL 2026-08-21 on NVIDIA NIM). 2.8T MoE, #3 Artificial Analysis (2026-07-16), free on NIM since weights opened 2026-07-26 — not yet in NIM's public docs, verified by direct probe."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-22"
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash
+      model: deepseek-ai/deepseek-v4-flash-0731
       terminal_bench_2_1: 82.7
       context_window: 1000000
-      note: "New 2026-07-31 (build V4-Flash-0731). 13B active, 1M context. Beats deepseek-v4-pro (72.1) and glm-5.2 (81.0) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category."
-      source: "techtimes.com/articles/322513 — verified live 2026-08-03"
+      note: "13B active, 1M context. Beats deepseek-v4-pro (72.1) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category. Model id fixed 2026-08-22: unsuffixed deepseek-ai/deepseek-v4-flash hit EOL 2026-08-07; the dated build id (-0731) is the one still live."
+      source: "techtimes.com/articles/322513; id fix verified live 2026-08-22"
     - provider: nvidia
       model: meta/muse-glimmer-30b
       note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. MCP-Atlas (agentic/tool-use) 75.5 vs Qwen3.6-27b's 62.5 and Gemma4-31b's 54.2 — matches 1T-param Kimi K2.5 with 33x fewer params. Distilled from Muse Spark 1.2; built to run on consumer GPU."
@@ -500,22 +527,14 @@ categories:
       context_window: 256000
       note: "Cheapest paid rung. Agentic coding model, evaluated 2026-07-23. Only reached via cheapest:code_debug once every free option above fails."
       source: "openrouter.ai/kwaipilot/kat-coder-air-v2.5 — verified 2026-07-27"
-    - provider: openrouter
-      model: moonshotai/kimi-k3
-      paid: true
-      cost_per_mtok_in: 3.0
-      cost_per_mtok_out: 15.0
-      context_window: 262144
-      note: "Priciest/last rung. 2.8T MoE, #3 on Artificial Analysis (2026-07-16). Only reached via cheapest:code_debug as the final fallback."
-      source: "openrouter.ai/moonshotai/kimi-k3 — verified 2026-07-27"
 
   context:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
-      model: z-ai/glm-5.2
+      model: moonshotai/kimi-k3
       context_window: 1000000
-      note: "1M token context; selectable reasoning effort, strong on long-horizon agentic tasks."
-      source: "docs.api.nvidia.com/nim/reference/z-ai-glm-5.2 — 2026-07"
+      note: "1M token context. Replaces z-ai/glm-5.2 (EOL 2026-08-21 on NVIDIA NIM). 2.8T MoE, free on NIM since weights opened 2026-07-26 — not yet in NIM's public docs, verified by direct probe."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-22"
     - provider: nvidia
       model: minimaxai/minimax-m3
       arena_elo: 1447

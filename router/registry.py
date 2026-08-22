@@ -22,9 +22,10 @@ _PROVIDER_SPEED_RANK: dict[str, int] = {"groq": 0, "nvidia": 2, "openrouter": 3}
 # (see rankings/cloud.yaml notes) that contradicts the provider default —
 # e.g. a specific NIM model known to be much slower than typical NIM latency.
 _SPEED_OVERRIDES: dict[tuple[str, str], int] = {
-    ("groq", "llama-3.1-8b-instant"): -1,   # smallest Groq model; fastest entry in the whole cascade
+    ("groq", "openai/gpt-oss-20b"): -1,      # replaces llama-3.1-8b-instant (Groq EOL 2026-08-16); smallest active Groq model, fastest in the cascade
     ("groq", "openai/gpt-oss-120b"): 0,      # ~500 tok/s, per Groq's own deprecation notice benchmarks
-    ("nvidia", "qwen/qwen3.5-397b-a17b"): 4,  # 40-60s typical (multilingual notes) — slow even for NIM
+    # qwen/qwen3.5-397b-a17b override removed 2026-08-22 (model-scout audit):
+    # EOL 2026-07-27, no longer referenced anywhere in rankings/cloud.yaml.
 }
 
 
