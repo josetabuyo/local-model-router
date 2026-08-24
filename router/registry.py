@@ -16,7 +16,9 @@ _MODES = ("best", "cheapest", "fastest")
 # Groq's LPU hardware beats NVIDIA NIM and OpenRouter's proxied backends on
 # every model we've measured — see rankings/cloud.yaml multilingual notes
 # (Groq 2-8s vs NVIDIA 40-60s for comparable quality tiers).
-_PROVIDER_SPEED_RANK: dict[str, int] = {"groq": 0, "nvidia": 2, "openrouter": 3}
+_PROVIDER_SPEED_RANK: dict[str, int] = {"groq": 0, "nvidia": 2, "gemini": 2, "openrouter": 3}
+# gemini shares nvidia's rank (2): no measured latency data yet (added 2026-08-24),
+# placed conservatively between Groq's LPU speed and OpenRouter's proxied backends.
 
 # Per-model overrides where we have documented actual throughput/latency
 # (see rankings/cloud.yaml notes) that contradicts the provider default —

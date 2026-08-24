@@ -25,6 +25,7 @@ load_dotenv(Path(__file__).parent / ".env")
 from benchmark.providers.ollama_provider import OllamaProvider
 from benchmark.providers.groq_provider import GroqProvider, FREE_MODELS as GROQ_MODELS
 from benchmark.providers.openrouter_provider import OpenRouterProvider, FREE_MODELS as OR_MODELS
+from benchmark.providers.gemini_provider import GeminiProvider, FREE_MODELS as GEMINI_MODELS
 from benchmark.runner import run_benchmark, save_results
 from benchmark.report import print_result_live, print_summary
 from benchmark.tasks import TASKS
@@ -61,6 +62,14 @@ def build_providers(args: argparse.Namespace):
         else:
             models = OR_MODELS if args.all_cloud else OR_MODELS[:2]
             pairs.append((OpenRouterProvider(key), models))
+
+    if args.provider in ("gemini", "cloud", "all"):
+        key = os.getenv("GEMINI_API_KEY")
+        if not key:
+            console.print("[yellow]GEMINI_API_KEY not set — skipping Gemini.[/yellow]")
+        else:
+            models = GEMINI_MODELS if args.all_cloud else GEMINI_MODELS[:2]
+            pairs.append((GeminiProvider(key), models))
 
     return pairs
 

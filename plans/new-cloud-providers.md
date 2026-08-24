@@ -1,35 +1,38 @@
-# Nuevos proveedores cloud de LLM gratis — propuesta (2026-08-22)
+# Nuevos proveedores cloud de LLM gratis
 
-Encontrados en la auditoría diaria de `model-scout` vía búsqueda web abierta
-(no en el cascade actual: NVIDIA NIM → Groq → OpenRouter). No integrados
-todavía porque cada uno requiere una API key nueva del usuario — dejar como
-propuesta hasta que se decida agregarlos.
+## Gemini — INTEGRADO 2026-08-24
 
-## Cerebras — candidato fuerte, mismo rol que Groq
+Agregado como 5to proveedor (`gemini`) tras el incidente de Pulpo/Luganense
+del 2026-08-24: Groq/NVIDIA/OpenRouter fallaron los tres al mismo tiempo
+(cuota agotada, modelo muerto, rate-limit), dejando el cascade cloud
+completo caído. Gemini es un proveedor con infraestructura y cuota
+totalmente independiente de los otros tres — reduce el riesgo de que un
+solo incidente tumbe todo el cascade cloud.
 
-- Free tier: ~1M tokens/día, sin tarjeta de crédito.
-- Igual que Groq: inferencia LPU/wafer-scale, velocidad como diferencial
-  frente a NVIDIA NIM/OpenRouter.
-- Encaja como un tercer proveedor "rápido" en las categorías donde Groq ya es
-  slot 0 (`multilingual`, `coding`, `code_debug`) — redundancia útil si Groq
-  rate-limitea (30 RPM/1000 RPD por modelo es bastante más chico que el 1M
-  tok/día de Cerebras).
-- Pasos de integración: agregar `benchmark/providers/cerebras_provider.py`
-  (mismo patrón que `groq_provider.py`, base OpenAI-compatible), env var
-  `CEREBRAS_API_KEY`, agregar a `router/dispatcher.py` y a
-  `rankings/cloud.yaml` con benchmarks live verificados.
+- `benchmark/providers/gemini_provider.py` — mismo patrón que groq/openrouter.
+- `router/dispatcher.py` — `_call_gemini`, base
+  `https://generativelanguage.googleapis.com/v1beta/openai`.
+- `router/registry.py` — rank de velocidad 2 (junto a NVIDIA; sin datos de
+  latencia medidos todavía).
+- `rankings/cloud.yaml` — agregado a `multilingual`, `instruction`, `context`
+  (las categorías más ligadas al clasificador de Luganense y a resiliencia
+  de contexto largo). No agregado a las otras 5 categorías — no hay
+  necesidad urgente ahí y evita inflar el cascade sin justificación.
+- Modelos: `gemini-3.1-flash-lite` (15 RPM / 1,000 RPD, el más generoso) y
+  `gemini-3.5-flash` (10 RPM / 250 RPD, mejor calidad, contexto 1,048,576
+  tokens confirmado).
+- **Pendiente del usuario**: agregar `GEMINI_API_KEY` a `.env` (conseguir en
+  aistudio.google.com, sin tarjeta). Sin la key, `gemini` simplemente falla
+  silenciosamente en el cascade y sigue al siguiente proveedor — no rompe
+  nada, pero tampoco aporta resiliencia real hasta que la key esté puesta.
 
-## Google Gemini API — candidato para `context` / respaldo de calidad
+## Cerebras — EVALUADO, RECHAZADO 2026-08-24
 
-- Free tier: hasta 1M tokens de contexto, límites de volumen más bajos que
-  Groq/Cerebras.
-- No requiere tarjeta.
-- Encajaría en `context` (ya hay 3 entradas NVIDIA con contexto 1M — Gemini
-  sería una opción de proveedor diferente, no solo modelo diferente, lo cual
-  ayuda si NVIDIA NIM tiene un mal día) y como respaldo de calidad general.
-- Pasos de integración: `benchmark/providers/gemini_provider.py`, env var
-  `GEMINI_API_KEY`, confirmar límites reales de RPM/RPD antes de sumarlo al
-  cascade (Google no siempre publica los límites del free tier con precisión).
+Su free tier sin tarjeta terminó. Ahora pide método de pago a cambio de
+$5 de crédito que expira en 30 días — no es sostenible ni gratis en el
+sentido que usa el resto de este cascade (NVIDIA/Groq/OpenRouter/Gemini son
+los cuatro sin tarjeta). No integrado. Si el free tier sin tarjeta vuelve en
+el futuro, recheck.
 
 ## No integrados (evaluados, no encajan)
 
@@ -43,6 +46,6 @@ propuesta hasta que se decida agregarlos.
 
 ## Siguiente paso
 
-Si el usuario confirma agregar alguno: crear la API key, agregarla a `.env`,
-y correr `model-scout` de nuevo — el skill ya sabe cómo auditar y sumar un
-proveedor con benchmarks verificados en vivo.
+Agregar `GEMINI_API_KEY` a `.env` y probar `curl localhost:11435/v1/chat/completions`
+contra `best:multilingual` o `best:instruction` para confirmar que el nuevo
+proveedor entra al cascade en producción.

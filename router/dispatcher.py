@@ -7,6 +7,7 @@ OLLAMA_BASE = "http://localhost:11434"
 GROQ_BASE = "https://api.groq.com/openai/v1"
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 NVIDIA_BASE = "https://integrate.api.nvidia.com/v1"
+GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 
 # Models that hang without explicit thinking=off. Client payload wins if it sets chat_template_kwargs.
 # DeepSeek V4 family and Kimi K2 use {"thinking": false}; Qwen3.5 uses {"enable_thinking": false}.
@@ -29,6 +30,8 @@ class Dispatcher:
             return await self._call_openrouter(model_id, payload, timeout=timeout or 120.0)
         if provider == "nvidia":
             return await self._call_nvidia(model_id, payload, timeout=timeout or 120.0)
+        if provider == "gemini":
+            return await self._call_gemini(model_id, payload, timeout=timeout or 60.0)
         raise ValueError(f"Unknown provider '{provider}'")
 
     async def _call_ollama(self, model_id: str, payload: dict, timeout: float = 300.0) -> dict:
@@ -72,6 +75,24 @@ class Dispatcher:
         async with httpx.AsyncClient() as client:
             resp = await client.post(
                 f"{OPENROUTER_BASE}/chat/completions",
+                json=body,
+                headers={
+                    "Authorization": f"Bearer {api_key}",
+                    "User-Agent": "local-model-router/1.0",
+                },
+                timeout=timeout,
+            )
+            resp.raise_for_status()
+            return resp.json()
+
+    async def _call_gemini(self, model_id: str, payload: dict, timeout: float = 60.0) -> dict:
+        api_key = os.getenv("GEMINI_API_KEY", "")
+        if not api_key:
+            raise ValueError("GEMINI_API_KEY is not set")
+        body = {**payload, "model": model_id}
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{GEMINI_BASE}/chat/completions",
                 json=body,
                 headers={
                     "Authorization": f"Bearer {api_key}",

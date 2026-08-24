@@ -211,6 +211,17 @@
 #   z-ai/glm-5.2:free (still alive on OpenRouter free tier, unchanged from
 #   2026-08-22 note). No new free cloud providers or local-model upgrades
 #   found this pass.
+# NOTE 2026-08-24 (new provider — Pulpo/Luganense incident): Luganense's
+#   classifier cascade went fully down today when Groq/NVIDIA/OpenRouter all
+#   failed at once (Groq quota exhausted, one NVIDIA model dead, OpenRouter
+#   rate-limited) — a single-incident, all-tiers-down scenario. Added
+#   `gemini` as a 4th independent free provider (own quota, own infra) to
+#   `multilingual`, `instruction`, and `context` — the categories that most
+#   directly cover Luganense's classifier and general instruct use. No card
+#   required for Gemini's free tier. Evaluated and REJECTED `cerebras` for
+#   the same purpose: its no-card free tier ended, now requires a payment
+#   method for a $5/30-day credit — breaks this project's no-card cascade
+#   policy, not added.
 
 categories:
 
@@ -464,6 +475,11 @@ categories:
       context_window: 1000000
       note: "Replaces openai/gpt-oss-20b:free, which went paid-only 2026-08-24 (404 'unavailable for free'). Newly free on OpenRouter as of this audit — previously only free via NVIDIA NIM, where it's already used in this category (no <think>-block issue, safe for the no-reasoning-trace requirement here)."
       source: "openrouter.ai/api/v1/models — verified 2026-08-24"
+    # ── Gemini (independent 4th free provider, added 2026-08-24) ───────────
+    - provider: gemini
+      model: gemini-3.1-flash-lite
+      note: "Fills the gap noted above — Groq has no non-reasoning instruct model free right now. Flash-Lite is not a CoT/reasoning model, safe for low-max_tokens instruction-following. Independent 4th provider (own quota/infra) for cascade resilience after the 2026-08-24 incident where Groq/NVIDIA/OpenRouter all failed at once. No card required."
+      source: "ai.google.dev/gemini-api/docs/openai, aifreeapi.com free-tier guide — verified 2026-08-24"
 
   multilingual:
     # Speed-first ordering (Luganense conversational latency, 2026-07-16):
@@ -490,6 +506,11 @@ categories:
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # ── Gemini (independent 4th free provider, added 2026-08-24) ───────────
+    - provider: gemini
+      model: gemini-3.1-flash-lite
+      note: "Added as a genuinely independent 4th free provider (own quota, own infra — Google, not NVIDIA/Meta/Groq-hosted) after an incident where Groq/NVIDIA/OpenRouter all failed at once for Luganense's classifier. No card required for the free tier. 15 RPM / 1,000 RPD — most generous free quota of any tier here. No public Arena/AA score yet for this exact snapshot; placed as last resort pending benchmark data."
+      source: "ai.google.dev/gemini-api/docs/openai (OpenAI-compat endpoint), aifreeapi.com free-tier guide — verified 2026-08-24"
 
   code_debug:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -607,3 +628,9 @@ categories:
       context_window: 128000
       note: "Smallest free-tier fallback. Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # ── Gemini (independent 4th free provider, added 2026-08-24) ───────────
+    - provider: gemini
+      model: gemini-3.5-flash
+      context_window: 1048576
+      note: "1,048,576 token context (confirmed spec, not extrapolated). Used here over the flash-lite variant used in other categories because context work benefits more from Flash's extra quality; free tier is smaller (10 RPM / 250 RPD vs flash-lite's 15/1,000) so kept as a lower-priority fallback. Independent 4th provider for cascade resilience — no card required."
+      source: "ai.google.dev/gemini-api/docs/whats-new-gemini-3.5, aifreeapi.com free-tier guide — verified 2026-08-24"

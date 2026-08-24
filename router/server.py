@@ -56,6 +56,7 @@ _CASCADE_TIMEOUTS: dict[str, float] = {
     "nvidia": 45.0,
     "groq": 30.0,
     "openrouter": 45.0,
+    "gemini": 30.0,
     "ollama": 180.0,
 }
 
