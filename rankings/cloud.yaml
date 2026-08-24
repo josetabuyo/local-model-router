@@ -169,6 +169,48 @@
 #   results were SEO-blog aggregators citing stale picks (Llama 3.1 8B, Phi-4,
 #   Qwen 3 7B) already superseded by what's installed — not actionable,
 #   discarded per this project's policy against trusting blog specifics.
+# NOTE 2026-08-24 (model-scout daily audit): live probes (direct chat-completion
+#   calls, not just /v1/models listings) found three EOLs since the last audit:
+#   1. deepseek-ai/deepseek-v4-pro on NVIDIA NIM — HTTP 410 "reached its end of
+#      life on 2026-08-07T09:00:00Z". Was used in reasoning/math/context.
+#      Replaced everywhere with deepseek-ai/deepseek-v4-flash-0731 (already
+#      live in coding/code_debug/context since the 2026-08-22 audit) — same
+#      successor model, now extended to the remaining categories.
+#   2. openai/gpt-oss-20b:free on OpenRouter — HTTP 404, "unavailable for
+#      free, use openai/gpt-oss-20b [paid] instead". Was used as the
+#      OpenRouter fallback in reasoning/coding/math/summarization/instruction/
+#      code_debug. In reasoning and instruction, replaced with
+#      thinkingmachines/inkling:free — newly free on OpenRouter as of this
+#      audit (previously only free via NVIDIA NIM), and already vetted for
+#      both categories (inkling has no <think>-block token-burn issue, it's
+#      already used in `instruction` via NIM). In coding/math/summarization/
+#      code_debug, removed with no replacement — each of those categories
+#      still has 3-4 other live OpenRouter free entries, no coverage gap.
+#   3. llama/llama-4-scout-17b-16e-instruct on Groq — HTTP 404. Confirmed via
+#      GET api.groq.com/openai/v1/models: fully gone from Groq's catalog, not
+#      just renamed (checked meta-llama/ prefix too — not present). Groq's
+#      free catalog is now just openai/gpt-oss-{20b,120b}, qwen/qwen3.6-27b
+#      (all reasoning-family, excluded from `instruction` by this category's
+#      own long-standing rule), plus allam-2-7b (Arabic-specialized) and
+#      groq/compound(-mini) (agentic tool-use systems, not plain instruct).
+#      GAP: no non-reasoning general instruct model currently available on
+#      Groq at all. Removed the Groq entry from `instruction` with no
+#      replacement — category still covered by NVIDIA (inkling, muse-
+#      glimmer-30b) and OpenRouter (gemma-4-31b, inkling:free) entries, but
+#      the "fast Groq LPU" option for this category is gone until Groq adds
+#      a new non-reasoning instruct model. Recheck in a future audit.
+#   Live-checked and confirmed still fine: openai/gpt-oss-20b (Groq, paid-tier
+#   name but free on Groq), openai/gpt-oss-120b (Groq), qwen/qwen3.6-27b
+#   (Groq), moonshotai/kimi-k3, deepseek-ai/deepseek-v4-flash-0731, meta/
+#   muse-glimmer-30b, moonshotai/kimi-k2.6, minimaxai/minimax-m3,
+#   thinkingmachines/inkling (all NVIDIA NIM — all 200 OK). New OpenRouter
+#   free-tier additions spotted but not integrated (off-category or
+#   redundant with existing entries): dots-studio/dots-3-note-preview:free,
+#   liquid/lfm-2.5-2.6b:free (small/fast, no clear category gap),
+#   thinkingmachines/inkling-small:free, poolside/laguna-xs-2.1:free,
+#   z-ai/glm-5.2:free (still alive on OpenRouter free tier, unchanged from
+#   2026-08-22 note). No new free cloud providers or local-model upgrades
+#   found this pass.
 
 categories:
 
@@ -176,10 +218,11 @@ categories:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-pro
-      arena_elo: 1370
-      note: "Reasoning-specialized; 1M token context. ELO extrapolated (DeepSeek R1=1369)."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: deepseek-ai/deepseek-v4-flash-0731
+      terminal_bench_2_1: 82.7
+      context_window: 1000000
+      note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/context since 2026-08-22."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
     - provider: nvidia
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
@@ -227,10 +270,10 @@ categories:
       note: "Reasoning-tagged Nemotron variant. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: openai/gpt-oss-20b:free
-      context_window: 131072
-      note: "Replaces gpt-oss-120b:free, which went paid-only; 20b is the current free tier of this family."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      model: thinkingmachines/inkling:free
+      context_window: 1000000
+      note: "Replaces openai/gpt-oss-20b:free, which went paid-only 2026-08-24 (404 'unavailable for free'). Newly free on OpenRouter as of this audit — previously only free via NVIDIA NIM, where it's already used in this category."
+      source: "openrouter.ai/api/v1/models — verified 2026-08-24"
     - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
@@ -286,11 +329,6 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-20b:free
-      context_window: 131072
-      note: "Replaces gpt-oss-120b:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
-    - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
       note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
@@ -308,10 +346,11 @@ categories:
   math:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-pro
-      arena_elo: 1370
-      note: "DeepSeek math specialist; 1M token context."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: deepseek-ai/deepseek-v4-flash-0731
+      terminal_bench_2_1: 82.7
+      context_window: 1000000
+      note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/context."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
     - provider: nvidia
       model: moonshotai/kimi-k2.6
       arena_elo: 1461
@@ -340,11 +379,6 @@ categories:
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: openai/gpt-oss-20b:free
-      context_window: 131072
-      note: "Replaces gpt-oss-120b:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
@@ -387,11 +421,6 @@ categories:
       note: "Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: openai/gpt-oss-20b:free
-      context_window: 131072
-      note: "Replaces gpt-oss-120b:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
-    - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
       note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
@@ -412,11 +441,13 @@ categories:
       model: meta/muse-glimmer-30b
       note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. Reasoning +5 over Gemma4-31b at less than 1/3 the params; no <think> block, safe for low-max_tokens use."
       source: "artificialanalysis.ai/articles/muse-glimmer — verified 2026-08-12"
-    # ── Groq ───────────────────────────────────────────────────────────────
-    - provider: groq
-      model: llama/llama-4-scout-17b-16e-instruct
-      note: "Replaces llama-3.1-8b-instant (deprecated by Groq 2026-08-16). NOT gpt-oss-20b — same reasoning family as gpt-oss-120b, which this category already excludes for <think>-block token burn. Scout is a non-reasoning Llama 4 MoE instruct model, fits the no-reasoning-trace requirement here."
-      source: "console.groq.com/docs/models — verified 2026-08-12"
+    # NOTE: llama/llama-4-scout-17b-16e-instruct reached EOL on Groq (404,
+    #   fully gone from the catalog, not just renamed) — removed 2026-08-24,
+    #   no replacement. Groq's remaining free catalog is all reasoning-family
+    #   models (gpt-oss-20b/120b, qwen3.6-27b), excluded from this category by
+    #   the rule above, plus allam-2-7b (Arabic-specialized) and
+    #   groq/compound(-mini) (agentic tool-use, not plain instruct). No
+    #   non-reasoning general instruct model currently available on Groq.
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     # NOTE: inclusionai/ling-3.0-flash:free removed — TIME-LIMITED PROMO ended
     #   2026-08-03 as this file warned, confirmed gone from live free catalog
@@ -429,10 +460,10 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-20b:free
-      context_window: 131072
-      note: "Replaces gpt-oss-120b:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      model: thinkingmachines/inkling:free
+      context_window: 1000000
+      note: "Replaces openai/gpt-oss-20b:free, which went paid-only 2026-08-24 (404 'unavailable for free'). Newly free on OpenRouter as of this audit — previously only free via NVIDIA NIM, where it's already used in this category (no <think>-block issue, safe for the no-reasoning-trace requirement here)."
+      source: "openrouter.ai/api/v1/models — verified 2026-08-24"
 
   multilingual:
     # Speed-first ordering (Luganense conversational latency, 2026-07-16):
@@ -509,11 +540,6 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: openai/gpt-oss-20b:free
-      context_window: 131072
-      note: "Replaces gpt-oss-120b:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
-    - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
       note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
@@ -542,10 +568,11 @@ categories:
       note: "1M token context — best for long-context retrieval."
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-pro
-      arena_elo: 1370
+      model: deepseek-ai/deepseek-v4-flash-0731
+      terminal_bench_2_1: 82.7
       context_window: 1000000
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/reasoning/math."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
     # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — three NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq

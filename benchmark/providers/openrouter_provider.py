@@ -12,7 +12,7 @@ OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 
 FREE_MODELS = [
     "google/gemma-4-31b-it:free",
-    "openai/gpt-oss-20b:free",
+    "thinkingmachines/inkling:free",
     "nvidia/nemotron-nano-9b-v2:free",
 ]
 
