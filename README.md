@@ -4,7 +4,7 @@ An OpenAI-compatible HTTP proxy that routes requests to the **best available LLM
 
 ```bash
 # ask for the best model for coding — router decides, you don't change a line of code
-curl http://localhost:11435/local/v1/chat/completions \
+curl http://localhost:9002/local/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "best:coding", "messages": [{"role": "user", "content": "Write a binary search in Python."}]}'
 ```
@@ -26,7 +26,7 @@ Running LLMs locally is free and private. Cloud models are faster and stronger. 
 ## Architecture
 
 ```
-your app  →  local-model-router (port 11435)
+your app  →  local-model-router (port 9002)
                      │
           ┌──────────┼──────────┐
           │          │          │
@@ -198,7 +198,7 @@ cp .env.example .env
 
 ```bash
 uv run router
-# Listening on http://0.0.0.0:11435
+# Listening on http://0.0.0.0:9002
 ```
 
 ---
@@ -211,12 +211,12 @@ Routes only to local Ollama models. Returns a hard 400 if you specify a cloud mo
 
 ```bash
 # Best local model for coding
-curl http://localhost:11435/local/v1/chat/completions \
+curl http://localhost:9002/local/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "best:coding", "messages": [{"role": "user", "content": "Write a sieve of Eratosthenes."}]}'
 
 # Explicit local model
-curl http://localhost:11435/local/v1/chat/completions \
+curl http://localhost:9002/local/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "ollama/deepseek-r1:8b", "messages": [{"role": "user", "content": "Summarize this: ..."}]}'
 ```
@@ -227,12 +227,12 @@ Routes only to cloud models (Groq, OpenRouter). Returns a hard 400 if you specif
 
 ```bash
 # Best cloud model for math
-curl http://localhost:11435/cloud/v1/chat/completions \
+curl http://localhost:9002/cloud/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "best:math", "messages": [{"role": "user", "content": "Integrate x^2 from 0 to 3."}]}'
 
 # Explicit cloud model
-curl http://localhost:11435/cloud/v1/chat/completions \
+curl http://localhost:9002/cloud/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "groq/qwen/qwen3.6-27b", "messages": [{"role": "user", "content": "Hello"}]}'
 ```
@@ -245,12 +245,12 @@ Default strategy: **local-first** (Ollama → cloud on failure).
 
 ```bash
 # local-first (default) — try Ollama, fall back to Groq if Ollama is down
-curl http://localhost:11435/v1/chat/completions \
+curl http://localhost:9002/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "best:coding", "messages": [{"role": "user", "content": "..."}]}'
 
 # cloud-first — try Groq, fall back to Ollama if the API is down or quota is exhausted
-curl http://localhost:11435/v1/chat/completions \
+curl http://localhost:9002/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "X-Router-Strategy: cloud-first" \
   -d '{"model": "best:coding", "messages": [{"role": "user", "content": "..."}]}'
@@ -387,7 +387,7 @@ Because the router speaks the OpenAI API, you can point any existing client at i
 from openai import OpenAI
 
 client = OpenAI(
-    base_url="http://localhost:11435/local/v1",
+    base_url="http://localhost:9002/local/v1",
     api_key="not-needed",   # router runs locally, no auth required
 )
 
@@ -403,7 +403,7 @@ print(response.choices[0].message.content)
 from langchain_openai import ChatOpenAI
 
 llm = ChatOpenAI(
-    base_url="http://localhost:11435/local/v1",
+    base_url="http://localhost:9002/local/v1",
     api_key="not-needed",
     model="best:coding",
 )
