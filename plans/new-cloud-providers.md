@@ -21,10 +21,9 @@ solo incidente tumbe todo el cascade cloud.
 - Modelos: `gemini-3.1-flash-lite` (15 RPM / 1,000 RPD, el más generoso) y
   `gemini-3.5-flash` (10 RPM / 250 RPD, mejor calidad, contexto 1,048,576
   tokens confirmado).
-- **Pendiente del usuario**: agregar `GEMINI_API_KEY` a `.env` (conseguir en
-  aistudio.google.com, sin tarjeta). Sin la key, `gemini` simplemente falla
-  silenciosamente en el cascade y sigue al siguiente proveedor — no rompe
-  nada, pero tampoco aporta resiliencia real hasta que la key esté puesta.
+- `GEMINI_API_KEY` ya está en `.env` (confirmado 2026-08-27) — probes en vivo
+  contra `gemini-3.1-flash-lite` y `gemini-3.5-flash` devolvieron 200 OK.
+  Proveedor activo en el cascade, no pendiente.
 
 ## Cerebras — EVALUADO, RECHAZADO 2026-08-24
 
@@ -44,8 +43,17 @@ el futuro, recheck.
   tenemos o a proveedores pagos. Fuera de alcance de este proyecto (el router
   ya es el propio agregador).
 
+## SambaNova — CANDIDATO SIN VERIFICAR, 2026-08-27
+
+Encontrado en búsqueda web abierta (blogs agregadores, no fuente primaria):
+free tier sin tarjeta, 200,000 tokens/día por modelo. No verificado en vivo
+todavía — este proyecto tiene política de no confiar en specs de blogs SEO
+sin cruzarlas contra la fuente primaria (docs.sambanova.ai / cloud.sambanova.ai).
+Próximo paso si se decide evaluar: confirmar en la doc oficial que sigue sin
+pedir tarjeta y qué modelos sirve gratis, antes de proponer integración.
+
 ## Siguiente paso
 
-Agregar `GEMINI_API_KEY` a `.env` y probar `curl localhost:11435/v1/chat/completions`
-contra `best:multilingual` o `best:instruction` para confirmar que el nuevo
-proveedor entra al cascade en producción.
+Cascade actual (NVIDIA/Groq/OpenRouter/Gemini) ya tiene 4 proveedores
+independientes sin tarjeta — no hay urgencia de agregar un 5to salvo que se
+repita un incidente de caída simultánea como el de Luganense (2026-08-24).

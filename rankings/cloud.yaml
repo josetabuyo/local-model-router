@@ -222,6 +222,69 @@
 #   the same purpose: its no-card free tier ended, now requires a payment
 #   method for a $5/30-day credit — breaks this project's no-card cascade
 #   policy, not added.
+# NOTE 2026-08-27 (model-scout daily audit): live probes (direct chat-completion
+#   calls against every model referenced in this file, not just listing
+#   endpoints) found four EOLs/breakages since the last audit:
+#   1. moonshotai/kimi-k2.6 on NVIDIA NIM — HTTP 404 "Not found for account",
+#      consistently reproduced, even though the model id is STILL listed in
+#      GET /v1/models. Treated as dead for this account. Was used in
+#      reasoning/math/summarization/multilingual (4 categories). Replaced
+#      everywhere with moonshotai/kimi-k3 (already live and used in
+#      coding/code_debug/context since the 2026-08-22 audit).
+#   2. thinkingmachines/inkling on NVIDIA NIM — HTTP 410 "reached its end of
+#      life on 2026-08-25T08:00:00Z". Was used in reasoning/instruction.
+#      Removed both places, no replacement (muse-glimmer-30b/deepseek-v4-
+#      flash-0731 already cover those slots).
+#   3. thinkingmachines/inkling:free on OpenRouter — HTTP 403 "only available
+#      on agentic harnesses", not usable as a plain chat-completion model
+#      (checked its smaller sibling thinkingmachines/inkling-small:free too —
+#      same 403). Was used in reasoning/instruction. In `reasoning`, replaced
+#      with z-ai/glm-5.2:free (confirmed alive on the live free catalog,
+#      though it 429s under upstream congestion — not EOL, kept per policy).
+#      In `instruction`, removed with NO replacement — glm-5.2's <think>-
+#      block behavior is unverified and this category excludes reasoning
+#      traces by design; gemma-4-31b-it:free and Gemini already cover it.
+#   4. nvidia/nemotron-3-nano-30b-a3b:free on OpenRouter — HTTP 404
+#      "unavailable for free" (paid-only now). Was used in math/
+#      summarization. Removed both places, no replacement needed (2+ live
+#      free entries remain in each).
+#   5. nvidia/nemotron-nano-9b-v2:free on OpenRouter — HTTP 404 "No endpoints
+#      found". Was used in context as the smallest fallback. Removed, no
+#      replacement needed (3 live entries remain).
+#   Live-checked and confirmed still fine (429s are upstream rate-limits, not
+#   EOLs, left unchanged): google/gemma-4-31b-it:free, google/gemma-4-26b-
+#   a4b-it:free (both 429 on OpenRouter's shared Google AI Studio pool),
+#   moonshotai/kimi-k3 (429 on NVIDIA NIM, same pattern as prior audits where
+#   it was confirmed live). Also confirmed live: deepseek-ai/deepseek-v4-
+#   flash-0731, meta/muse-glimmer-30b, minimaxai/minimax-m3 (all NVIDIA NIM);
+#   openai/gpt-oss-120b, qwen/qwen3.6-27b, openai/gpt-oss-20b (all Groq);
+#   poolside/laguna-s-2.1:free, cohere/north-mini-code:free, nvidia/nemotron-
+#   3-ultra-550b-a55b:free, nvidia/nemotron-3-super-120b-a12b:free, nvidia/
+#   nemotron-3.5-lightning:free, nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free (all OpenRouter); gemini-3.1-flash-lite, gemini-3.5-flash
+#   (both Gemini).
+#   Also fixed two code-level staleness bugs found while cross-checking this
+#   file against the codebase: router/dispatcher.py's _NVIDIA_THINKING_DEFAULTS
+#   still keyed off dead deepseek-ai/deepseek-v4-pro and unsuffixed
+#   deepseek-ai/deepseek-v4-flash (both EOL since 2026-08-07) and
+#   moonshotai/kimi-k2.6 (dead per above) — updated to deepseek-ai/deepseek-
+#   v4-flash-0731 and moonshotai/kimi-k3, matching what's actually live and
+#   used in this file. benchmark/providers/openrouter_provider.py's
+#   FREE_MODELS still listed the two dead OpenRouter entries fixed above
+#   (thinkingmachines/inkling:free, nvidia/nemotron-nano-9b-v2:free) —
+#   updated to z-ai/glm-5.2:free and nvidia/nemotron-3-super-120b-a12b:free.
+#   New OpenRouter free-tier additions spotted but not integrated (off-
+#   category, redundant, or same agentic-harness-only restriction as
+#   inkling): dots-studio/dots-3-note-preview:free and liquid/lfm-2.5-2.6b:free
+#   (both emit a reasoning trace and returned empty content under a 20-token
+#   cap — same failure mode already excluded from `instruction`; no clear
+#   category gap to justify the risk elsewhere), poolside/laguna-xs-2.1:free
+#   (smaller Laguna variant, redundant with laguna-s-2.1 already in use),
+#   minimax/minimax-m3:free and minimax/minimax-m2.7:free (redundant with
+#   minimaxai/minimax-m3 already covering this on NVIDIA NIM).
+#   No new free cloud providers found this pass. Local model check (Ollama,
+#   16GB RAM Apple Silicon): no upgrade search performed this pass — deferred,
+#   nothing indicated a change since the 2026-08-24 note.
 
 categories:
 
@@ -235,13 +298,9 @@ categories:
       note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/context since 2026-08-22."
       source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
     - provider: nvidia
-      model: moonshotai/kimi-k2.6
-      arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: nvidia
-      model: thinkingmachines/inkling
-      note: "New 2026-07-15. 975B MoE, 41B active, 1M context, Apache 2.0, native multimodal (text/image/audio). SWE-bench 77.6. Not the top scorer but strong general reasoning base."
-      source: "thinkingmachines.ai/model-card/inkling — verified live 2026-08-03"
+      model: moonshotai/kimi-k3
+      note: "Replaces moonshotai/kimi-k2.6, which now 404s on NVIDIA NIM chat completions ('Not found for account') despite still being listed in /v1/models — treated as dead for this account. kimi-k3 already live and used in coding/code_debug/context since 2026-08-22."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-27"
     - provider: nvidia
       model: meta/muse-glimmer-30b
       note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. AA-LCR (long-context reasoning) 80.0 vs Gemma4-31b's 68.3; reasoning +5 over Gemma4-31b despite far smaller size."
@@ -281,10 +340,9 @@ categories:
       note: "Reasoning-tagged Nemotron variant. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
     - provider: openrouter
-      model: thinkingmachines/inkling:free
-      context_window: 1000000
-      note: "Replaces openai/gpt-oss-20b:free, which went paid-only 2026-08-24 (404 'unavailable for free'). Newly free on OpenRouter as of this audit — previously only free via NVIDIA NIM, where it's already used in this category."
-      source: "openrouter.ai/api/v1/models — verified 2026-08-24"
+      model: z-ai/glm-5.2:free
+      note: "Replaces thinkingmachines/inkling:free, which now 403s ('only available on agentic harnesses') — not usable as a plain chat-completion model. glm-5.2 is confirmed alive on the live OpenRouter free catalog but frequently 429s ('temporarily rate-limited upstream, shared pool') on probe — that's upstream congestion, not EOL; kept per project policy of not removing 429s."
+      source: "openrouter.ai/api/v1/models — verified 2026-08-27"
     - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
@@ -363,9 +421,9 @@ categories:
       note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/context."
       source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
     - provider: nvidia
-      model: moonshotai/kimi-k2.6
-      arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: moonshotai/kimi-k3
+      note: "Replaces moonshotai/kimi-k2.6, which now 404s on NVIDIA NIM chat completions ('Not found for account') despite still being listed in /v1/models — treated as dead for this account."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-27"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
@@ -380,11 +438,9 @@ categories:
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
       source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: nvidia/nemotron-3-nano-30b-a3b:free
-      context_window: 256000
-      note: "Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # NOTE: nvidia/nemotron-3-nano-30b-a3b:free removed 2026-08-27 — 404
+    #   "unavailable for free" (paid-only now). No replacement needed, two
+    #   other live free entries remain below.
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
@@ -400,9 +456,9 @@ categories:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
     - provider: nvidia
-      model: moonshotai/kimi-k2.6
-      arena_elo: 1461
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: moonshotai/kimi-k3
+      note: "Replaces moonshotai/kimi-k2.6, which now 404s on NVIDIA NIM chat completions ('Not found for account') despite still being listed in /v1/models — treated as dead for this account."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-27"
     - provider: nvidia
       model: minimaxai/minimax-m3
       arena_elo: 1447
@@ -426,11 +482,9 @@ categories:
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: nvidia/nemotron-3-nano-30b-a3b:free
-      context_window: 256000
-      note: "Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # NOTE: nvidia/nemotron-3-nano-30b-a3b:free removed 2026-08-27 — 404
+    #   "unavailable for free" (paid-only now). No replacement needed, two
+    #   other live free entries remain (one above, one below).
     - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
@@ -443,11 +497,10 @@ categories:
     # requests (e.g. single-word classifiers). Router now strips <think> blocks
     # before the empty-content check, but best to keep reasoning models out of
     # this category altogether. Use best:reasoning for tasks that want CoT.
+    # NOTE: thinkingmachines/inkling reached EOL on NVIDIA NIM 2026-08-25
+    #   (410 "reached its end of life"), removed 2026-08-27, no replacement —
+    #   muse-glimmer-30b below still covers this category on NVIDIA.
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
-    - provider: nvidia
-      model: thinkingmachines/inkling
-      note: "New 2026-07-15. 975B MoE, 41B active, 1M context, Apache 2.0. Ranks #12 in Instruction Following on public leaderboard. Replaces qwen/qwen3.5-397b-a17b (EOL 2026-07-27)."
-      source: "thinkingmachines.ai/model-card/inkling — verified live 2026-08-03"
     - provider: nvidia
       model: meta/muse-glimmer-30b
       note: "New 2026-08-10. Meta's first open-weight agentic model (Apache 2.0), 30B dense, 131K context. Reasoning +5 over Gemma4-31b at less than 1/3 the params; no <think> block, safe for low-max_tokens use."
@@ -470,11 +523,13 @@ categories:
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: thinkingmachines/inkling:free
-      context_window: 1000000
-      note: "Replaces openai/gpt-oss-20b:free, which went paid-only 2026-08-24 (404 'unavailable for free'). Newly free on OpenRouter as of this audit — previously only free via NVIDIA NIM, where it's already used in this category (no <think>-block issue, safe for the no-reasoning-trace requirement here)."
-      source: "openrouter.ai/api/v1/models — verified 2026-08-24"
+    # NOTE: thinkingmachines/inkling:free removed 2026-08-27 — now 403s
+    #   ("only available on agentic harnesses"), not usable as a plain
+    #   chat-completion model. z-ai/glm-5.2:free (used as its replacement in
+    #   `reasoning`) was deliberately NOT reused here: its <think>-block
+    #   behavior isn't verified and this category excludes anything with a
+    #   reasoning trace. No replacement added — gemma-4-31b-it:free above and
+    #   Gemini below still cover this category.
     # ── Gemini (independent 4th free provider, added 2026-08-24) ───────────
     - provider: gemini
       model: gemini-3.1-flash-lite
@@ -496,10 +551,9 @@ categories:
       source: "console.groq.com — 2026-06"
     # ── NVIDIA NIM (quality fallback) ──────────────────────────────────────
     - provider: nvidia
-      model: moonshotai/kimi-k2.6
-      arena_elo: 1461
-      note: "Quality fallback; replaces qwen/qwen3.5-397b-a17b (EOL 2026-07-27)."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+      model: moonshotai/kimi-k3
+      note: "Quality fallback. Replaces moonshotai/kimi-k2.6, which now 404s on NVIDIA NIM chat completions ('Not found for account') despite still being listed in /v1/models — treated as dead for this account."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-27"
     # ── OpenRouter (free tier last resort) ─────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
@@ -623,11 +677,9 @@ categories:
       arena_elo: 1451
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
-    - provider: openrouter
-      model: nvidia/nemotron-nano-9b-v2:free
-      context_window: 128000
-      note: "Smallest free-tier fallback. Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # NOTE: nvidia/nemotron-nano-9b-v2:free removed 2026-08-27 — 404 "No
+    #   endpoints found". No replacement needed, three other live free
+    #   entries remain in this category (two above, Gemini below).
     # ── Gemini (independent 4th free provider, added 2026-08-24) ───────────
     - provider: gemini
       model: gemini-3.5-flash
