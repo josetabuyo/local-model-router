@@ -285,6 +285,39 @@
 #   No new free cloud providers found this pass. Local model check (Ollama,
 #   16GB RAM Apple Silicon): no upgrade search performed this pass — deferred,
 #   nothing indicated a change since the 2026-08-24 note.
+# NOTE 2026-08-28 (model-scout daily audit): live probes (direct chat-completion
+#   calls, not just listing endpoints) against every model referenced in this
+#   file — NVIDIA NIM (deepseek-ai/deepseek-v4-flash-0731, moonshotai/kimi-k3,
+#   meta/muse-glimmer-30b, minimaxai/minimax-m3), Groq (openai/gpt-oss-20b,
+#   openai/gpt-oss-120b, qwen/qwen3.6-27b), OpenRouter (nvidia/nemotron-3.5-
+#   lightning:free, google/gemma-4-{31b,26b-a4b}-it:free, nvidia/nemotron-3-
+#   nano-omni-30b-a3b-reasoning:free, z-ai/glm-5.2:free, nvidia/nemotron-3-
+#   {super-120b-a12b,ultra-550b-a55b}:free, poolside/laguna-s-2.1:free,
+#   cohere/north-mini-code:free), and Gemini (gemini-3.1-flash-lite,
+#   gemini-3.5-flash) — found ZERO EOLs. All 200 OK except four OpenRouter
+#   free entries that 429'd (gemma-4-31b-it, gemma-4-26b-a4b-it, glm-5.2,
+#   laguna-s-2.1 — all "temporarily rate-limited upstream shared pool", the
+#   same recurring congestion pattern from prior audits, not EOL, kept per
+#   policy. Re-scanned the live OpenRouter free catalog
+#   (GET /v1/api/v1/models, filtered ':free'): one new entry since the last
+#   scan, inclusionai/ling-3.0-flash-fin:free (finance-domain fine-tune of the
+#   earlier ling-3.0-flash, which had already been removed as a time-limited
+#   promo). Probed it directly — works, but emits a reasoning trace before
+#   the answer (same <think>-block risk already excluded from `instruction`)
+#   and is finance-specialized, off-category for every existing slot. Not
+#   added. Also re-scanned the NVIDIA NIM catalog (GET /v1/models): confirmed
+#   moonshotai/kimi-k2.6 still 404s ("Not found for account", dead for this
+#   account, matches 2026-08-27 finding, no longer referenced anywhere in
+#   this file so no action) and nvidia/nemotron-nano-3-30b-a3b still 404s on
+#   chat completions despite being listed (still not live). Found a new dated
+#   build deepseek-ai/deepseek-v4-pro-0813 (200 OK) — the old unsuffixed
+#   deepseek-v4-pro's EOL replacement — but deepseek-v4-flash-0731 (already
+#   in this file) beats it on every published benchmark (Terminal-Bench 2.1
+#   82.7 vs 72.1), so not swapped in. Web search for new open-weight releases
+#   and local (Ollama/Apple Silicon 16GB) upgrades returned only SEO-blog
+#   aggregators with no dated primary-source releases — discarded per
+#   long-standing project policy, nothing actionable. No changes to any
+#   provider file, registry, or ranking this pass.
 
 categories:
 
