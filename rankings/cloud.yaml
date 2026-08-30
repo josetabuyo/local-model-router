@@ -355,6 +355,45 @@
 #   results for Cloudflare Workers AI / Mistral free tier / SambaNova were
 #   blog-sourced, not primary — not evaluated further this pass). No local
 #   (Ollama/Apple Silicon 16GB) upgrade search performed this pass.
+# NOTE 2026-08-30 (model-scout daily audit): live probes (direct chat-completion
+#   calls, not just listing endpoints) against every model referenced in this
+#   file. Found ONE issue: minimaxai/minimax-m3 on NVIDIA NIM hangs
+#   indefinitely — connects fine, no response ever arrives, confirmed across 3
+#   separate curl probes (--max-time 20-30s, exit code 28/timeout, HTTP 000).
+#   Same failure mode as meta/muse-glimmer-30b, removed for the identical
+#   reason 2026-08-29. Removed from both categories it was in (summarization,
+#   context); moonshotai/kimi-k3 and deepseek-ai/deepseek-v4-flash-0731 still
+#   cover those slots on NVIDIA. No code changes needed this pass — router/
+#   registry.py and dispatcher.py never referenced minimax-m3 by name.
+#   Everything else live-checked and confirmed still fine: deepseek-ai/
+#   deepseek-v4-flash-0731 and moonshotai/kimi-k3 (both NVIDIA NIM, 200 OK);
+#   openai/gpt-oss-{20b,120b} and qwen/qwen3.6-27b (all Groq, 200 OK);
+#   gemini-3.1-flash-lite and gemini-3.5-flash (both Gemini, 200 OK);
+#   nvidia/nemotron-3.5-lightning:free, nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free, nvidia/nemotron-3-{super-120b-a12b,ultra-550b-a55b}:free,
+#   poolside/laguna-s-2.1:free, cohere/north-mini-code:free (all OpenRouter,
+#   200 OK); google/gemma-4-{31b,26b-a4b}-it:free and z-ai/glm-5.2:free (all
+#   OpenRouter, 429 "temporarily rate-limited upstream, shared pool" — same
+#   recurring congestion pattern as every prior audit, not EOL, kept per
+#   policy). Re-scanned the live OpenRouter free catalog (GET
+#   /v1/api/v1/models, filtered ':free'): unchanged, same 18 entries as the
+#   2026-08-28/29 scans. Web search for new open-weight releases and free
+#   providers surfaced nothing dated/primary beyond what's already noted;
+#   specifically checked whether Qwen3.8-2.4T-A95B (surfaced 2026-08-29) is
+#   reachable via NVIDIA's free hosted API — confirmed NOT: docs.nvidia.com's
+#   own get-started guide for it describes self-hosted Kubernetes NIM
+#   container deployment only (4-node minimum, Helm/kubectl), not
+#   integrate.api.nvidia.com; also absent from the live GET /v1/models
+#   listing. GLM-5.3 likewise absent from that listing. No new free cloud
+#   providers found (search results were the same recycled SEO-blog
+#   aggregator noise as prior audits — laozhang.ai, pasqualepillitteri.it,
+#   etc. — nothing dated+primary). Local (Ollama/Apple Silicon 16GB) check:
+#   `ollama` CLI not available in this session's environment, no live
+#   inventory check possible; web search surfaced an unverified claim
+#   (aggregator-sourced, no primary citation) that Qwen3.8-27B released
+#   ~2026-08-14 with fast community GGUF adoption — worth a follow-up check
+#   against `ollama list`/`ollama pull` from a session where the CLI is
+#   reachable, not acted on here.
 
 categories:
 
@@ -527,12 +566,10 @@ categories:
       model: moonshotai/kimi-k3
       note: "Replaces moonshotai/kimi-k2.6, which now 404s on NVIDIA NIM chat completions ('Not found for account') despite still being listed in /v1/models — treated as dead for this account."
       source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-27"
-    - provider: nvidia
-      model: minimaxai/minimax-m3
-      arena_elo: 1447
-      context_window: 1000000
-      note: "1M token context; useful for very large documents."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # NOTE: minimaxai/minimax-m3 removed 2026-08-30 — hangs indefinitely on
+    #   NVIDIA NIM (connects, never returns; 3 separate timeouts, same failure
+    #   mode as meta/muse-glimmer-30b removed 2026-08-29). moonshotai/kimi-k3
+    #   above still covers this category on NVIDIA.
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -704,19 +741,15 @@ categories:
       context_window: 1000000
       note: "1M token context. Replaces z-ai/glm-5.2 (EOL 2026-08-21 on NVIDIA NIM). 2.8T MoE, free on NIM since weights opened 2026-07-26 — not yet in NIM's public docs, verified by direct probe."
       source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-22"
-    - provider: nvidia
-      model: minimaxai/minimax-m3
-      arena_elo: 1447
-      context_window: 1000000
-      note: "1M token context — best for long-context retrieval."
-      source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
+    # NOTE: minimaxai/minimax-m3 removed 2026-08-30 — hangs indefinitely on
+    #   NVIDIA NIM (see summarization category note above for details).
     - provider: nvidia
       model: deepseek-ai/deepseek-v4-flash-0731
       terminal_bench_2_1: 82.7
       context_window: 1000000
       note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/reasoning/math."
       source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
-    # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — three NVIDIA entries above already cover 1M context).
+    # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — two NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
