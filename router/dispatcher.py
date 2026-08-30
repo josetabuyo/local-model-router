@@ -14,8 +14,6 @@ GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 _NVIDIA_THINKING_DEFAULTS: dict[str, dict] = {
     "deepseek-ai/deepseek-v4-flash-0731": {"thinking": False},
     "moonshotai/kimi-k3":                 {"thinking": False},
-    "qwen/qwen3.5-397b-a17b":             {"enable_thinking": False},
-    "qwen/qwen3.5-122b-a10b":             {"enable_thinking": False},
 }
 
 
