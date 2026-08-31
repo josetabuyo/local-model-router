@@ -394,6 +394,37 @@
 #   ~2026-08-14 with fast community GGUF adoption — worth a follow-up check
 #   against `ollama list`/`ollama pull` from a session where the CLI is
 #   reachable, not acted on here.
+# NOTE 2026-08-31 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. All still
+#   live, no removals: deepseek-ai/deepseek-v4-flash-0731 and moonshotai/
+#   kimi-k3 (both NVIDIA NIM, 200 OK — deepseek-v4-flash-0731 needed a 30s
+#   timeout to clear a transient 529 "Service temporarily overloaded", second
+#   attempt succeeded); openai/gpt-oss-{20b,120b} and qwen/qwen3.6-27b (all
+#   Groq, 200 OK); gemini-3.1-flash-lite and gemini-3.5-flash (both Gemini,
+#   200 OK); cohere/north-mini-code:free, nvidia/nemotron-3-{super-120b-a12b,
+#   ultra-550b-a55b}:free, poolside/laguna-s-2.1:free (all OpenRouter, 200
+#   OK); google/gemma-4-31b-it:free and z-ai/glm-5.2:free (OpenRouter, 429
+#   "temporarily rate-limited upstream, shared pool" on two separate attempts
+#   ~10s apart — same recurring congestion as every prior audit, not EOL,
+#   kept per policy). Re-scanned live OpenRouter free catalog (GET /v1/models,
+#   filtered ':free'): 18 entries, unchanged from 2026-08-28/29/30 scans.
+#   Re-scanned live NVIDIA NIM catalog (GET /v1/models): 83 entries; both
+#   referenced models present; meta/muse-glimmer-30b and minimaxai/minimax-m3
+#   still listed there too but correctly stay unreferenced (removed
+#   2026-08-29/30 for hanging, not for disappearing from the catalog — NIM
+#   doesn't delist hung models, it just never responds). Web search for new
+#   open-weight releases and free providers: nothing dated+primary — same
+#   recycled SEO-blog aggregator noise (taskade.com, morphllm.com, costbench.
+#   com, freellmapi.co, etc.) reporting on models already in this cascade
+#   (Kimi K3, GLM-5.2, MiniMax M3, Qwen3.6) or repackaging stale claims
+#   (Cerebras/SambaNova free-tier status conflicting across sources, neither
+#   confirmed via a primary page). Local (Ollama/Apple Silicon 16GB) check:
+#   `ollama` CLI still not available in this session's environment, no live
+#   inventory check possible. Found one primary source worth noting for
+#   context, not action: ollama.com/blog/mlx confirms Ollama 0.19's MLX
+#   backend (up to ~2x decode speed on Apple Silicon) requires 32GB+ unified
+#   memory — this machine's 16GB stays on the existing Metal/llama.cpp
+#   backend, no change applicable here.
 
 categories:
 
