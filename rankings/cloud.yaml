@@ -426,6 +426,44 @@
 #   memory — this machine's 16GB stays on the existing Metal/llama.cpp
 #   backend, no change applicable here.
 
+# NOTE 2026-09-01 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. All still
+#   live, no removals: deepseek-ai/deepseek-v4-flash-0731 and moonshotai/
+#   kimi-k3 (both NVIDIA NIM, 200 OK); openai/gpt-oss-{20b,120b} and
+#   qwen/qwen3.6-27b (all Groq, 200 OK); gemini-3.1-flash-lite and
+#   gemini-3.5-flash (both Gemini, 200 OK); nvidia/nemotron-3.5-lightning:free,
+#   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free, cohere/north-mini-
+#   code:free, nvidia/nemotron-3-ultra-550b-a55b:free (all OpenRouter, 200 OK
+#   — ultra-550b-a55b needed ~30s to respond, slow but not dead); google/
+#   gemma-4-{31b,26b-a4b}-it:free, z-ai/glm-5.2:free, poolside/laguna-s-2.1:free
+#   (all OpenRouter, 429 "temporarily rate-limited upstream, shared pool" —
+#   same recurring congestion as every prior audit, not EOL, kept per policy);
+#   nvidia/nemotron-3-super-120b-a12b:free (OpenRouter, 502 "Upstream error
+#   from Nvidia: Service temporarily overloaded" on 3 separate attempts ~10s
+#   apart — treated as transient overload per the same policy applied to 429s,
+#   not removed, recheck next audit if it persists). ADDED: qwen/qwen3.8-27b
+#   to Groq/`instruction` — new on Groq's catalog since the 2026-08-31 audit
+#   (Alibaba, released 2026-08-14, Apache 2.0, huggingface.co/Qwen/Qwen3.8-27B,
+#   Artificial Analysis Intelligence Index 52 / SWE-bench Pro 61.7), verified
+#   non-reasoning via two live probes (no <think>/reasoning_content, no
+#   length-cutoff-on-empty-content at max_tokens=5) — closes the Groq gap in
+#   `instruction` open since llama-4-scout's EOL on 2026-08-24. Also added to
+#   benchmark/providers/groq_provider.py FREE_MODELS. Re-scanned live
+#   OpenRouter free catalog (GET /v1/models, filtered ':free'): 17 entries,
+#   unchanged from 2026-08-28 through 08-31 scans (still includes the
+#   already-evaluated-and-rejected inclusionai/ling-3.0-flash-fin:free,
+#   thinkingmachines/inkling(-small):free, dots-studio/dots-3-note-
+#   preview:free, liquid/lfm-2.5-2.6b:free, poolside/laguna-xs-2.1:free,
+#   minimax/minimax-{m2.7,m3}:free, nvidia/nemotron-3.5-content-safety:free).
+#   Re-scanned live NVIDIA NIM catalog (GET /v1/models): 83 entries, same
+#   count as 2026-08-31, no new listings. Web search for new open-weight
+#   releases and free providers beyond the Groq catalog diff above surfaced
+#   nothing dated+primary — same recycled SEO-aggregator noise as prior
+#   audits (thundercompute.com, bentoml.com, llm-stats.com, etc.) covering
+#   models already in this cascade. Local (Ollama/Apple Silicon 16GB) check:
+#   `ollama` CLI still not available in this session's environment, no live
+#   inventory check possible.
+
 categories:
 
   reasoning:
@@ -644,12 +682,15 @@ categories:
     #   (OpenRouter) and Gemini below still cover it. Recheck in a future
     #   audit for a non-reasoning NVIDIA replacement.
     # NOTE: llama/llama-4-scout-17b-16e-instruct reached EOL on Groq (404,
-    #   fully gone from the catalog, not just renamed) — removed 2026-08-24,
-    #   no replacement. Groq's remaining free catalog is all reasoning-family
-    #   models (gpt-oss-20b/120b, qwen3.6-27b), excluded from this category by
-    #   the rule above, plus allam-2-7b (Arabic-specialized) and
-    #   groq/compound(-mini) (agentic tool-use, not plain instruct). No
-    #   non-reasoning general instruct model currently available on Groq.
+    #   fully gone from the catalog, not just renamed) — removed 2026-08-24.
+    #   Groq gap CLOSED 2026-09-01: qwen/qwen3.8-27b appeared on Groq's
+    #   catalog (new, not present as of the 2026-08-31 audit) and verified
+    #   non-reasoning — see entry and note below.
+    # ── Groq ───────────────────────────────────────────────────────────────
+    - provider: groq
+      model: qwen/qwen3.8-27b
+      note: "Fills the Groq gap in this category, open since llama-4-scout-17b-16e-instruct's EOL on 2026-08-24. New model on Groq's catalog as of this audit (not present 2026-08-31), successor to qwen3.6-27b. Verified non-reasoning: two live probes (plain prompt, and a 5-max_tokens classifier-style prompt) returned direct content with no <think> block or reasoning_content field and no length-cutoff-on-empty-content — unlike qwen3.6-27b, which does emit reasoning traces and stays excluded from this category by the rule above."
+      source: "own live probe against api.groq.com/openai/v1/chat/completions — verified 2026-09-01; huggingface.co/Qwen/Qwen3.8-27B (released 2026-08-14, Apache 2.0), artificialanalysis.ai/models/qwen3-8-27b (Intelligence Index 52, SWE-bench Pro 61.7)"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
     # NOTE: inclusionai/ling-3.0-flash:free removed — TIME-LIMITED PROMO ended
     #   2026-08-03 as this file warned, confirmed gone from live free catalog
