@@ -43,7 +43,7 @@ el futuro, recheck.
   tenemos o a proveedores pagos. Fuera de alcance de este proyecto (el router
   ya es el propio agregador).
 
-## SambaNova — CANDIDATO SIN VERIFICAR, 2026-08-27
+## SambaNova — CANDIDATO SIN VERIFICAR, 2026-08-27 (revisado 2026-09-02)
 
 Encontrado en búsqueda web abierta (blogs agregadores, no fuente primaria):
 free tier sin tarjeta, 200,000 tokens/día por modelo. No verificado en vivo
@@ -51,6 +51,13 @@ todavía — este proyecto tiene política de no confiar en specs de blogs SEO
 sin cruzarlas contra la fuente primaria (docs.sambanova.ai / cloud.sambanova.ai).
 Próximo paso si se decide evaluar: confirmar en la doc oficial que sigue sin
 pedir tarjeta y qué modelos sirve gratis, antes de proponer integración.
+
+Revisión 2026-09-02: se chequeó cloud.sambanova.ai/pricing directamente —
+esa página sólo muestra pricing pago por token, sin mención de free tier.
+Inconcluso (el free tier podría estar documentado en otra parte del sitio,
+no necesariamente no existe) — se mantiene como "sin verificar", no se
+promueve ni se descarta. Pendiente para un futuro pase con más tiempo para
+recorrer el resto de la doc.
 
 ## Siguiente paso
 

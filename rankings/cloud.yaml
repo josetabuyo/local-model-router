@@ -463,6 +463,58 @@
 #   models already in this cascade. Local (Ollama/Apple Silicon 16GB) check:
 #   `ollama` CLI still not available in this session's environment, no live
 #   inventory check possible.
+# NOTE 2026-09-02 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. Found ONE
+#   EOL: kwaipilot/kat-coder-air-v2.5 on OpenRouter — HTTP 404 "No endpoints
+#   found", confirmed via GET /v1/models too (slug no longer listed; only
+#   kwaipilot/kat-coder-pro-v2 and kat-coder-pro-v2.5 remain). This was the
+#   sole `cheapest:coding`/`cheapest:code_debug` paid fallback rung — removed
+#   from both categories, no replacement. Tried the two surviving Kat-Coder
+#   Pro variants as a replacement but both returned HTTP 403 "Key limit
+#   exceeded (total limit)" on our OPENROUTER_API_KEY — this is an
+#   account-level spend cap, not a model issue, and it blocks ANY paid
+#   OpenRouter call on this key right now, not just Kat-Coder. Flagged to
+#   the user rather than swapped in blind: raising/resetting the OpenRouter
+#   key's spend limit is an account decision, and a paid fallback nobody can
+#   actually reach isn't worth adding back. `coding`/`code_debug` now have NO
+#   `cheapest:*` paid rung — free-tier entries in both categories are
+#   unaffected and still cover `best:`/`fastest:`.
+#   Everything else live-checked and confirmed still fine: deepseek-ai/
+#   deepseek-v4-flash-0731 (NVIDIA NIM, 529 "Service temporarily overloaded"
+#   on first probe, 200 OK on retry — transient, not EOL) and moonshotai/
+#   kimi-k3 (NVIDIA NIM, 200 OK); openai/gpt-oss-{20b,120b}, qwen/qwen3.6-27b,
+#   qwen/qwen3.8-27b (all Groq, 200 OK — one initial network timeout on
+#   gpt-oss-20b in this session's sandbox, cleared on retry, not an API
+#   issue); gemini-3.1-flash-lite and gemini-3.5-flash (both Gemini, 200 OK);
+#   nvidia/nemotron-3.5-lightning:free, cohere/north-mini-code:free, nvidia/
+#   nemotron-3-ultra-550b-a55b:free (all OpenRouter, 200 OK); google/gemma-4-
+#   {31b,26b-a4b}-it:free, z-ai/glm-5.2:free, poolside/laguna-s-2.1:free (all
+#   OpenRouter, 429 "temporarily rate-limited upstream" — same recurring
+#   congestion pattern as every prior audit, not EOL, kept per policy);
+#   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free and nvidia/nemotron-3-
+#   super-120b-a12b:free (both OpenRouter, transient 502/ResourceExhausted
+#   from the underlying Nvidia backend on first probe, one cleared to 200 on
+#   retry — treated as congestion, not EOL, per the same policy applied to
+#   429s in prior audits).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered
+#   ':free'): 18 entries, unchanged from the 2026-09-01 scan (same set,
+#   including nvidia/nemotron-3.5-content-safety:free noted then — a
+#   moderation/safety classifier, off-category for every slot here, still
+#   not added). Re-scanned live NVIDIA NIM catalog (GET /v1/models): 82
+#   entries (down 1 from the 83 counted 2026-08-31/09-01, but every model
+#   this file actually references is still present — no functional change,
+#   NIM's total count fluctuates with unrelated embedding/reward/guard
+#   models we don't use). Checked GLM-5.3 / GLM-5.3-Flash (released
+#   2026-08-26) directly against OpenRouter's own model page: still paid-only
+#   ($0.075/$0.25 per Mtok, temporary 50%-off promo through 2026-09-09), no
+#   free tier anywhere — confirms the 2026-08-31 expectation, not added.
+#   Checked SambaNova Cloud's own pricing page (cloud.sambanova.ai/pricing)
+#   per the still-open plans/new-cloud-providers.md candidate — it lists
+#   only paid per-token pricing, no free-tier terms visible on that page.
+#   Inconclusive (a free tier could be documented elsewhere on their site),
+#   not upgraded from "unverified" to accepted or rejected; left as-is for a
+#   future pass. No new free cloud providers or local (Ollama/Apple Silicon
+#   16GB) upgrades found this pass.
 
 categories:
 
@@ -578,15 +630,6 @@ categories:
       context_window: 1000000
       note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
-    # ── OpenRouter (paid — cheapest:coding fallback only, see NOTE 2026-07-27) ──
-    - provider: openrouter
-      model: kwaipilot/kat-coder-air-v2.5
-      paid: true
-      cost_per_mtok_in: 0.15
-      cost_per_mtok_out: 0.60
-      context_window: 256000
-      note: "Cheapest paid rung. Agentic coding model, evaluated 2026-07-23. Only reached via cheapest:coding once every free option above fails."
-      source: "openrouter.ai/kwaipilot/kat-coder-air-v2.5 — verified 2026-07-27"
 
   math:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -796,15 +839,6 @@ categories:
       context_window: 1000000
       note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
-    # ── OpenRouter (paid — cheapest:code_debug fallback only, see NOTE 2026-07-27) ──
-    - provider: openrouter
-      model: kwaipilot/kat-coder-air-v2.5
-      paid: true
-      cost_per_mtok_in: 0.15
-      cost_per_mtok_out: 0.60
-      context_window: 256000
-      note: "Cheapest paid rung. Agentic coding model, evaluated 2026-07-23. Only reached via cheapest:code_debug once every free option above fails."
-      source: "openrouter.ai/kwaipilot/kat-coder-air-v2.5 — verified 2026-07-27"
 
   context:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
