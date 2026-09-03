@@ -515,6 +515,41 @@
 #   not upgraded from "unverified" to accepted or rejected; left as-is for a
 #   future pass. No new free cloud providers or local (Ollama/Apple Silicon
 #   16GB) upgrades found this pass.
+# NOTE 2026-09-03 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. ZERO EOLs,
+#   no changes needed. NVIDIA NIM: moonshotai/kimi-k3 (200 OK) and deepseek-ai/
+#   deepseek-v4-flash-0731 (two initial requests hit HTTP 000/timeout at 40-60s,
+#   200 OK on a 90s retry — same transient-overload pattern as 2026-08-31/09-02,
+#   not EOL). Groq: openai/gpt-oss-{20b,120b}, qwen/qwen3.6-27b, qwen/qwen3.8-27b
+#   (all 200 OK). Gemini: gemini-3.1-flash-lite, gemini-3.5-flash (both 200 OK).
+#   OpenRouter: cohere/north-mini-code:free, nvidia/nemotron-3-nano-omni-30b-
+#   a3b-reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, nvidia/
+#   nemotron-3.5-lightning:free, nvidia/nemotron-3-ultra-550b-a55b:free (200 OK
+#   — ultra-550b-a55b needed ~100s this time, slower than the ~30s noted
+#   2026-09-01 but still alive, not EOL); google/gemma-4-{31b,26b-a4b}-it:free,
+#   z-ai/glm-5.2:free, poolside/laguna-s-2.1:free (429 "temporarily rate-limited
+#   upstream, shared pool" — same recurring congestion as every prior audit,
+#   not EOL, kept per policy).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered ':free'):
+#   18 entries, unchanged from the 2026-09-02 scan (same set, including the
+#   already-evaluated-and-rejected inclusionai/ling-3.0-flash-fin:free,
+#   thinkingmachines/inkling(-small):free, dots-studio/dots-3-note-
+#   preview:free, liquid/lfm-2.5-2.6b:free, poolside/laguna-xs-2.1:free,
+#   minimax/minimax-{m2.7,m3}:free, nvidia/nemotron-3.5-content-safety:free).
+#   Re-scanned live NVIDIA NIM catalog (GET /v1/models): 82 entries, same count
+#   as 2026-09-02, no new listings.
+#   Web search for new open-weight releases returned only recycled SEO-blog
+#   aggregator coverage of models already in this cascade (GLM-5.3-Flash,
+#   DeepSeek V4-Pro, Kimi K3, Qwen3.8-27B) — nothing new dated+primary.
+#   Followed up on the still-open SambaNova candidate from 2026-09-02 (their
+#   own blog, sambanova.ai/blog/sambanova-cloud-developer-tier-is-live): the
+#   "free" offer is a one-time $5 credit that expires after 3 months, not an
+#   ongoing no-card free tier like Groq/NVIDIA/OpenRouter/Gemini — doesn't
+#   confirm the aggregator's "200K tokens/day free tier" claim, and the blog
+#   doesn't state whether a payment method is required to start. Still
+#   inconclusive on primary-source grounds; not accepted or rejected, left
+#   for a future pass. No new free cloud providers or local (Ollama/Apple
+#   Silicon 16GB) upgrades found this pass.
 
 categories:
 
