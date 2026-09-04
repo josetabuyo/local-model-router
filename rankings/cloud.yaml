@@ -515,6 +515,38 @@
 #   not upgraded from "unverified" to accepted or rejected; left as-is for a
 #   future pass. No new free cloud providers or local (Ollama/Apple Silicon
 #   16GB) upgrades found this pass.
+# NOTE 2026-09-04 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. ZERO EOLs,
+#   no changes needed. NVIDIA NIM: moonshotai/kimi-k3 (200 OK) and deepseek-ai/
+#   deepseek-v4-flash-0731 (first probe HTTP 000/timeout at 90s, 200 OK on a
+#   150s retry — same recurring transient-overload pattern as prior audits,
+#   not EOL). Groq: openai/gpt-oss-{20b,120b}, qwen/qwen3.6-27b, qwen/
+#   qwen3.8-27b (all 200 OK). Gemini: gemini-3.1-flash-lite, gemini-3.5-flash
+#   (both 200 OK). OpenRouter: cohere/north-mini-code:free, nvidia/nemotron-3-
+#   super-120b-a12b:free, nvidia/nemotron-3.5-lightning:free (all 200 OK);
+#   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free and nvidia/nemotron-3-
+#   ultra-550b-a55b:free (HTTP 200 wrapping an upstream 429/502 "ResourceExhausted"
+#   / "Service temporarily overloaded" from Nvidia's OpenRouter-hosted backend);
+#   google/gemma-4-{31b,26b-a4b}-it:free, z-ai/glm-5.2:free, poolside/
+#   laguna-s-2.1:free (429 "temporarily rate-limited upstream, shared pool" —
+#   same recurring congestion as every prior audit, not EOL, kept per policy).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered ':free'):
+#   18 entries, unchanged from 2026-09-03. Re-scanned live NVIDIA NIM catalog
+#   (GET /v1/models): 81 entries (down from 82 on 2026-09-02/09-03); did not
+#   diff the full list — both NVIDIA models used in this cascade were
+#   independently confirmed alive via direct chat-completion probe above, so
+#   the count drop doesn't affect this file; flagged for a closer diff next
+#   pass if it keeps shrinking.
+#   Web search for new open-weight releases and free providers returned only
+#   recycled SEO-blog aggregator coverage of models/providers already known
+#   (Qwen3.8-27B, Kimi K3, GLM-5.2, Gemini/Groq/OpenRouter/NVIDIA NIM as the
+#   "genuine free tier" set, Cloudflare Workers AI/Mistral/SambaNova/Cohere
+#   free tiers mentioned again with no primary-source depth beyond what was
+#   already inconclusive as of 2026-08-28/09-02) — nothing new dated+primary.
+#   Local (Ollama/Apple Silicon 16GB): `ollama` CLI still not available in
+#   this session's environment, no live inventory check possible (same as
+#   every prior audit). No new free cloud providers or local upgrades found
+#   this pass.
 # NOTE 2026-09-03 (model-scout daily audit): live probes (direct chat-
 #   completion calls) against every model referenced in this file. ZERO EOLs,
 #   no changes needed. NVIDIA NIM: moonshotai/kimi-k3 (200 OK) and deepseek-ai/
