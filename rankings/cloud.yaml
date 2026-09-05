@@ -582,6 +582,36 @@
 #   inconclusive on primary-source grounds; not accepted or rejected, left
 #   for a future pass. No new free cloud providers or local (Ollama/Apple
 #   Silicon 16GB) upgrades found this pass.
+# NOTE 2026-09-05 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. ZERO EOLs,
+#   no changes needed. NVIDIA NIM: moonshotai/kimi-k3 and deepseek-ai/
+#   deepseek-v4-flash-0731 (both 200 OK). Groq: openai/gpt-oss-{20b,120b},
+#   qwen/qwen3.6-27b, qwen/qwen3.8-27b (all 200 OK). Gemini: gemini-3.1-
+#   flash-lite, gemini-3.5-flash (both 200 OK). OpenRouter: nvidia/
+#   nemotron-3-super-120b-a12b:free, poolside/laguna-s-2.1:free, cohere/
+#   north-mini-code:free, nvidia/nemotron-3-ultra-550b-a55b:free (200 OK);
+#   google/gemma-4-31b-it:free and z-ai/glm-5.2:free hit the same recurring
+#   429 "temporarily rate-limited upstream, shared pool" seen in every prior
+#   audit — not EOL, kept per policy.
+#   Re-scanned live NVIDIA NIM catalog (GET /v1/models, 81 entries) and
+#   OpenRouter free catalog (GET /v1/models, 19 entries): no new listings
+#   beyond what's already evaluated in prior audits. Re-confirmed
+#   moonshotai/kimi-k2.6 and nvidia/nemotron-nano-3-30b-a3b still 404
+#   ("Not found for account") on NIM chat completions despite being listed —
+#   still dead for this account, matches every prior finding since
+#   2026-08-27/29. Re-checked deepseek-ai/deepseek-v4-pro-0813 (200 OK):
+#   independent web coverage now puts it at Terminal-Bench 2.1 87.9 (vendor)
+#   vs 78.7 (independent replication) — the vendor number would beat
+#   deepseek-v4-flash-0731's 82.7 already in this cascade, but the
+#   independently-verified number does not. Per policy of not picking a
+#   number in silence when sources disagree, both are noted here; not
+#   swapped in given the independent figure is the more conservative read
+#   and flash-0731 is a known-stable presence in the cascade.
+#   Web search for new open-weight releases and local (Ollama/Apple Silicon
+#   16GB) upgrades returned only recycled SEO-blog aggregator coverage with
+#   no new dated primary-source releases — discarded per policy. No new free
+#   cloud providers found. No changes to any provider file, registry, or
+#   ranking this pass.
 
 categories:
 
