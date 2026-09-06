@@ -612,6 +612,46 @@
 #   no new dated primary-source releases — discarded per policy. No new free
 #   cloud providers found. No changes to any provider file, registry, or
 #   ranking this pass.
+# NOTE 2026-09-06 (model-scout daily audit): live probes (direct chat-
+#   completion calls) against every model referenced in this file. ZERO EOLs,
+#   no changes needed. NVIDIA NIM: moonshotai/kimi-k3 and deepseek-ai/
+#   deepseek-v4-flash-0731 (both 200 OK). Groq: openai/gpt-oss-{20b,120b},
+#   qwen/qwen3.6-27b, qwen/qwen3.8-27b (all 200 OK). Gemini: gemini-3.1-
+#   flash-lite, gemini-3.5-flash (both 200 OK). OpenRouter: nvidia/nemotron-3-
+#   super-120b-a12b:free, nvidia/nemotron-3.5-lightning:free, nvidia/
+#   nemotron-3-ultra-550b-a55b:free, poolside/laguna-s-2.1:free, cohere/
+#   north-mini-code:free (200 OK); nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free (200 wrapping upstream 502 "ResourceExhausted: Worker
+#   local total request limit reached" — transient, not EOL); google/gemma-4-
+#   {31b,26b-a4b}-it:free and z-ai/glm-5.2:free (429 "temporarily rate-limited
+#   upstream, shared pool" — same recurring congestion as every prior audit,
+#   not EOL, kept per policy).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered
+#   ':free'): 19 entries, one new since 2026-09-05: inclusionai/ling-3.0-
+#   flash-sante:free. Probed directly — same failure mode as the already-
+#   rejected ling-3.0-flash-fin:free (health-domain fine-tune of ling-3.0-
+#   flash, emits a <think>-style reasoning trace before any answer, off-
+#   category for every slot in this file). Not added. Re-scanned live NVIDIA
+#   NIM catalog (GET /v1/models): 81 entries, same count as 2026-09-05;
+#   checked explicitly for GLM-5.3, Qwen3.8-2.4T-A95B, and DeepSeek V4 Flash
+#   Vision Exp (released 2026-08-21 per web search) — none present, only
+#   deepseek-v4-flash-0731 and deepseek-v4-pro-0813 remain the live DeepSeek
+#   builds. Nothing to add.
+#   Web search for new open-weight releases returned only recycled SEO-blog
+#   aggregator coverage of models already in this cascade (GLM-5.3, Qwen3.8,
+#   DeepSeek V4 variants, Kimi K3) — nothing new dated+primary. Followed up
+#   again on the still-open SambaNova candidate: cloud.sambanova.ai/plans
+#   itself now shows "credit card" language on the page (previously
+#   ambiguous), consistent with the community report surfaced 2026-09-02/03
+#   that a payment method was added to the free tier ~4 weeks prior. Signal
+#   is trending toward reject but still not a clean primary statement of
+#   terms — left as inconclusive rather than flipping the verdict on a page
+#   scrape alone; worth a dedicated check of SambaNova's actual signup flow
+#   in a future pass to close this out one way or the other.
+#   No new free cloud providers or local (Ollama/Apple Silicon 16GB) upgrades
+#   found this pass — `ollama` CLI still not available in this session's
+#   environment, no live inventory check possible (same as prior audits). No
+#   changes to any provider file, registry, or ranking this pass.
 
 categories:
 
