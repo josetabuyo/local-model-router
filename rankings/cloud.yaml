@@ -677,6 +677,29 @@
 #   confirming actual free quota before promoting it over gemini-3.5-flash /
 #   gemini-3.1-flash-lite.
 
+# NOTE 2026-09-08 (model-scout daily audit): minimax/minimax-m3:free (added
+#   yesterday 2026-09-07 as z-ai/glm-5.2's replacement) reached EOL on
+#   OpenRouter's free tier in under 24h — direct probe returns 404
+#   "unavailable for free, use paid minimax/minimax-m3 instead", and it's
+#   gone entirely from the live free catalog (16 entries, no minimax-m3).
+#   Removed from the `reasoning` category slot (this file) and from
+#   FREE_MODELS in benchmark/providers/openrouter_provider.py — no
+#   replacement added, four other live entries remain in that category.
+#   All other referenced models re-probed clean: NVIDIA NIM (kimi-k3,
+#   deepseek-v4-flash-0731, both 200 OK with content); Groq (openai/gpt-oss-
+#   {20b,120b}, qwen/qwen3.6-27b, qwen/qwen3.8-27b, all 200 OK); Gemini
+#   (gemini-3.5-flash and gemini-3.8-flash 200 OK; gemini-3.1-flash-lite 503
+#   "high demand" again — transient, matches yesterday's note, still not
+#   EOL). New OpenRouter free-catalog entries this pass (not added — no
+#   clear category gap, and two are actively broken as direct API calls):
+#   thinkingmachines/inkling:free and thinkingmachines/inkling-small:free
+#   (403 "only available on agentic harnesses", not usable via plain
+#   chat-completion calls), dots-studio/dots-3-note-preview:free (200 but
+#   burns its whole token budget on hidden reasoning before any content —
+#   same failure mode already documented for cohere/north-mini-code:free).
+#   Gemini's gemini-3.8-flash free-tier RPM/RPD is still unpublished
+#   (carried over from 2026-09-07's note) — still not swapping it in over
+#   gemini-3.5-flash/gemini-3.1-flash-lite without confirmed quota.
 categories:
 
   reasoning:
@@ -730,12 +753,12 @@ categories:
       context_window: 256000
       note: "Reasoning-tagged Nemotron variant. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07)."
       source: "openrouter.ai/api/v1/models — verified 2026-07-21"
-    - provider: openrouter
-      model: minimax/minimax-m3:free
-      gpqa_diamond: 93.5
-      context_window: 1000000
-      note: "Replaces z-ai/glm-5.2:free — confirmed dead 2026-09-07 (404 'unavailable for free, use paid z-ai/glm-5.2 instead'), gone entirely from the live OpenRouter free catalog. minimax-m3 (427B MoE, 23B active) live-probed clean 200 with direct content, no reasoning-token truncation. Note: minimax-m3 was separately removed from NVIDIA NIM (this file, context category) for hanging indefinitely — that issue is provider-specific to NIM, not reproduced on OpenRouter."
-      source: "own live probe against openrouter.ai/api/v1/chat/completions — verified 2026-09-07; benchlm.ai/models/minimax-m3 (GPQA Diamond 93.5)"
+    # NOTE: minimax/minimax-m3:free removed 2026-09-08 — reached EOL on
+    #   OpenRouter's free tier after barely one day live (404 "unavailable
+    #   for free, use paid minimax/minimax-m3 instead"), gone from the live
+    #   free catalog too. No replacement needed — four other live entries
+    #   remain in this category (lightning, gemma-4-31b, gemma-4-26b,
+    #   nemotron-3-nano-omni-30b-a3b-reasoning above).
     - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       context_window: 1000000
