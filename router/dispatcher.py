@@ -13,7 +13,6 @@ GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 # DeepSeek V4 family and Kimi K2 use {"thinking": false}; Qwen3.5 uses {"enable_thinking": false}.
 _NVIDIA_THINKING_DEFAULTS: dict[str, dict] = {
     "deepseek-ai/deepseek-v4-flash-0731": {"thinking": False},
-    "moonshotai/kimi-k3":                 {"thinking": False},
 }
 
 
