@@ -785,23 +785,69 @@
 #   exercised directly either — cloud.yaml was instead hand-verified as
 #   valid YAML and every edited category was manually checked to retain at
 #   least one live entry), no live inventory check possible.
+# NOTE 2026-09-10 (model-scout daily audit): live probes (direct chat-
+#   completion POSTs with --max-time 25-30s / --connect-timeout 10s against
+#   every model referenced in this file, repeated 2-3x per finding) found:
+#   1. deepseek-ai/deepseek-v4-flash-0731 on NVIDIA NIM — now hangs
+#      indefinitely (HTTP 000/timeout, curl exit 28, 3/3 probes), the same
+#      failure signature this file has already documented for kimi-k3,
+#      muse-glimmer-30b, and minimax-m3. It was the sole NVIDIA entry in
+#      reasoning/coding/math/code_debug/context — removed from all five.
+#   2. moonshotai/kimi-k3 on NVIDIA NIM — the 2026-09-09 hang is NOT
+#      reproducing today; 2/2 live probes returned 200 OK. Re-added to
+#      reasoning/coding/math/code_debug/context/summarization (closing the
+#      summarization NIM gap flagged 2026-09-09) as the deepseek-v4-flash-0731
+#      replacement, but flagged in each note as a flaky model with a history
+#      of hanging on some days and not others — recheck every audit rather
+#      than assuming it's stable now.
+#   3. nvidia/nemotron-3-ultra-550b-a55b:free and nvidia/nemotron-3.5-
+#      lightning:free on OpenRouter — both hang (HTTP 000/timeout, 2/2
+#      probes each). Removed from context and reasoning respectively; no
+#      replacement needed in either category, 3+ other live entries remain.
+#   4. deepseek-ai/deepseek-v4-pro-0813 (the dated NVIDIA build evaluated
+#      but not added on 2026-09-05 for weaker benchmarks) also hangs on a
+#      live probe today (HTTP 000/timeout) — moot since it was never added,
+#      but rules it out as a fallback candidate too.
+#   Live-checked and confirmed still fine: openai/gpt-oss-120b, openai/gpt-
+#   oss-20b, qwen/qwen3.6-27b, qwen/qwen3.8-27b (all Groq, 200 OK);
+#   google/gemma-4-31b-it:free, google/gemma-4-26b-a4b-it:free, poolside/
+#   laguna-s-2.1:free (all OpenRouter, 429 rate-limited upstream — not EOL,
+#   left unchanged per policy); nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, cohere/north-
+#   mini-code:free (all OpenRouter, 200 OK); gemini-3.1-flash-lite,
+#   gemini-3.5-flash (both Gemini, 200 OK). Also re-confirmed dead, no
+#   change: moonshotai/kimi-k2.6 on NVIDIA NIM (404 "Not found for
+#   account", unchanged since 2026-08-27).
+#   Web search for new free providers/open-weight releases: nothing
+#   actionable — same recycled aggregator content as recent audits (Qwen3.8
+#   27B, already in this file via Groq; Meta Muse Spark 1.3, not found on
+#   any integrated provider's live catalog). Cerebras re-confirmed still
+#   requires a card for its free tier (still rejected per this file's
+#   no-card cascade policy). No local (Ollama/Apple Silicon) upgrade
+#   investigated this pass — this audit's time went to the live-probe
+#   regression above; recheck local inventory next time.
 categories:
 
   reasoning:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
+    # NOTE 2026-09-10: deepseek-ai/deepseek-v4-flash-0731 removed — hangs
+    #   indefinitely on NVIDIA NIM (connects, TLS/HTTP2 established, zero
+    #   bytes ever received; confirmed across 3 separate probes with
+    #   --max-time 25-30s and --connect-timeout 10s, curl exit 28/timeout
+    #   each time). Same failure signature as moonshotai/kimi-k3's 2026-09-09
+    #   removal below, meta/muse-glimmer-30b (2026-08-29), and
+    #   minimaxai/minimax-m3 (2026-08-30) — this looks like a recurring,
+    #   model-specific NVIDIA NIM failure mode rather than one-off EOLs.
+    #   Replaced with moonshotai/kimi-k3, re-verified live today (2 separate
+    #   200 OK probes) after its own 2026-09-09 hang — flagging it as prone
+    #   to the same intermittent hang pattern, recheck every audit rather
+    #   than assuming stability.
+    #   Source: own live probes against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      context_window: 1000000
-      note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/context since 2026-08-22."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
-    # NOTE: moonshotai/kimi-k3 removed 2026-09-09 — hangs indefinitely on
-    #   NVIDIA NIM (connects fine, TLS/HTTP2 established, zero bytes ever
-    #   received; confirmed across 4 separate probes, timeouts from 60s up to
-    #   ~945s). Same failure mode as meta/muse-glimmer-30b (removed 2026-08-29)
-    #   and minimaxai/minimax-m3 (removed 2026-08-30). deepseek-v4-flash-0731
-    #   above still covers this category on NVIDIA.
+      model: moonshotai/kimi-k3
+      note: "2.8T MoE, 104B active, 1M context, #3 Artificial Analysis 2026-07-16. Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM — treat as flaky, recheck every audit."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (connects, never returns; confirmed across 3 probes up to
     #   240s max-time). Not a clean EOL/404, but functionally worse for the
@@ -820,11 +866,10 @@ categories:
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
       source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: nvidia/nemotron-3.5-lightning:free
-      context_window: 131072
-      note: "Replaces inclusionai/ling-3.0-flash:free — that promo ended 2026-08-03 as this file warned, confirmed gone from the live free catalog 2026-08-12. Lightning is new 2026-08-11, 30B MoE/3B active, ~4x faster output and 30% faster agentic completion vs class peers per NVIDIA's PinchBench."
-      source: "openrouter.ai/api/v1/models — live-verified 2026-08-12; blogs.nvidia.com/blog/nemotron-lightning-switchyard-rtx-dgx"
+    # NOTE 2026-09-10: nvidia/nemotron-3.5-lightning:free removed — hangs on
+    #   OpenRouter (HTTP 000/timeout, confirmed twice with --max-time 25s).
+    #   No replacement needed, three other live free entries remain below
+    #   (gemma-4-31b, gemma-4-26b, nemotron-3-nano-omni-30b-a3b-reasoning).
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
@@ -854,15 +899,16 @@ categories:
 
   coding:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE 2026-09-10: deepseek-ai/deepseek-v4-flash-0731 removed — hangs
+    #   indefinitely on NVIDIA NIM (see reasoning category note above for
+    #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
+    #   today after its own 2026-09-09 hang — flagged as flaky, recheck
+    #   every audit.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      context_window: 1000000
-      note: "13B active, 1M context. Beats deepseek-v4-pro (72.1) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category. Model id fixed 2026-08-22: unsuffixed deepseek-ai/deepseek-v4-flash hit EOL 2026-08-07; the dated build id (-0731) is the one still live."
-      source: "techtimes.com/articles/322513; id fix verified live 2026-08-22"
+      model: moonshotai/kimi-k3
+      note: "2.8T MoE, 104B active, 1M context, #1 Frontend Code Arena on LMArena (2026-07). Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
-    #   NVIDIA NIM (see reasoning category note above for details).
-    # NOTE: moonshotai/kimi-k3 removed 2026-09-09 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
@@ -903,14 +949,15 @@ categories:
 
   math:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE 2026-09-10: deepseek-ai/deepseek-v4-flash-0731 removed — hangs
+    #   indefinitely on NVIDIA NIM (see reasoning category note above for
+    #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
+    #   today after its own 2026-09-09 hang — flagged as flaky, recheck
+    #   every audit.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      context_window: 1000000
-      note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/context."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
-    # NOTE: moonshotai/kimi-k3 removed 2026-09-09 — hangs indefinitely on
-    #   NVIDIA NIM (see reasoning category note above for details).
+      model: moonshotai/kimi-k3
+      note: "2.8T MoE, 104B active, 1M context. Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
@@ -944,11 +991,15 @@ categories:
     # NOTE: minimaxai/minimax-m3 removed 2026-08-30 — hangs indefinitely on
     #   NVIDIA NIM (connects, never returns; 3 separate timeouts, same failure
     #   mode as meta/muse-glimmer-30b removed 2026-08-29).
-    # NOTE: moonshotai/kimi-k3 removed 2026-09-09 — hangs indefinitely on
-    #   NVIDIA NIM (see reasoning category note above for details). This was
-    #   the last NVIDIA entry in this category — GAP: no NVIDIA NIM coverage
-    #   left here. Still covered by Groq (3 entries) and OpenRouter (2
-    #   entries) below; recheck in a future audit for a NIM replacement.
+    # NOTE 2026-09-10: moonshotai/kimi-k3 re-added — the 2026-09-09 hang
+    #   (see reasoning category note above) is no longer reproducing; 2
+    #   separate live probes today returned 200 OK. Closes the NVIDIA NIM
+    #   coverage gap flagged in that removal note. Flagged as flaky — has
+    #   now hung and recovered on separate days — recheck every audit.
+    - provider: nvidia
+      model: moonshotai/kimi-k3
+      note: "2.8T MoE, 104B active, 1M context, #3 Artificial Analysis 2026-07-16. History of intermittent hangs on NVIDIA NIM (down 2026-09-09, live 2026-09-10) — treat as flaky."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -1058,15 +1109,16 @@ categories:
 
   code_debug:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
+    # NOTE 2026-09-10: deepseek-ai/deepseek-v4-flash-0731 removed — hangs
+    #   indefinitely on NVIDIA NIM (see reasoning category note above for
+    #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
+    #   today after its own 2026-09-09 hang — flagged as flaky, recheck
+    #   every audit.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      context_window: 1000000
-      note: "13B active, 1M context. Beats deepseek-v4-pro (72.1) on Terminal-Bench 2.1 and all 9 of DeepSeek's published agent/coding benchmarks despite far fewer active params. Replaces deepseek-v4-pro in this category. Model id fixed 2026-08-22: unsuffixed deepseek-ai/deepseek-v4-flash hit EOL 2026-08-07; the dated build id (-0731) is the one still live."
-      source: "techtimes.com/articles/322513; id fix verified live 2026-08-22"
+      model: moonshotai/kimi-k3
+      note: "2.8T MoE, 104B active, 1M context, #1 Frontend Code Arena on LMArena (2026-07). Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
-    #   NVIDIA NIM (see reasoning category note above for details).
-    # NOTE: moonshotai/kimi-k3 removed 2026-09-09 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
@@ -1109,15 +1161,16 @@ categories:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
     # NOTE: minimaxai/minimax-m3 removed 2026-08-30 — hangs indefinitely on
     #   NVIDIA NIM (see summarization category note above for details).
-    # NOTE: moonshotai/kimi-k3 removed 2026-09-09 — hangs indefinitely on
-    #   NVIDIA NIM (see reasoning category note above for details).
-    #   deepseek-v4-flash-0731 below still covers this category on NVIDIA.
+    # NOTE 2026-09-10: deepseek-ai/deepseek-v4-flash-0731 removed — hangs
+    #   indefinitely on NVIDIA NIM (see reasoning category note above for
+    #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
+    #   today after its own 2026-09-09 hang — flagged as flaky, recheck
+    #   every audit.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
+      model: moonshotai/kimi-k3
       context_window: 1000000
-      note: "Replaces deepseek-ai/deepseek-v4-pro, EOL 2026-08-07 on NVIDIA NIM (410 'reached end of life'). Same successor model already used in coding/code_debug/reasoning/math."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-08-24"
+      note: "2.8T MoE, 104B active, 1M context. Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
     # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — two NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
@@ -1131,11 +1184,10 @@ categories:
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
       source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: nvidia/nemotron-3-ultra-550b-a55b:free
-      context_window: 1000000
-      note: "Largest model on OpenRouter's free tier (550B MoE); best-fit replacement for qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07) in this category."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # NOTE 2026-09-10: nvidia/nemotron-3-ultra-550b-a55b:free removed —
+    #   hangs on OpenRouter (HTTP 000/timeout, confirmed twice with
+    #   --max-time 25s). No replacement needed, nemotron-3-super-120b-a12b
+    #   below and gemini-3.5-flash further down already cover 1M+ context.
     - provider: openrouter
       model: nvidia/nemotron-3-super-120b-a12b:free
       arena_elo: 1343
