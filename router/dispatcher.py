@@ -11,9 +11,7 @@ GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 
 # Models that hang without explicit thinking=off. Client payload wins if it sets chat_template_kwargs.
 # DeepSeek V4 family and Kimi K2 use {"thinking": false}; Qwen3.5 uses {"enable_thinking": false}.
-_NVIDIA_THINKING_DEFAULTS: dict[str, dict] = {
-    "deepseek-ai/deepseek-v4-flash-0731": {"thinking": False},
-}
+_NVIDIA_THINKING_DEFAULTS: dict[str, dict] = {}
 
 
 class Dispatcher:

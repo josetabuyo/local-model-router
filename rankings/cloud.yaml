@@ -826,6 +826,65 @@
 #   no-card cascade policy). No local (Ollama/Apple Silicon) upgrade
 #   investigated this pass — this audit's time went to the live-probe
 #   regression above; recheck local inventory next time.
+# NOTE 2026-09-12 (model-scout daily audit, one day skipped — last audit was
+#   2026-09-10): live probes (direct chat-completion calls, --max-time
+#   25-30s / --connect-timeout 10s, repeated 2-3x per finding) against every
+#   model referenced in this file. Found: moonshotai/kimi-k3 on NVIDIA NIM
+#   hangs again — 3/3 probes HTTP 000/timeout, same signature documented for
+#   this model on 2026-09-09 and now recurring. Both fallback candidates
+#   also re-checked and still hanging: deepseek-ai/deepseek-v4-flash-0731
+#   (1/1 timeout, matches 2026-09-10 finding) and deepseek-ai/
+#   deepseek-v4-pro-0813 (1/1 timeout, matches 2026-09-10 finding) — neither
+#   is viable, so this isn't a simple swap back. Sanity-checked the account/
+#   endpoint itself is healthy (meta/llama-3.1-8b-instruct returned a clean
+#   410 EOL, moonshotai/kimi-k2.6 returned a clean 404 "not found for
+#   account") — the hang is specific to these three large MoE models, not a
+#   broad NIM outage. Re-scanned the live NVIDIA NIM catalog (GET
+#   /v1/models, 82 entries): found z-ai/glm-5.3-flash newly listed (absent
+#   2026-09-09/10) — probed live, 200 OK with valid "OK" content (7s
+#   response, emits reasoning_content by design). 320B MoE/18B active, MIT
+#   license, 1.31M context, released 2026-08-26, AA Intelligence Index 42
+#   (open-weight median 18), DeepSWE v1.1 63.4 vs GLM-5.2's 46.2 — Z.ai
+#   claims it approaches Opus 4.8 on coding/agentic benchmarks at ~1/10th
+#   GLM-5.2's price (artificialanalysis.ai/models/glm-5-3-flash). Swapped in
+#   for moonshotai/kimi-k3 across all 6 categories it was in (reasoning,
+#   coding, math, summarization, code_debug, context) and ALSO added to
+#   `multilingual` as the NVIDIA quality fallback, closing the gap open
+#   there since kimi-k3's 2026-09-09 removal (placed after Groq per that
+#   category's speed-first design). NOT added to `instruction` — it emits a
+#   reasoning trace by default, which that category deliberately excludes
+#   (same reasoning-model exclusion rule applied to qwen3.6-27b/kimi-k2.6/
+#   gpt-oss-120b there). Also noticed openai/gpt-oss-20b newly listed on
+#   NVIDIA NIM's catalog (previously Groq-only) — not added anywhere, fully
+#   redundant with the existing Groq entry and Groq is faster (LPU).
+#   Removed the now-dead deepseek-ai/deepseek-v4-flash-0731 key from
+#   router/dispatcher.py's _NVIDIA_THINKING_DEFAULTS (no longer referenced
+#   anywhere in this file since its 2026-09-10 removal) — dict is now empty.
+#   Live-checked and confirmed still fine: openai/gpt-oss-{20b,120b},
+#   qwen/qwen3.6-27b, qwen/qwen3.8-27b (all Groq, 200 OK); gemini-3.1-flash-
+#   lite (one 404 on first probe, clean 200 OK on retry — matches this
+#   session's recurring transient-blip pattern from prior audits) and
+#   gemini-3.5-flash (one HTTP 000/timeout, 200 OK on 2nd retry — same
+#   pattern, confirmed still listed in /v1beta/models alongside newer
+#   gemini-3.6/3.7/3.8-flash tiers); nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, cohere/
+#   north-mini-code:free (all OpenRouter, 200 OK); google/gemma-4-{31b,26b-
+#   a4b}-it:free and poolside/laguna-s-2.1:free (OpenRouter, 429 "temporarily
+#   rate-limited upstream, shared pool" — same recurring congestion pattern
+#   as every prior audit, not EOL, kept per policy).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered
+#   ':free'): 19 entries, one new since the last scan: inclusionai/
+#   ling-3.0-flash-vl:free (vision-language fine-tune of the ling-3.0-flash
+#   lineage). Probed directly — works (200 OK) but emits a "reasoning" field
+#   before content, same disqualifying pattern already documented for its
+#   -fin/-sante siblings, and is vision-specialized, off-category for every
+#   slot in this file. Not added.
+#   Web search for new open-weight releases and free providers found nothing
+#   beyond glm-5.3-flash above (already the day's actionable finding) — same
+#   recycled aggregator coverage of models already known. Local (Ollama/
+#   Apple Silicon 16GB) check: `ollama` CLI still not available in this
+#   session's environment, no live inventory check possible (same as every
+#   prior audit).
 categories:
 
   reasoning:
@@ -844,14 +903,23 @@ categories:
     #   to the same intermittent hang pattern, recheck every audit rather
     #   than assuming stability.
     #   Source: own live probes against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10
+    # NOTE 2026-09-12: moonshotai/kimi-k3 removed — hangs again (3/3 live
+    #   probes today, HTTP 000/timeout), confirming it as a recurring flaky
+    #   NVIDIA NIM model rather than stable now. deepseek-v4-flash-0731 and
+    #   deepseek-v4-pro-0813 also both re-checked and still hang, so neither
+    #   is a viable fallback. Replaced with z-ai/glm-5.3-flash, new on
+    #   NVIDIA NIM's live catalog since the last audit (not present
+    #   2026-09-09/10) — verified live with a full 200 OK completion (7s,
+    #   valid content).
+    #   Source: own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, 104B active, 1M context, #3 Artificial Analysis 2026-07-16. Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM — treat as flaky, recheck every audit."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE, 18B active, MIT license, 1.31M context. Released 2026-08-26. AA Intelligence Index 42 (open-weight median 18). Emits reasoning_content by default (needs adequate max_tokens headroom, same pattern as other reasoning-tagged entries in this file) — fine for this category, which wants CoT."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (connects, never returns; confirmed across 3 probes up to
     #   240s max-time). Not a clean EOL/404, but functionally worse for the
-    #   cascade. deepseek-v4-flash-0731 above still covers this category.
+    #   cascade. glm-5.3-flash above now covers this category.
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -904,10 +972,15 @@ categories:
     #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
     #   today after its own 2026-09-09 hang — flagged as flaky, recheck
     #   every audit.
+    # NOTE 2026-09-12: moonshotai/kimi-k3 removed — hangs again (see
+    #   reasoning category note above for full detail on today's findings).
+    #   Replaced with z-ai/glm-5.3-flash, new on NVIDIA NIM's live catalog,
+    #   MIT-licensed, strong agentic-coding scores (DeepSWE v1.1 63.4 vs
+    #   GLM-5.2's 46.2 per Artificial Analysis).
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, 104B active, 1M context, #1 Frontend Code Arena on LMArena (2026-07). Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE, 18B active, MIT license, 1.31M context. DeepSWE v1.1 63.4 (vs GLM-5.2's 46.2), Z.ai claims it approaches Opus 4.8 on coding/agentic benchmarks at ~1/10th GLM-5.2's price."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
@@ -954,10 +1027,13 @@ categories:
     #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
     #   today after its own 2026-09-09 hang — flagged as flaky, recheck
     #   every audit.
+    # NOTE 2026-09-12: moonshotai/kimi-k3 removed — hangs again (see
+    #   reasoning category note above for full detail on today's findings).
+    #   Replaced with z-ai/glm-5.3-flash, new on NVIDIA NIM's live catalog.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, 104B active, 1M context. Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE, 18B active, MIT license, 1.31M context, AA Intelligence Index 42."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: qwen/qwen3.6-27b
@@ -996,10 +1072,13 @@ categories:
     #   separate live probes today returned 200 OK. Closes the NVIDIA NIM
     #   coverage gap flagged in that removal note. Flagged as flaky — has
     #   now hung and recovered on separate days — recheck every audit.
+    # NOTE 2026-09-12: moonshotai/kimi-k3 removed — hangs again (see
+    #   reasoning category note above for full detail on today's findings).
+    #   Replaced with z-ai/glm-5.3-flash, new on NVIDIA NIM's live catalog.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, 104B active, 1M context, #3 Artificial Analysis 2026-07-16. History of intermittent hangs on NVIDIA NIM (down 2026-09-09, live 2026-09-10) — treat as flaky."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE, 18B active, MIT license, 1.31M context, AA Intelligence Index 42."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -1095,6 +1174,15 @@ categories:
     #   NIM coverage left in this category. Still covered by Groq (fast path,
     #   primary here per this category's speed-first design) and OpenRouter/
     #   Gemini below; recheck in a future audit for a NIM replacement.
+    # NOTE 2026-09-12: GAP closed — added z-ai/glm-5.3-flash as NVIDIA
+    #   quality fallback (see reasoning category note above for full detail
+    #   on today's kimi-k3/deepseek-v4 hang findings and glm-5.3-flash's
+    #   live verification). Placed after Groq per this category's
+    #   speed-first design — NVIDIA is the quality fallback, not primary.
+    - provider: nvidia
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE, 18B active, MIT license, 1.31M context. Quality fallback behind Groq's fast path per this category's speed-first design."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # ── OpenRouter (free tier last resort) ─────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
@@ -1114,10 +1202,15 @@ categories:
     #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
     #   today after its own 2026-09-09 hang — flagged as flaky, recheck
     #   every audit.
+    # NOTE 2026-09-12: moonshotai/kimi-k3 removed — hangs again (see
+    #   reasoning category note above for full detail on today's findings).
+    #   Replaced with z-ai/glm-5.3-flash, new on NVIDIA NIM's live catalog,
+    #   MIT-licensed, strong agentic-coding scores (DeepSWE v1.1 63.4 vs
+    #   GLM-5.2's 46.2 per Artificial Analysis).
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, 104B active, 1M context, #1 Frontend Code Arena on LMArena (2026-07). Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE, 18B active, MIT license, 1.31M context. DeepSWE v1.1 63.4 (vs GLM-5.2's 46.2), Z.ai claims it approaches Opus 4.8 on coding/agentic benchmarks at ~1/10th GLM-5.2's price."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
@@ -1166,11 +1259,14 @@ categories:
     #   full detail). Replaced with moonshotai/kimi-k3, re-verified live
     #   today after its own 2026-09-09 hang — flagged as flaky, recheck
     #   every audit.
+    # NOTE 2026-09-12: moonshotai/kimi-k3 removed — hangs again (see
+    #   reasoning category note above for full detail on today's findings).
+    #   Replaced with z-ai/glm-5.3-flash, new on NVIDIA NIM's live catalog.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      context_window: 1000000
-      note: "2.8T MoE, 104B active, 1M context. Re-added after hanging 2026-09-09; live again as of 2026-09-10 but has a documented history of intermittent hangs on NVIDIA NIM."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-10"
+      model: z-ai/glm-5.3-flash
+      context_window: 1310720
+      note: "320B MoE, 18B active, MIT license. AA Intelligence Index 42."
+      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-12; artificialanalysis.ai/models/glm-5-3-flash"
     # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — two NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
