@@ -885,6 +885,54 @@
 #   Apple Silicon 16GB) check: `ollama` CLI still not available in this
 #   session's environment, no live inventory check possible (same as every
 #   prior audit).
+
+# NOTE 2026-09-13 (model-scout daily audit): live probes (direct chat-
+#   completion calls, --max-time 25-30s / --connect-timeout 10s) against every
+#   model referenced in this file. ZERO EOLs, no changes needed. NVIDIA NIM:
+#   z-ai/glm-5.3-flash (200 OK). Groq: openai/gpt-oss-{20b,120b}, qwen/
+#   qwen3.6-27b, qwen/qwen3.8-27b (all 200 OK). Gemini: gemini-3.1-flash-lite
+#   (200 OK); gemini-3.5-flash (HTTP 000 on a probe run in parallel with
+#   another curl sharing the same -o file — retried standalone, clean 200 OK,
+#   confirmed a tooling artifact not a real timeout). OpenRouter: nvidia/
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free, nvidia/nemotron-3-super-120b-
+#   a12b:free, poolside/laguna-s-2.1:free, cohere/north-mini-code:free (all
+#   200 OK); google/gemma-4-{31b,26b-a4b}-it:free (429 "temporarily
+#   rate-limited upstream, shared pool" — same recurring congestion as every
+#   prior audit, not EOL, kept per policy).
+#   Rechecked (not currently referenced, historical flakiness watch):
+#   moonshotai/kimi-k3 on NVIDIA NIM still hangs (2/2 probes, HTTP 000/timeout)
+#   — consistent with 2026-09-09/09-12 findings, correctly stays out of the
+#   cascade. deepseek-ai/deepseek-v4-flash-0731 on NVIDIA NIM came back 200 OK
+#   today (was hanging 2026-09-10/09-12) — NOT swapped back in given its own
+#   flip-flopping history and glm-5.3-flash's current stability; same
+#   don't-chase-volatile-evidence policy already applied to kimi-k3.
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered
+#   ':free'): 19 entries, unchanged from 2026-09-12 (same already-evaluated-
+#   and-rejected set: inclusionai/ling-3.0-flash-{fin,sante,vl}:free,
+#   dots-studio/dots-3-note-preview:free, liquid/lfm-2.5-2.6b:free, nex-agi/
+#   nex-n2.5-{mini,pro}:free, poolside/laguna-xs-2.1:free, thinkingmachines/
+#   inkling(-small):free, nvidia/nemotron-3.5-content-safety:free). Re-scanned
+#   live NVIDIA NIM catalog (GET /v1/models): 82 entries, same count as
+#   2026-09-12.
+#   Web search for new open-weight releases surfaced DeepSeek V4.1 Flash
+#   (reported released 2026-09-10) and Sakana AI Fugu Ultra v2.0 (reported
+#   released 2026-09-11) per aggregator coverage (llmgateway.io/timeline,
+#   thundercompute.com) — checked NVIDIA NIM's live /v1/models catalog
+#   directly for both (grep for "deepseek"/"fugu"/"sakana"): neither present,
+#   only deepseek-v4-flash-0731/deepseek-v4-pro-0813 remain the live DeepSeek
+#   builds. Not added; recheck in a future audit.
+#   Followed up on Mistral (noted "no clear differential" in
+#   plans/new-cloud-providers.md): checked mistral.ai/pricing directly
+#   (primary source) — page does confirm "Free" plan language exists, but
+#   doesn't clearly separate API/La Plateforme free-tier terms from the
+#   consumer Le Chat free plan, so still doesn't independently confirm the
+#   aggregator-sourced "2 RPM / 1B tokens/month API" claim seen in web search.
+#   Left as-is, not upgraded from "no clear differential" to accepted.
+#   No new free cloud providers or local (Ollama/Apple Silicon 16GB) upgrades
+#   found this pass — `ollama` CLI still not available in this session's
+#   environment, no live inventory check possible (same as every prior audit).
+#   No changes to any provider file, registry, or ranking this pass.
+
 categories:
 
   reasoning:
