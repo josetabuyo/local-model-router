@@ -106,7 +106,7 @@ class Registry:
                 raise ValueError(
                     f"'{model_str}' is a local model. "
                     "The /cloud endpoint only accepts '<best|cheapest|fastest>:<category>' or a cloud provider prefix "
-                    "(e.g. 'nvidia/moonshotai/kimi-k3', 'groq/qwen/qwen3.6-27b')."
+                    "(e.g. 'nvidia/moonshotai/kimi-k3', 'groq/qwen/qwen3.8-27b')."
                 )
             return [(provider, model_id)]
         raise ValueError(self._format_error(model_str))

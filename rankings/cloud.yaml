@@ -991,6 +991,54 @@
 #   to retain deepseek-v4-flash-0731 as its sole NVIDIA slot with no
 #   leftover glm-5.3-flash references.
 
+# NOTE 2026-09-15 (model-scout daily audit): live probes (direct chat-
+#   completion calls, --max-time 25-30s / --connect-timeout 10s) against every
+#   model referenced in this file. ONE EOL found: qwen/qwen3.6-27b on Groq —
+#   HTTP 404 "does not exist or you do not have access to it" on two separate
+#   probes, and confirmed absent from the live Groq catalog (GET
+#   /openai/v1/models filtered for "qwen" returns only qwen/qwen3.8-27b now).
+#   Corroborated by a web search hit noting it "is no longer marked free on
+#   Groq as of Sep 11, 2026" (freellm.net). It was a Groq entry in 7
+#   categories (reasoning, coding, math, summarization, multilingual,
+#   code_debug, context) — removed from all seven. No replacement needed in
+#   any of them: each already has openai/gpt-oss-120b and/or
+#   openai/gpt-oss-20b as the remaining live Groq entry (multilingual keeps
+#   gpt-oss-20b as its sole Groq/fast-path model). Updated FREE_MODELS in
+#   benchmark/providers/groq_provider.py (dropped the dead slug) and the
+#   illustrative model-string example in router/registry.py (swapped to the
+#   still-live qwen/qwen3.8-27b).
+#   Everything else live-checked and confirmed fine: deepseek-ai/deepseek-v4-
+#   flash-0731 (NVIDIA NIM, 200 OK); openai/gpt-oss-{20b,120b} and qwen/
+#   qwen3.8-27b (all Groq, 200 OK); gemini-3.1-flash-lite (200 OK) and
+#   gemini-3.5-flash (one HTTP 000 on first probe, clean 200 OK on standalone
+#   retry — same sandbox tooling-artifact pattern already diagnosed
+#   2026-09-13/14, not a real outage); nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, cohere/north-
+#   mini-code:free (all OpenRouter, 200 OK); google/gemma-4-{31b,26b-a4b}-
+#   it:free and poolside/laguna-s-2.1:free (429 "temporarily rate-limited
+#   upstream, shared pool" — same recurring congestion as every prior audit,
+#   not EOL, kept per policy).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered
+#   ':free'): 19 entries, unchanged from 2026-09-12/13/14 (same
+#   already-evaluated-and-rejected long tail: inclusionai/ling-3.0-flash-
+#   {fin,sante,vl}:free, dots-studio/dots-3-note-preview:free, nex-agi/
+#   nex-n2.5-{mini,pro}:free, poolside/laguna-xs-2.1:free, thinkingmachines/
+#   inkling(-small):free, liquid/lfm-2.5-2.6b:free, nvidia/nemotron-3-
+#   ultra-550b-a55b:free, nvidia/nemotron-3.5-{lightning,content-safety}:free).
+#   Re-scanned live NVIDIA NIM catalog (GET /v1/models): 81 entries, in line
+#   with the 2026-09-04/05 count; the model this file actually uses
+#   (deepseek-v4-flash-0731) was independently confirmed alive via direct
+#   probe above.
+#   Web search for new open-weight releases and free providers: nothing
+#   dated+primary beyond the qwen3.6-27b finding above — same recycled
+#   aggregator coverage of models already known (Qwen3.8 Max cited by one
+#   aggregator as the new open-weight leaderboard #1, but not present in
+#   Groq's live catalog or NVIDIA NIM's, so not actionable here; Nex-N2.5 and
+#   Ling-3.0-Flash-Sante already evaluated and rejected in prior audits). No
+#   new free cloud providers found. Local (Ollama/Apple Silicon 16GB) check:
+#   not performed this pass — `ollama` CLI still not available in this
+#   session's environment (same as every prior audit).
+
 categories:
 
   reasoning:
@@ -1033,10 +1081,6 @@ categories:
       model: openai/gpt-oss-120b
       note: "Matches o4-mini on many benchmarks. 500 tok/s."
       source: "Groq deprecation notice 2026-06-29"
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      gpqa_diamond: 87.8
-      source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-20b
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
@@ -1092,11 +1136,6 @@ categories:
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
-      model: qwen/qwen3.6-27b
-      livecodebench_v6: 83.9
-      swe_bench_verified: 77.2
-      source: "console.groq.com — 2026-06"
-    - provider: groq
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
@@ -1143,11 +1182,6 @@ categories:
       source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
-      model: qwen/qwen3.6-27b
-      aime_2026: 94.1
-      note: "94.1% AIME 2026 — exceptional math."
-      source: "console.groq.com — 2026-06"
-    - provider: groq
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
     - provider: groq
@@ -1190,9 +1224,6 @@ categories:
     - provider: groq
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-20b
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
@@ -1271,10 +1302,9 @@ categories:
       model: openai/gpt-oss-20b
       note: "Replaces llama-3.1-8b-instant (deprecated by Groq 2026-08-16). Primary: Groq LPU, still sub-10s typical. Sufficient for conversational multilingual."
       source: "console.groq.com/docs/deprecations — verified 2026-08-12"
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      note: "Balanced quality/speed on Groq LPU."
-      source: "console.groq.com — 2026-06"
+    # NOTE 2026-09-15: qwen/qwen3.6-27b removed — reached EOL on Groq (see
+    #   reasoning category note above for full detail). gpt-oss-20b above
+    #   remains the sole Groq entry in this category.
     # NOTE: moonshotai/kimi-k3 (NVIDIA quality fallback) removed 2026-09-09 —
     #   hangs indefinitely on NVIDIA NIM (see reasoning category note above
     #   for details). This was the only NVIDIA entry here — GAP: no NVIDIA
@@ -1320,11 +1350,6 @@ categories:
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      livecodebench_v6: 83.9
-      swe_bench_verified: 77.2
-      source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
@@ -1378,9 +1403,6 @@ categories:
     - provider: groq
       model: openai/gpt-oss-120b
       source: "Groq deprecation notice 2026-06-29"
-    - provider: groq
-      model: qwen/qwen3.6-27b
-      source: "console.groq.com — 2026-06"
     - provider: groq
       model: openai/gpt-oss-20b
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
