@@ -1038,6 +1038,39 @@
 #   new free cloud providers found. Local (Ollama/Apple Silicon 16GB) check:
 #   not performed this pass — `ollama` CLI still not available in this
 #   session's environment (same as every prior audit).
+# NOTE 2026-09-16 (model-scout daily audit): live probes (direct chat-
+#   completion calls, --max-time 25-40s) against every model referenced in
+#   this file. No EOLs found, no adds, no removes. All confirmed alive:
+#   deepseek-ai/deepseek-v4-flash-0731 (NVIDIA NIM, 200 OK — one HTTP 000 on
+#   the first probe attempt, clean 200 OK in 7s on a standalone retry; same
+#   sandbox tooling-artifact pattern already diagnosed in prior audits, not
+#   a real outage); openai/gpt-oss-{20b,120b} and qwen/qwen3.8-27b (all
+#   Groq, 200 OK); gemini-3.1-flash-lite and gemini-3.5-flash (both 200 OK
+#   via the OpenAI-compatible endpoint the provider code actually calls,
+#   generativelanguage.googleapis.com/v1beta/openai/chat/completions — an
+#   initial probe against the native v1beta generateContent endpoint 404'd
+#   and then hung, but that's the wrong endpoint for this codebase, not a
+#   model problem); nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free,
+#   nvidia/nemotron-3-super-120b-a12b:free, poolside/laguna-s-2.1:free,
+#   cohere/north-mini-code:free (all OpenRouter, 200 OK); google/gemma-4-
+#   {31b,26b-a4b}-it:free (429 "temporarily rate-limited upstream, shared
+#   pool" on two separate probes each — same recurring Google AI Studio
+#   congestion as every prior audit, not EOL, kept per policy).
+#   router/registry.py _SPEED_OVERRIDES re-checked: both referenced entries
+#   (groq/openai/gpt-oss-20b, groq/openai/gpt-oss-120b) still live, no stale
+#   references.
+#   Web search for new free cloud providers and new open-weight releases:
+#   nothing dated+primary — same recycled SEO-aggregator coverage (Mistral's
+#   $10/mo credit and Cloudflare Workers AI already known/not integrated;
+#   Cerebras confirmed to have dropped its no-card free tier in August 2026,
+#   not relevant since it isn't integrated here). DeepSeek V4 0813 checkpoint
+#   mentioned by aggregators but not present in NVIDIA NIM's live catalog
+#   (only deepseek-v4-flash-0731 and deepseek-coder-6.7b-instruct under
+#   deepseek-ai/), so not actionable. Local (Ollama/Apple Silicon 16GB)
+#   check: not performed this pass — `ollama` CLI still not available in
+#   this session's environment (same as every prior audit); web search on
+#   GGUF/MLX quantization turned up only generic 2026 comparison content,
+#   nothing new actionable for this machine's setup.
 
 categories:
 
