@@ -1071,6 +1071,39 @@
 #   this session's environment (same as every prior audit); web search on
 #   GGUF/MLX quantization turned up only generic 2026 comparison content,
 #   nothing new actionable for this machine's setup.
+# NOTE 2026-09-17 (model-scout daily audit): live probes (direct chat-
+#   completion calls, --max-time 30s) against every model referenced in
+#   this file. ONE issue found: deepseek-ai/deepseek-v4-flash-0731 on NVIDIA
+#   NIM now hangs indefinitely (2/2 probes, HTTP 000/exit 28 timeout at
+#   --max-time 30s each; confirmed the account/endpoint itself is healthy via
+#   a clean 200 OK GET /v1/models in 0.5s, so this is model-specific, not a
+#   broad NIM outage). It was the sole NVIDIA slot-0 entry in all 7
+#   categories that use it (reasoning, coding, math, summarization,
+#   multilingual, code_debug, context) — same recurring flaky-NIM-model
+#   pattern documented repeatedly in this file (muse-glimmer-30b, minimax-m3,
+#   kimi-k3, glm-5.3-flash's own 2026-09-14 hang). Re-probed z-ai/glm-5.3-
+#   flash (the model deepseek-v4-flash-0731 replaced on 2026-09-14): 2/2
+#   probes today returned clean 200 OK (9-17s, emits reasoning_content by
+#   design as before). Swapped z-ai/glm-5.3-flash back in for deepseek-ai/
+#   deepseek-v4-flash-0731 across all 7 categories — this is the third
+#   flip-flop between these same two models in the last week; flagging both
+#   as prone to intermittent hangs and recommending every future audit
+#   re-probe whichever one is live before assuming stability.
+#   Source: own live probes against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17
+#   Everything else live-checked and confirmed fine: openai/gpt-oss-{20b,120b}
+#   and qwen/qwen3.8-27b (all Groq, 200 OK); gemini-3.5-flash (200 OK, native
+#   v1beta generateContent endpoint); nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free, nvidia/nemotron-3-super-120b-a12b:free, poolside/
+#   laguna-s-2.1:free, cohere/north-mini-code:free (all OpenRouter, 200 OK);
+#   google/gemma-4-{31b,26b-a4b}-it:free (429 "temporarily rate-limited
+#   upstream, shared pool" — same recurring congestion as every prior audit,
+#   not EOL, kept per policy).
+#   Web search for new free cloud providers and new open-weight releases:
+#   only recycled SEO-aggregator coverage (Cloudflare Workers AI, Mistral,
+#   SambaNova retiring its free tier in July 2026 — none newly actionable,
+#   already noted or rejected in prior audits). No new provider or local
+#   (Ollama/Apple Silicon 16GB) upgrade found — `ollama` CLI still not
+#   available in this session's environment (same as every prior audit).
 
 categories:
 
@@ -1100,11 +1133,16 @@ categories:
     #   same intermittent hang pattern, recheck every audit rather than
     #   assuming stability.
     #   Source: own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed — hangs
+    #   again on NVIDIA NIM (2/2 live probes today, HTTP 000/exit 28 timeout
+    #   at --max-time 30s each). Third flip-flop between these two models in
+    #   a week; see top-of-file 2026-09-17 note for full detail. Replaced
+    #   with z-ai/glm-5.3-flash, re-verified live today (2/2 probes, 200 OK).
+    #   Source: own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      note: "Beats v4-pro's 72.1 and glm-5.2's 81.0 on DeepSeek's own agent/coding suite, 13B active/1M context."
-      source: "techtimes.com/articles/322513 — verified 2026-08-03; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE/18B active, MIT license, 1.31M context, released 2026-08-26. AA Intelligence Index 42 (open-weight median 18), DeepSWE v1.1 63.4 vs GLM-5.2's 46.2. Z.ai claims it approaches Opus 4.8 on coding/agentic benchmarks at ~1/10th GLM-5.2's price. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (connects, never returns; confirmed across 3 probes up to
     #   240s max-time). Not a clean EOL/404, but functionally worse for the
@@ -1160,11 +1198,13 @@ categories:
     # NOTE 2026-09-14: z-ai/glm-5.3-flash removed — hangs again (see
     #   reasoning category note above for full detail on today's findings).
     #   Replaced with deepseek-ai/deepseek-v4-flash-0731, re-verified live.
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed again —
+    #   hangs on NVIDIA NIM (see top-of-file 2026-09-17 note for full
+    #   detail). Replaced with z-ai/glm-5.3-flash, re-verified live.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      note: "Beats v4-pro's 72.1 and glm-5.2's 81.0 on DeepSeek's own agent/coding suite, 13B active/1M context."
-      source: "techtimes.com/articles/322513 — verified 2026-08-03; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE/18B active, MIT license, 1.31M context. See reasoning category entry for full benchmark detail. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
@@ -1209,10 +1249,13 @@ categories:
     # NOTE 2026-09-14: z-ai/glm-5.3-flash removed — hangs again (see
     #   reasoning category note above for full detail on today's findings).
     #   Replaced with deepseek-ai/deepseek-v4-flash-0731, re-verified live.
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed again —
+    #   hangs on NVIDIA NIM (see top-of-file 2026-09-17 note for full
+    #   detail). Replaced with z-ai/glm-5.3-flash, re-verified live.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      note: "13B active/1M context. See coding category note for full benchmark detail."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE/18B active, MIT license, 1.31M context. See reasoning category entry for full benchmark detail. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -1249,10 +1292,13 @@ categories:
     # NOTE 2026-09-14: z-ai/glm-5.3-flash removed — hangs again (see
     #   reasoning category note above for full detail on today's findings).
     #   Replaced with deepseek-ai/deepseek-v4-flash-0731, re-verified live.
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed again —
+    #   hangs on NVIDIA NIM (see top-of-file 2026-09-17 note for full
+    #   detail). Replaced with z-ai/glm-5.3-flash, re-verified live.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      note: "13B active/1M context. See coding category note for full benchmark detail."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE/18B active, MIT license, 1.31M context. See reasoning category entry for full benchmark detail. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -1349,10 +1395,13 @@ categories:
     #   Replaced with deepseek-ai/deepseek-v4-flash-0731, re-verified live.
     #   Placed after Groq per this category's speed-first design — NVIDIA is
     #   the quality fallback, not primary.
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed again —
+    #   hangs on NVIDIA NIM (see top-of-file 2026-09-17 note for full
+    #   detail). Replaced with z-ai/glm-5.3-flash, re-verified live.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      note: "13B active/1M context. Quality fallback behind Groq's fast path per this category's speed-first design."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE/18B active, MIT license, 1.31M context. Quality fallback behind Groq's fast path per this category's speed-first design. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # ── OpenRouter (free tier last resort) ─────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
@@ -1375,11 +1424,13 @@ categories:
     # NOTE 2026-09-14: z-ai/glm-5.3-flash removed — hangs again (see
     #   reasoning category note above for full detail on today's findings).
     #   Replaced with deepseek-ai/deepseek-v4-flash-0731, re-verified live.
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed again —
+    #   hangs on NVIDIA NIM (see top-of-file 2026-09-17 note for full
+    #   detail). Replaced with z-ai/glm-5.3-flash, re-verified live.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      terminal_bench_2_1: 82.7
-      note: "Beats v4-pro's 72.1 and glm-5.2's 81.0 on DeepSeek's own agent/coding suite, 13B active/1M context."
-      source: "techtimes.com/articles/322513 — verified 2026-08-03; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      note: "320B MoE/18B active, MIT license, 1.31M context. See reasoning category entry for full benchmark detail. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
@@ -1426,11 +1477,14 @@ categories:
     # NOTE 2026-09-14: z-ai/glm-5.3-flash removed — hangs again (see
     #   reasoning category note above for full detail on today's findings).
     #   Replaced with deepseek-ai/deepseek-v4-flash-0731, re-verified live.
+    # NOTE 2026-09-17: deepseek-ai/deepseek-v4-flash-0731 removed again —
+    #   hangs on NVIDIA NIM (see top-of-file 2026-09-17 note for full
+    #   detail). Replaced with z-ai/glm-5.3-flash, re-verified live.
     - provider: nvidia
-      model: deepseek-ai/deepseek-v4-flash-0731
-      context_window: 1000000
-      note: "13B active/1M context. See coding category note for full benchmark detail."
-      source: "own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-14"
+      model: z-ai/glm-5.3-flash
+      context_window: 1310000
+      note: "320B MoE/18B active, MIT license, 1.31M context. See reasoning category entry for full benchmark detail. Emits reasoning_content by design."
+      source: "artificialanalysis.ai/models/glm-5-3-flash — verified 2026-09-12; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-17"
     # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — two NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
