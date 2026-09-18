@@ -1104,6 +1104,48 @@
 #   already noted or rejected in prior audits). No new provider or local
 #   (Ollama/Apple Silicon 16GB) upgrade found — `ollama` CLI still not
 #   available in this session's environment (same as every prior audit).
+# NOTE 2026-09-18 (model-scout daily audit): z-ai/glm-5.3-flash (current
+#   NVIDIA NIM pin, all 8 categories) hangs again — 2/2 clean live probes
+#   today, both exit 28/timeout at a strict 25s --max-time (integrate.api.
+#   nvidia.com/v1/chat/completions). Tried three candidate replacements
+#   before concluding this is broader than one flaky model: deepseek-ai/
+#   deepseek-v4-flash-0731 hung (1/1, clean 25s timeout); moonshotai/kimi-k3
+#   and a second z-ai/glm-5.3-flash retry both returned anomalous
+#   200-900s+ curl time_total readings despite the same --max-time —
+#   inconsistent with a clean network timeout and more likely an artifact of
+#   this session's own process backgrounding/suspend, so treated as
+#   inconclusive rather than a real multi-minute hang; z-ai/glm-5.3
+#   (non-flash sibling, newly seen in the live /v1/models catalog, not
+#   previously in this file) succeeded once cleanly (200 OK, 4.0s) then
+#   failed once on immediate retry with the same anomalous-timing pattern.
+#   NVIDIA NIM's /v1/models GET (catalog listing) stayed fast and reliable
+#   throughout — only POST /v1/chat/completions on these chat models
+#   hung — pointing at provider-side inference congestion today rather than
+#   a per-model EOL. No candidate cleared a confident 2/2 clean bar, so the
+#   pin is LEFT UNCHANGED at z-ai/glm-5.3-flash rather than swapped for an
+#   equally-unverified alternative; Groq and OpenRouter already cover every
+#   category if the NIM leg times out in production. Recheck next audit.
+#   Groq: all 3 pinned models (openai/gpt-oss-120b, openai/gpt-oss-20b,
+#   qwen/qwen3.8-27b) verified live, 200 OK. OpenRouter: all 6 pinned free
+#   models (google/gemma-4-{31b,26b-a4b}-it:free, nvidia/nemotron-3-{nano-
+#   omni-30b-a3b-reasoning,super-120b-a12b}:free, poolside/laguna-s-2.1:free,
+#   cohere/north-mini-code:free) confirmed still in the live :free catalog
+#   (GET openrouter.ai/api/v1/models). New arrivals spotted on that same
+#   live catalog, not yet added (no category gap to justify it today):
+#   deepseek/deepseek-v4-flash-0731:free and qwen/qwen3.8-27b:free (both
+#   already covered elsewhere in this file via NIM/Groq), z-ai/glm-5.2:free
+#   (already watched, unchanged). Gemini: gemini-3.1-flash-lite live (200
+#   OK); gemini-3.5-flash returned HTTP 503 "high demand" — transient
+#   capacity error, not an EOL, no action.
+#   Web search for new releases this week: DeepSeek V4.1 Flash (released
+#   2026-09-10, per aggregator coverage — llm-stats.com/ai-news, thundercompute.
+#   com/blog/best-open-source-llms) and Meta Muse Spark 1.3 (released
+#   2026-09-02, same sources). Neither cross-checked yet against LMArena/
+#   Artificial Analysis directly or confirmed on a free NIM/Groq/OpenRouter
+#   listing — flagged for a follow-up audit rather than added on
+#   aggregator-only sourcing, per this project's policy against trusting
+#   blog specifics. No local (Ollama/Apple Silicon 16GB) upgrade evaluated
+#   this run — `ollama` CLI not available in this session's environment.
 
 categories:
 
