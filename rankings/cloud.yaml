@@ -1146,6 +1146,71 @@
 #   aggregator-only sourcing, per this project's policy against trusting
 #   blog specifics. No local (Ollama/Apple Silicon 16GB) upgrade evaluated
 #   this run — `ollama` CLI not available in this session's environment.
+# NOTE 2026-09-19 (model-scout daily audit): live probes (direct chat-
+#   completion calls, --max-time 20-30s) against every model referenced in
+#   this file. ZERO EOLs, no cascade changes. SECOND CONSECUTIVE DAY of broad
+#   NVIDIA NIM chat-completion congestion: the pinned z-ai/glm-5.3-flash
+#   hung (HTTP 000, one probe read back an in-flight partial body for a
+#   DIFFERENT model — deepseek-ai/deepseek-v4-flash-0731 — after 30s,
+#   apparently a stale/misrouted response rather than a real answer to the
+#   glm-5.3-flash request; a clean retry then measured time_total 932s on
+#   the same call). Tried both fallback candidates already documented as
+#   flip-flop partners: deepseek-ai/deepseek-v4-flash-0731 hung (HTTP
+#   000/timeout, 25s), moonshotai/kimi-k3 hung (HTTP 000/timeout, 25s).
+#   Confirmed this is provider-side congestion, not a per-model EOL or a
+#   broad account outage: GET /v1/models stayed fast and clean (200 OK,
+#   0.6s, 82 entries, same count as prior audits) throughout, and a probe of
+#   the unrelated already-dead deepseek-ai/deepseek-v4-pro-0813 returned a
+#   clean, fast 410 "reached its end of life on 2026-09-14T08:00:00Z" (was
+#   never referenced in this cascade; noting it here only so no future audit
+#   wastes a probe re-trying it as a fallback candidate). Per the same
+#   policy applied 2026-09-18 (don't swap a confirmed-hanging pin for an
+#   equally-unverified alternative), the pin is LEFT UNCHANGED at
+#   z-ai/glm-5.3-flash across all 7 categories. Flagging to the user: this
+#   is now 2 days running where the entire NVIDIA NIM leg of the cascade has
+#   been unreachable in practice (Groq and OpenRouter still cover every
+#   category in production) — worth watching whether this becomes a
+#   multi-day pattern rather than a transient blip.
+#   Source: own live probes against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-19
+#   Groq: openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b — all 3
+#   pinned models 200 OK (sub-1s each). OpenRouter: nvidia/nemotron-3-nano-
+#   omni-30b-a3b-reasoning:free, nvidia/nemotron-3-super-120b-a12b:free,
+#   cohere/north-mini-code:free (200 OK); google/gemma-4-{31b,26b-a4b}-
+#   it:free and poolside/laguna-s-2.1:free (429 "temporarily rate-limited
+#   upstream, shared pool" — same recurring congestion as every prior audit,
+#   not EOL, kept per policy). Gemini: gemini-3.1-flash-lite and
+#   gemini-3.5-flash both 200 OK via the OpenAI-compat endpoint the codebase
+#   actually calls (generativelanguage.googleapis.com/v1beta/openai/chat/completions;
+#   the native v1beta/models/*:generateContent endpoint 404s for both — not
+#   the endpoint this project uses, matches the 2026-09-16 finding).
+#   Re-scanned live OpenRouter free catalog (GET /v1/models, filtered
+#   ':free'): 22 entries, up from 19 on 2026-09-18. New since that scan:
+#   deepseek/deepseek-v4-flash-0731:free and qwen/qwen3.8-27b:free (both
+#   already spotted 2026-09-18 as new arrivals, not added — fully redundant
+#   with the same models already live via NVIDIA NIM/Groq), z-ai/glm-5.2:free
+#   (already known/watched, unchanged), nvidia/nemotron-3.5-content-
+#   safety:free (classifier, off-category, already rejected). Two entries
+#   RE-APPEARED that were previously removed for hanging on OpenRouter
+#   2026-09-10: nvidia/nemotron-3-ultra-550b-a55b:free and nvidia/
+#   nemotron-3.5-lightning:free — not re-probed for recovery this pass (time
+#   budget went to the NVIDIA NIM regression above); worth a direct probe
+#   next audit to see if they're usable again. Re-scanned live NVIDIA NIM
+#   catalog (GET /v1/models): 82 entries, same count as recent audits;
+#   confirmed z-ai/glm-5.3 (non-flash sibling) still listed — per
+#   llm-stats.com's September 8 2026 Artificial Analysis Intelligence Index
+#   citation it scores 45 vs glm-5.3-flash's 42 among open-weight models,
+#   but the 2026-09-18 audit already found it flaky (one clean 200 OK, one
+#   anomalous-timing failure) and today's broad congestion makes it
+#   impossible to cleanly re-verify — not swapped in.
+#   Web search for new open-weight releases and free providers: nothing
+#   dated+primary beyond models already integrated somewhere in this
+#   cascade (GLM-5.3/5.3-Flash, Kimi K3, DeepSeek V4, Qwen3.8) — same
+#   recycled SEO-aggregator coverage as every prior audit (wavect.io,
+#   morphllm.com, geotoolbox.ai, kingy.ai, llm-stats.com). No new free cloud
+#   providers found. Local (Ollama/Apple Silicon 16GB) check: `ollama` CLI
+#   still not available in this session's environment (same as every prior
+#   audit), no live inventory check possible. No changes to any provider
+#   file, registry, or ranking this pass.
 
 categories:
 
