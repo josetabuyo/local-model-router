@@ -1211,6 +1211,68 @@
 #   still not available in this session's environment (same as every prior
 #   audit), no live inventory check possible. No changes to any provider
 #   file, registry, or ranking this pass.
+# NOTE 2026-09-20: Daily audit, live chat-completion probes against every
+#   model referenced in this file. THIRD CONSECUTIVE DAY of broad NVIDIA NIM
+#   chat-completion hangs: the pinned z-ai/glm-5.3-flash hung (HTTP
+#   000/timeout, --max-time 20s), retried once — hung again. Tried the
+#   documented flip-flop fallback moonshotai/kimi-k3: hung both attempts
+#   too (HTTP 000/timeout). Per the same policy applied on 2026-09-18/19
+#   (don't swap a confirmed-hanging pin for an equally-unverified
+#   alternative during broad congestion), the pin is LEFT UNCHANGED at
+#   z-ai/glm-5.3-flash across all 7 categories. This is now 3 days running
+#   where the NVIDIA NIM leg of the cascade has been unreachable in
+#   practice — Groq and OpenRouter still cover every category in
+#   production, but this has stopped looking like a transient blip; worth
+#   the user's attention if it continues into a 4th day.
+#   Separately confirmed deepseek-ai/deepseek-v4-pro-0813 (not referenced
+#   in this cascade, kept dead in earlier notes as a fallback-candidate
+#   warning) is still a clean 410 EOL — no change.
+#   Source: own live probes against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-20
+#   Groq: openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b — all 3
+#   pinned models 200 OK. Gemini: gemini-3.1-flash-lite and gemini-3.5-flash
+#   both 200 OK — probed via the native v1beta/models/*:generateContent
+#   endpoint this time (not the OpenAI-compat endpoint the codebase
+#   actually calls), and unlike the 2026-09-16/19 finding that this native
+#   endpoint 404s, both requests succeeded today. Not chasing this
+#   discrepancy further this pass (the codebase doesn't use this endpoint
+#   either way) — flagging in case a future audit wants to confirm whether
+#   the native endpoint's 404 was itself transient. OpenRouter: re-scanned
+#   live free catalog
+#   (GET /v1/models, filtered ':free'): 21 entries. All 3 pinned models
+#   (google/gemma-4-31b-it:free, nvidia/nemotron-3-nano-omni-30b-a3b-
+#   reasoning:free, nvidia/nemotron-3-super-120b-a12b:free) and the other
+#   currently-referenced free slugs (cohere/north-mini-code:free,
+#   poolside/laguna-s-2.1:free) all still present in the live catalog — no
+#   EOLs. Followed up on the 2026-09-19 note flagging nvidia/nemotron-3-
+#   ultra-550b-a55b:free and nvidia/nemotron-3.5-lightning:free (both
+#   removed 2026-09-10 for hanging) as worth a recovery probe: BOTH now
+#   return 200 OK, fully recovered. Not re-added to the cascade — no open
+#   category gap they'd fill; 1M+ context and general reasoning/instruction
+#   slots are already covered by nemotron-3-super-120b-a12b and
+#   gemini-3.5-flash per the original 2026-09-10 removal rationale.
+#   New OpenRouter catalog entries spotted, not added (off-category or no
+#   clear slot-0 case yet, need a second pass with real benchmark sourcing
+#   before promoting any of these): dots-studio/dots-3-note-preview:free,
+#   inclusionai/ling-3.0-flash-{fin,sante,vl}:free (fin/sante look
+#   domain-specialized — finance/health — vl is vision-language, none map
+#   to this project's text categories), liquid/lfm-2.5-2.6b:free (small,
+#   no speed-ranked category besides multilingual which is already
+#   Groq-first), nex-agi/nex-n2.5-{mini,pro}:free (no public benchmark
+#   found yet, brand-new), thinkingmachines/inkling{,-small}:free (same —
+#   too new to have third-party scores), z-ai/glm-5.2:free (already
+#   known/watched, superseded in this cascade by glm-5.3-flash, unchanged).
+#   Web search for new open-weight releases and free providers: nothing
+#   dated+primary beyond models already integrated somewhere in this
+#   cascade (GLM-5.3/5.3-Flash, Kimi K3, DeepSeek V4, Qwen3.8) — same
+#   recycled SEO-aggregator coverage as every prior audit. Re-confirmed
+#   Cerebras is still card-required (no change since 2026-08-24 rejection):
+#   free tier replaced by a $5/30-day credit behind a verified payment
+#   method as of July 2026, per multiple aggregators re-checked today; no
+#   genuinely free no-card tier found elsewhere. No new free cloud
+#   providers found. Local (Ollama/Apple Silicon 16GB) check: `ollama` CLI
+#   still not available in this session's environment (same as every prior
+#   audit), no live inventory check possible. No changes to any provider
+#   file, registry, or ranking this pass — pin unchanged.
 
 categories:
 
