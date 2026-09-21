@@ -1273,6 +1273,56 @@
 #   still not available in this session's environment (same as every prior
 #   audit), no live inventory check possible. No changes to any provider
 #   file, registry, or ranking this pass — pin unchanged.
+# NOTE 2026-09-21: Daily audit, live chat-completion probes against every
+#   model referenced in this file. FOURTH CONSECUTIVE DAY of NVIDIA NIM
+#   chat-completion hangs on the pinned z-ai/glm-5.3-flash (HTTP
+#   000/timeout, --max-time 30s, one retry also hung ~15min wall before
+#   giving up). Control probe against nvidia/nemotron-3-super-120b-a12b
+#   (not in this rotation) returned 200 OK in <1s — confirms NIM itself is
+#   reachable and fast; the hang is specific to the large reasoning-class
+#   models in this rotation, not a platform-wide outage. Retried both prior
+#   flip-flop fallbacks: deepseek-ai/deepseek-v4-flash-0731 hung (000,
+#   ~934s), moonshotai/kimi-k3 hung (000, ~20s). Tried the non-flash
+#   sibling z-ai/glm-5.3 (flagged 2026-09-18 as flaky, scores 45 vs
+#   glm-5.3-flash's 42 per artificialanalysis.ai, 753B-A40B, 1M context):
+#   attempt 1 succeeded (200 OK, 12.8s), attempt 2 hung (000, ~119s) —
+#   confirms it's flaky today too, same as every prior check. Per the
+#   standing policy (don't swap a confirmed-hanging pin for an equally
+#   unverified alternative during congestion), pin LEFT UNCHANGED at
+#   z-ai/glm-5.3-flash. This is now 4 days running with the NVIDIA NIM leg
+#   effectively unusable for the reasoning/coding rotation in production —
+#   Groq and OpenRouter still cover every category, so the cascade itself
+#   hasn't broken, but flagging this explicitly for the user: worth
+#   deciding whether to drop NIM's reasoning-class models from the cascade
+#   entirely (falling back to Groq/OpenRouter/Gemini only for those
+#   categories) rather than re-probing a 4th-day-running hang every day.
+#   Source: own live probes against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-21
+#   Groq: openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b — all 3
+#   pinned models 200 OK, fast (<25ms completion_time each). Gemini:
+#   gemini-3.5-flash 200 OK; gemini-3.1-flash-lite timed out on first probe
+#   (000, 15s) but 200 OK on immediate retry — transient, not treated as a
+#   regression. OpenRouter: re-scanned live free catalog (GET /v1/models,
+#   filtered ':free'): 21 entries, byte-for-byte identical set to the
+#   2026-09-20 scan — no new arrivals, no EOLs. All pinned OpenRouter
+#   slugs (poolside/laguna-s-2.1:free, cohere/north-mini-code:free,
+#   google/gemma-4-31b-it:free, nvidia/nemotron-3-super-120b-a12b:free,
+#   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free) live; gemma-4-31b-it
+#   returned one 429 (upstream rate-limit, not EOL, per policy not removed).
+#   Web search for new free-tier LLM providers: openrouter.ai and several
+#   aggregator roundups (dev.to, medium, kdnuggets, freellmapi.co,
+#   tokenmix.ai) converge on the same active no-card list already in this
+#   cascade (Gemini, Groq, OpenRouter) plus Cloudflare Workers AI, Mistral,
+#   Cohere, Hugging Face as additional no-card options not yet evaluated
+#   here — logged as a new unverified candidate in
+#   plans/new-cloud-providers.md (Cloudflare Workers AI specifically;
+#   Mistral/Cohere/HF were already implicitly out of scope or covered).
+#   Re-confirmed Cerebras still card-required (402), no change. No new
+#   open-weight model releases found beyond what's already integrated
+#   somewhere in this cascade. Local (Ollama/Apple Silicon 16GB) check:
+#   `ollama` CLI still not available in this session's environment (same
+#   as every prior audit), no live inventory check possible. No changes to
+#   any provider file, registry, or ranking this pass beyond this note —
+#   pin unchanged.
 
 categories:
 

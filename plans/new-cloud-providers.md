@@ -52,6 +52,21 @@ sin cruzarlas contra la fuente primaria (docs.sambanova.ai / cloud.sambanova.ai)
 Próximo paso si se decide evaluar: confirmar en la doc oficial que sigue sin
 pedir tarjeta y qué modelos sirve gratis, antes de proponer integración.
 
+## Cloudflare Workers AI — CANDIDATO SIN VERIFICAR, 2026-09-21
+
+Encontrado en búsqueda web abierta (openrouter.ai/blog y varios agregadores,
+2026-09-21) como uno de los proveedores con free tier sin tarjeta más citados
+junto a Gemini/Groq — pero es "Workers AI" (hosting de modelos, serverless
+inference), NO "Cloudflare AI Gateway" (ya descartado arriba como gateway/
+router puro, sin modelos propios). No confundir los dos productos.
+No verificado en vivo todavía — antes de evaluar integración hay que
+confirmar en la fuente primaria (developers.cloudflare.com/workers-ai) qué
+modelos sirve gratis, límites reales (neurons/día) y si de verdad no pide
+tarjeta, en vez de confiar en los agregadores SEO que lo mencionan. Si se
+confirma un free tier real: API es OpenAI-compatible (mismo patrón que
+groq/openrouter/gemini providers), integración debería ser directa si el
+usuario aprueba agregar la API key nueva.
+
 Revisión 2026-09-02: se chequeó cloud.sambanova.ai/pricing directamente —
 esa página sólo muestra pricing pago por token, sin mención de free tier.
 Inconcluso (el free tier podría estar documentado en otra parte del sitio,
