@@ -1367,6 +1367,46 @@
 #   above. No new free cloud providers or local (Ollama/Apple Silicon 16GB)
 #   upgrades evaluated this pass — focus was resolving the 5-day NIM
 #   congestion streak.
+# NOTE 2026-09-23: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NVIDIA NIM: the pinned moonshotai/kimi-k3
+#   (re-pinned yesterday) hung 4/4 today (HTTP 000 at --max-time 30s, across
+#   three separate rounds). z-ai/glm-5.3-flash also still hangs (6th day).
+#   Control nvidia/nemotron-3-super-120b-a12b 200 OK in 1.1s — NIM itself
+#   reachable. z-ai/glm-5.3 (non-flash) went 4/4 clean today (200 OK 1.8s,
+#   3.8s, 7.4s, 7.4s) and answered an arithmetic check correctly (17*23=391)
+#   — first clean multi-round result for it after weeks of 1/2 splits.
+#   DECISION: swapped the NVIDIA pin from moonshotai/kimi-k3 to z-ai/glm-5.3
+#   across all 7 categories (reasoning, coding, math, summarization,
+#   multilingual, code_debug, context). Caveat: glm-5.3 is a reasoning model
+#   — with max_tokens=16 it returned content=null (only reasoning_content,
+#   finish_reason=length); with 1024 it answers normally. GLM-5.3: 753B
+#   MoE/40B active, 1M context, released 2026-08-18. Artificial Analysis
+#   Intelligence Index v4.3.2: 45, #2/114 open-weight (AA re-based its index
+#   since v4.1.1, so don't compare to the old "60" for Kimi K3 directly).
+#   arena.ai Text (LMArena moved to arena.ai, 301 redirect): Kimi K3 #17
+#   1485±5, GLM-5.3 Max #19 1483±6, Qwen3.8 Max #22 1481±6 — statistically
+#   tied, so the swap is about availability, not a quality downgrade.
+#   NEW on NIM, evaluated and NOT added: deepseek-ai/deepseek-v4.1-flash
+#   (released 2026-09-10, MIT, ~763B total, 1M ctx; AA Index v4.3.2 39, #7/114;
+#   vendor-reported Terminal-Bench 2.1 90.6, DeepSWE v1.1 74.2; not yet on
+#   arena.ai Text). Hung 2/2 probes (HTTP 000, 30s) — re-check tomorrow; if
+#   it answers it's a strong coding candidate. nvidia/nemotron-3.5-lightning-
+#   30b-a3b (NIM slug of the already-known OpenRouter :free model) 200 OK
+#   2/2, but it's a small 30B/3B model — no category slot 0 upgrade.
+#   Groq: openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b — all 200
+#   OK, ~1s. Gemini: gemini-3.5-flash 200 OK 1.5s; gemini-3.1-flash-lite 200
+#   OK 4.4s (no timeout today). OpenRouter: cohere/north-mini-code:free and
+#   both nemotron-3 :free models 200 OK; google/gemma-4-{31b,26b-a4b}-it:free
+#   and poolside/laguna-s-2.1:free returned 429 (free-tier rate limit, NOT
+#   EOL — kept). Live free catalog: 21 entries; only unseen ones are
+#   inclusionai/ling-3.0-flash-{sante,vl}:free (a domain-specific health
+#   model and a vision-language model — off-category, not added). No new
+#   free cloud providers or local (Ollama/Apple Silicon 16GB) upgrades found.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com — verified 2026-09-23;
+#   artificialanalysis.ai/models/glm-5-3 and /deepseek-v4-1-flash — verified
+#   2026-09-23; arena.ai/leaderboard/text — verified 2026-09-23;
+#   llm-stats.com/models/deepseek-v4.1-flash (vendor benchmarks) — 2026-09-23.
 
 categories:
 
@@ -1409,11 +1449,15 @@ categories:
     #   deepseek-ai/deepseek-v4-flash-0731 (this category's other flip-flop
     #   partner) is now confirmed permanently EOL (410), ruled out for good.
     #   Source: own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-22
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
+      model: z-ai/glm-5.3
       context_window: 1048576
-      note: "2.8T MoE (104B active), custom open license, 1M-token context, released 2026-07-16, weights open since 2026-07-26. LMArena #1 Frontend Code Arena (Text/Code/Agent Arena leaderboards); Artificial Analysis Intelligence Index 60 (v4.1.1), tied top open-weight model with GLM-5.3, behind only frontier closed models. No reasoning_content/<think>-block behavior observed."
-      source: "morphllm.com/kimi-k3, openrouter.ai/moonshotai/kimi-k3 — verified 2026-09-22; lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22"
+      note: "753B MoE (40B active), GLM-5.3 License (commercial use with restrictions, open weights), 1M-token context, released 2026-08-18. Artificial Analysis Intelligence Index 45 (v4.3.2), #2/114 open-weight; LMArena Text GLM-5.3 Max #19 (1483±6), 2 ELO behind Kimi K3 (#17, 1485±5). Reasoning model: emits reasoning_content and content is null if max_tokens is too small — give it >=512 tokens."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (connects, never returns; confirmed across 3 probes up to
     #   240s max-time). Not a clean EOL/404, but functionally worse for the
@@ -1476,10 +1520,14 @@ categories:
     #   day. Replaced with moonshotai/kimi-k3, the first candidate to clear a
     #   clean 2/2 live-probe bar since the hang streak began 2026-09-18; see
     #   reasoning category entry / top-of-file 2026-09-22 note for full detail.
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, custom open license. See reasoning category entry for full benchmark detail. No reasoning_content/<think>-block behavior observed."
-      source: "lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-22"
+      model: z-ai/glm-5.3
+      note: "753B MoE/40B active, open weights. See reasoning category entry for full benchmark detail. Emits reasoning_content by design (needs >=512 max_tokens)."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
@@ -1531,10 +1579,14 @@ categories:
     #   day. Replaced with moonshotai/kimi-k3, the first candidate to clear a
     #   clean 2/2 live-probe bar since the hang streak began 2026-09-18; see
     #   reasoning category entry / top-of-file 2026-09-22 note for full detail.
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, custom open license. See reasoning category entry for full benchmark detail. No reasoning_content/<think>-block behavior observed."
-      source: "lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-22"
+      model: z-ai/glm-5.3
+      note: "753B MoE/40B active, open weights. See reasoning category entry for full benchmark detail. Emits reasoning_content by design (needs >=512 max_tokens)."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -1578,10 +1630,14 @@ categories:
     #   day. Replaced with moonshotai/kimi-k3, the first candidate to clear a
     #   clean 2/2 live-probe bar since the hang streak began 2026-09-18; see
     #   reasoning category entry / top-of-file 2026-09-22 note for full detail.
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, custom open license. See reasoning category entry for full benchmark detail. No reasoning_content/<think>-block behavior observed."
-      source: "lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-22"
+      model: z-ai/glm-5.3
+      note: "753B MoE/40B active, open weights. See reasoning category entry for full benchmark detail. Emits reasoning_content by design (needs >=512 max_tokens)."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
       model: openai/gpt-oss-120b
@@ -1685,10 +1741,14 @@ categories:
     #   day. Replaced with moonshotai/kimi-k3, the first candidate to clear a
     #   clean 2/2 live-probe bar since the hang streak began 2026-09-18; see
     #   reasoning category entry / top-of-file 2026-09-22 note for full detail.
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, custom open license. Quality fallback behind Groq's fast path per this category's speed-first design. No reasoning_content/<think>-block behavior observed."
-      source: "lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-22"
+      model: z-ai/glm-5.3
+      note: "753B MoE/40B active, open weights. See reasoning category entry for full benchmark detail. Emits reasoning_content by design (needs >=512 max_tokens)."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # ── OpenRouter (free tier last resort) ─────────────────────────────────
     - provider: openrouter
       model: google/gemma-4-31b-it:free
@@ -1718,10 +1778,14 @@ categories:
     #   day. Replaced with moonshotai/kimi-k3, the first candidate to clear a
     #   clean 2/2 live-probe bar since the hang streak began 2026-09-18; see
     #   reasoning category entry / top-of-file 2026-09-22 note for full detail.
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
-      note: "2.8T MoE, custom open license. See reasoning category entry for full benchmark detail. No reasoning_content/<think>-block behavior observed."
-      source: "lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-22"
+      model: z-ai/glm-5.3
+      note: "753B MoE/40B active, open weights. See reasoning category entry for full benchmark detail. Emits reasoning_content by design (needs >=512 max_tokens)."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # NOTE: meta/muse-glimmer-30b removed 2026-08-29 — hangs indefinitely on
     #   NVIDIA NIM (see reasoning category note above for details).
     # ── Groq ───────────────────────────────────────────────────────────────
@@ -1775,11 +1839,15 @@ categories:
     #   day. Replaced with moonshotai/kimi-k3, the first candidate to clear a
     #   clean 2/2 live-probe bar since the hang streak began 2026-09-18; see
     #   reasoning category entry / top-of-file 2026-09-22 note for full detail.
+    # NOTE 2026-09-23: moonshotai/kimi-k3 removed — hung 4/4 live probes
+    #   today (HTTP 000, 30s) one day after being re-pinned. Replaced with
+    #   z-ai/glm-5.3, which cleared 4/4 clean probes today (200 OK, 1.8-7.4s,
+    #   correct answer on an arithmetic check); see top-of-file 2026-09-23 note.
     - provider: nvidia
-      model: moonshotai/kimi-k3
+      model: z-ai/glm-5.3
       context_window: 1048576
-      note: "2.8T MoE (104B active), custom open license, 1M-token context. See reasoning category entry for full benchmark detail. No reasoning_content/<think>-block behavior observed."
-      source: "morphllm.com/kimi-k3, openrouter.ai/moonshotai/kimi-k3 — verified 2026-09-22; lmarena.ai, artificialanalysis.ai Intelligence Index v4.1.1 — cited 2026-08-22"
+      note: "753B MoE (40B active), GLM-5.3 License (commercial use with restrictions, open weights), 1M-token context, released 2026-08-18. Artificial Analysis Intelligence Index 45 (v4.3.2), #2/114 open-weight; LMArena Text GLM-5.3 Max #19 (1483±6), 2 ELO behind Kimi K3 (#17, 1485±5). Reasoning model: emits reasoning_content and content is null if max_tokens is too small — give it >=512 tokens."
+      source: "artificialanalysis.ai/models/glm-5-3 (Intelligence Index v4.3.2) — verified 2026-09-23; arena.ai/leaderboard/text (GLM-5.3 Max #19, 1483±6) — verified 2026-09-23; own live probe against integrate.api.nvidia.com/v1/chat/completions — verified 2026-09-23"
     # NOTE: minimaxai/minimax-m2.7 reached EOL 2026-07-27, removed (no replacement needed — two NVIDIA entries above already cover 1M context).
     # ── Groq ───────────────────────────────────────────────────────────────
     - provider: groq
