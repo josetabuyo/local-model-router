@@ -1408,6 +1408,61 @@
 #   2026-09-23; arena.ai/leaderboard/text — verified 2026-09-23;
 #   llm-stats.com/models/deepseek-v4.1-flash (vendor benchmarks) — 2026-09-23.
 
+# NOTE 2026-09-24: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CHANGES — pinned z-ai/glm-5.3 (NVIDIA
+#   NIM) held up: 2/2 clean 200 OK (1.1s, 3.8s), correct arithmetic answer.
+#   Groq: openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b all 200
+#   OK <1s. Gemini: gemini-3.5-flash 200 OK 3.0s; gemini-3.1-flash-lite 503
+#   once, then 200 OK 3.8s on retry (transient, kept). OpenRouter:
+#   nemotron-3-super-120b-a12b:free, cohere/north-mini-code:free,
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free 200 OK; google/gemma-4-
+#   {31b,26b-a4b}-it:free and poolside/laguna-s-2.1:free 429 (free-tier
+#   rate limit, NOT EOL — kept, same as yesterday).
+#   NIM hang streak continues for the rotating frontier set: moonshotai/
+#   kimi-k3 0/3 (HTTP 000 at 30s), z-ai/glm-5.3-flash 0/1 (7th day),
+#   deepseek-ai/deepseek-v4.1-flash 0/3 (2nd day since it appeared).
+#   moonshotai/kimi-k2.6 now 404 "Function not found" on NIM (was already
+#   out of this file; confirms EOL). Controls: nemotron-3-ultra-550b-a55b
+#   200 OK 8.1s, poolside/laguna-xs-2.1 200 OK 0.8s — NIM itself reachable.
+#   MEASUREMENT CAVEAT: this run happened ~03:00 local on battery; pmset log
+#   shows the Mac cycling through Deep Idle/DarkWake (77 sleep/wakes since
+#   boot), so several curl --max-time 30 probes reported wall times of
+#   100-940s. Those inflated durations are sleep artifacts, not provider
+#   latency; only probes that returned inside ~30s were used for verdicts.
+#   NEW open-weight release evaluated, NOT added: Xiaomi MiMo-V2.6-Pro
+#   (weights on Hugging Face 2026-09-22, MIT, 1.02T MoE/42B active, 1M ctx)
+#   — Artificial Analysis Intelligence Index v4.3.2: 46, now #1 open-weight
+#   (above GLM-5.3 45 and Qwen3.8 Max 45); not yet on arena.ai Text
+#   (leaderboard dated 2026-09-13). Only paid endpoints so far: OpenRouter
+#   xiaomi/mimo-v2.6-pro $0.435/$0.87 per Mtok, no :free variant; not in
+#   NIM's /v1/models. Recheck for a free listing in future audits — would be
+#   a slot-0 candidate for reasoning/coding/context if it goes free.
+#   MiniMax H3 Max (2026-09-08) likewise has no free listing anywhere. MiMo-
+#   V2.6-Flash exists on OpenRouter but paid ($0.14/$0.28), not added.
+#   OpenRouter live free catalog: 20 entries (was 21) — inclusionai/ling-
+#   3.0-flash-vl:free dropped off, off-category anyway. Candidates probed:
+#   nex-agi/nex-n2.5-mini:free and dots-studio/dots-3-note-preview:free 200
+#   OK but no category upgrade; nex-n2.5-pro:free HTTP 000 at 30s;
+#   thinkingmachines/inkling(-small):free still 403 agentic-harness-only;
+#   nemotron-3-ultra-550b-a55b:free proxies NIM's "Service temporarily
+#   overloaded". No new free cloud providers found (web search returned
+#   the same aggregator lists as prior audits — Gemini/Groq/OpenRouter/NIM
+#   already integrated, Cerebras rejected 08-24, Cloudflare Workers AI
+#   still a candidate in plans/new-cloud-providers.md).
+#   Local (Apple Silicon 16GB): Ollama v0.34.4 (2026-09-23) speeds up Qwen
+#   3.8 prompt processing on MLX and v0.34.1/0.34.2 fixed MLX memory growth
+#   — worth `brew upgrade ollama` but no new model to pin. Ollama server
+#   was not running this session, no live inventory check. Open Ollama
+#   issue #17869 (filed 2026-08-19, no maintainer reply) requests an
+#   official Q3_K_M MLX build of Qwen3.8-35B-A3B for 16GB Macs — watch.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com — verified 2026-09-24;
+#   artificialanalysis.ai/leaderboards/models and /models/mimo-v2-6-pro —
+#   2026-09-24; arena.ai/leaderboard/text (dated 2026-09-13) — 2026-09-24;
+#   huggingface.co/XiaomiMiMo/MiMo-V2.6-Pro-RL — 2026-09-24; llm-stats.com/
+#   llm-updates (releases 09-21/09-22) — 2026-09-24; github.com/ollama/
+#   ollama/releases and /issues/17869 — 2026-09-24; local `pmset -g log`.
+
 categories:
 
   reasoning:
