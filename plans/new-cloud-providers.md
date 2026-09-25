@@ -74,6 +74,69 @@ no necesariamente no existe) — se mantiene como "sin verificar", no se
 promueve ni se descarta. Pendiente para un futuro pase con más tiempo para
 recorrer el resto de la doc.
 
+## OVHcloud AI Endpoints — VERIFICADO EN VIVO, PROPUESTA PENDIENTE 2026-09-25
+
+Encontrado vía github.com/mnfst/awesome-free-llm-apis y verificado contra la
+fuente primaria + llamadas reales el 2026-09-25.
+
+**Lo que se confirmó:**
+- Tier anónimo real: **sin API key y sin cuenta**. `POST
+  https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/chat/completions` con
+  `model: Qwen3.8-27B` → 200 OK en 1.7s, respuesta correcta. API
+  OpenAI-compatible (mismo patrón que groq/openrouter/gemini providers);
+  el modelo devuelve un campo extra `reasoning` junto a `content`.
+- Catálogo (`GET /v1/models`, sin key): gpt-oss-120b, gpt-oss-20b,
+  Qwen3.8-27B, Qwen3.6-27B, Qwen3.5-397B-A17B, Qwen3.5-9B,
+  Meta-Llama-3_3-70B-Instruct, Mistral-Small-3.2-24B-Instruct-2506,
+  Mistral-Nemo-Instruct-2407, Mistral-7B-Instruct-v0.3,
+  Qwen3-Coder-30B-A3B-Instruct, Qwen2.5-VL-72B-Instruct, más
+  embeddings (bge-m3, Qwen3-Embedding-8B), whisper-large-v3 y TTS.
+- Límite anónimo: **2 requests/minuto**. Doc oficial
+  (docs.ovhcloud.com/en/guides/public-cloud/ai-machine-learning/
+  ai-endpoints-getting-started): "Anonymous: 2 requests per minute, per IP
+  and per model". Confirmado en vivo con headers del 429: `ratelimit-limit:
+  2`, `x-ratelimit-limit-minute: 2`, `retry-after: 27`. Matiz observado:
+  una llamada a gpt-oss-120b dio 429 inmediatamente después de dos a
+  Qwen3.8-27B, o sea que en la práctica el bucket parece global por IP,
+  no por modelo — asumir 2 RPM totales.
+- Tier autenticado: 400 RPM por proyecto y modelo, pero la API key
+  **requiere método de pago** ("Access keys created from Public Cloud
+  projects in Discovery mode (without a payment method) cannot use the
+  service"). Mismo descalificador que Cerebras — no es "gratis sin tarjeta".
+
+**Por qué NO se integró en esta auditoría:**
+2 RPM es demasiado poco para un tramo normal del cascade (Groq da 30 RPM,
+NIM 40, OpenRouter 20). Un bench de 8 categorías lo agotaría en la primera
+ronda. Además, hoy Qwen3.8-27B y gpt-oss-120b/20b ya están cubiertos vía
+Groq con 15x más cuota.
+
+**Por qué igual vale la pena considerarlo:**
+Es el único proveedor encontrado hasta ahora con cero configuración (sin
+key, sin cuenta, sin tarjeta) e infraestructura independiente de los 4
+actuales, hosteado en la UE. Eso lo hace un candidato ideal a **fallback de
+último recurso**: si Groq/NIM/OpenRouter/Gemini fallan todos a la vez
+(incidente Luganense 2026-08-24), 2 RPM es mejor que cero, y no puede
+"morir" por cuota agotada ni por key expirada.
+
+**Pasos de integración si el usuario aprueba** (~1 hora):
+1. `benchmark/providers/ovh_provider.py`: copiar `groq_provider.py`, base
+   `https://oai.endpoints.kepler.ai.cloud.ovh.net/v1`, sin header
+   `Authorization` (o opcional si algún día hay key). `FREE_MODELS =
+   ["Qwen3.8-27B", "gpt-oss-120b", "gpt-oss-20b"]`. Manejar 429 con
+   `retry-after` (el header viene, ~27-30s) — o mejor, NO reintentar y
+   dejar que el cascade siga, porque esperar 30s bloquea el router.
+2. `router/dispatcher.py`: `_call_ovh`, mismo patrón que `_call_gemini`.
+3. `router/registry.py`: `_PROVIDER_SPEED_RANK["ovh"] = 9` (último) para
+   que siempre quede al final del cascade en toda categoría.
+4. `rankings/cloud.yaml`: agregar como ÚLTIMO slot en `instruction`,
+   `multilingual`, `coding` (las categorías donde Qwen3.8-27B / gpt-oss
+   ya están validados en este archivo vía Groq). No en las demás.
+5. Sin cambios en `.env` — no hay key.
+6. Test: un `curl` anónimo por modelo + correr `tests/` para el registry.
+
+Riesgo: bajo (sin secretos nuevos, siempre último en el cascade). Decisión
+del usuario — no se integra a ciegas.
+
 ## Siguiente paso
 
 Cascade actual (NVIDIA/Groq/OpenRouter/Gemini) ya tiene 4 proveedores

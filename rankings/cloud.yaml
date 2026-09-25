@@ -1463,6 +1463,82 @@
 #   llm-updates (releases 09-21/09-22) — 2026-09-24; github.com/ollama/
 #   ollama/releases and /issues/17869 — 2026-09-24; local `pmset -g log`.
 
+# NOTE 2026-09-25: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for a 3rd day: 2/2 clean 200 OK (1.2s, 1.0s), correct
+#   arithmetic answer. Groq: openai/gpt-oss-120b, openai/gpt-oss-20b,
+#   qwen/qwen3.8-27b all 200 OK <1s. Gemini: gemini-3.5-flash 200 OK 3.8s/
+#   1.8s (one earlier probe hit the same sleep artifact as 2026-09-24 —
+#   927s wall time, discarded); gemini-3.1-flash-lite 503 once, then 200 OK
+#   2.0s (transient, kept). OpenRouter: cohere/north-mini-code:free 200 OK;
+#   nvidia/nemotron-3-{super-120b-a12b,nano-omni-30b-a3b-reasoning}:free
+#   returned HTTP 200 but with an upstream-error body from NIM ("Service
+#   temporarily overloaded" / "Worker local total request limit reached") —
+#   that's NIM congestion proxied through OpenRouter, not EOL, kept;
+#   google/gemma-4-{31b,26b-a4b}-it:free and poolside/laguna-s-2.1:free 429
+#   (free-tier rate limit, NOT EOL — kept).
+#   NIM flaky set: moonshotai/kimi-k3 RECOVERED — 3/3 200 OK today (16.4s,
+#   16.6s, 18.5s, correct answer) after 0/3 yesterday and 0/4 on 09-23. Not
+#   re-pinned: glm-5.3 answers the same prompt in ~1s and the two are
+#   statistically tied on arena.ai (1485±5 vs 1483±6), so there's no
+#   quality or latency argument for another flip. Remains the documented
+#   fallback if glm-5.3 starts hanging. z-ai/glm-5.3-flash 0/1 (HTTP 000
+#   30s, 8th day). deepseek-ai/deepseek-v4.1-flash 0/2 clean 30s timeouts
+#   (3rd day since it appeared on NIM; a third probe was a sleep artifact).
+#   Control nvidia/nemotron-3-super-120b-a12b 200 OK 1.5s — NIM reachable.
+#   Live catalogs: NIM /v1/models 82 entries (unchanged); OpenRouter :free
+#   20 entries (unchanged count) — new since 09-24: inclusionai/ling-3.0-
+#   flash-fin:free (finance-domain, 200 OK, off-category) and liquid/
+#   lfm-2.5-2.6b:free (2.6B edge model, 200 OK, no category upgrade);
+#   qwen/qwen3.8-27b:free 429 (already redundant with Groq). Not added.
+#   Rankings (no movement): Artificial Analysis Intelligence Index —
+#   MiMo-V2.6-Pro 46 (#1 open-weight), GLM-5.3 45, Qwen3.8 Max 45, Kimi K3
+#   44, DeepSeek V4.1 Flash 39. arena.ai Text leaderboard still dated
+#   2026-09-13 (Kimi K3 #17 1485±5, GLM-5.3 Max #19 1483±6, Qwen3.8 Max #22
+#   1481±6). MiMo-V2.6-Pro still paid-only everywhere (OpenRouter $0.435/
+#   $0.87 per Mtok, not on NIM); MiMo-V2.6-Flash's only free route is a
+#   ~1-week OpenCode Zen launch promo (desktop-app only, no API key, prompts
+#   used for training) — not a cascade candidate. Releases 09-18..09-25 per
+#   llm-stats.com: only proprietary (Claude Opus 5.5, GPT-6 Luna/Sol, Grok
+#   4.7) plus the already-known MiMo-V2.6 pair. Nothing to add.
+#   NEW FREE PROVIDER FOUND AND LIVE-VERIFIED: OVHcloud AI Endpoints has an
+#   anonymous tier — NO API key, NO account: POST https://oai.endpoints.
+#   kepler.ai.cloud.ovh.net/v1/chat/completions with model Qwen3.8-27B
+#   returned 200 OK in 1.7s with the correct answer (OpenAI-compatible,
+#   emits a `reasoning` field). Catalog (GET /v1/models, no key): gpt-oss-
+#   120b, gpt-oss-20b, Qwen3.8-27B, Qwen3.6-27B, Qwen3.5-397B-A17B,
+#   Qwen3.5-9B, Meta-Llama-3_3-70B-Instruct, Mistral-Small-3.2-24B,
+#   Qwen3-Coder-30B-A3B, Qwen2.5-VL-72B + embeddings/whisper/TTS. Limit
+#   confirmed live via 429 headers (ratelimit-limit: 2, x-ratelimit-limit-
+#   minute: 2, retry-after ~27s) and in the primary docs: "Anonymous: 2
+#   requests per minute, per IP and per model". Observed nuance: a
+#   gpt-oss-120b call 429'd immediately after two Qwen3.8-27B calls, so in
+#   practice the bucket looked per-IP global rather than per-model — treat
+#   it as 2 RPM total. Authenticated tier is 400 RPM but the key REQUIRES a
+#   payment method ("Discovery mode" projects can't use the service) — same
+#   disqualifier as Cerebras. NOT integrated: 2 RPM is too low for a normal
+#   cascade leg; documented in plans/new-cloud-providers.md as a proposal
+#   for a zero-config last-resort fallback (no key, independent infra, EU-
+#   hosted) — user decision.
+#   Local (Apple Silicon 16GB): `ollama` CLI IS present this session
+#   (/opt/homebrew/bin/ollama, client 0.21.2 — 13 minor versions behind);
+#   server not running, no inventory check. Homebrew stable is 0.34.2,
+#   GitHub latest stable v0.34.4 (2026-09-23), and v0.40.0 PRE-RELEASE
+#   (2026-09-25) makes MLX the default runner on Apple Silicon for
+#   supported architectures. Recommend `brew upgrade ollama` to 0.34.x
+#   now (MLX memory-growth fix 0.34.1/0.34.2, faster Qwen 3.8 on MLX
+#   0.34.4); hold on 0.40.0 until it leaves pre-release.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, oai.endpoints.kepler.
+#   ai.cloud.ovh.net — verified 2026-09-25; docs.ovhcloud.com/en/guides/
+#   public-cloud/ai-machine-learning/ai-endpoints-getting-started — 2026-09-25;
+#   github.com/mnfst/awesome-free-llm-apis (lead only) — 2026-09-25;
+#   artificialanalysis.ai/leaderboards/models — 2026-09-25; arena.ai/
+#   leaderboard/text (dated 2026-09-13) — 2026-09-25; llm-stats.com/
+#   llm-updates — 2026-09-25; openrouter.ai/xiaomi/mimo-v2.6-pro and
+#   kingy.ai (MiMo free-access article, 2026-09-21) — 2026-09-25;
+#   github.com/ollama/ollama/releases and local `brew info ollama` — 2026-09-25.
+
 categories:
 
   reasoning:
