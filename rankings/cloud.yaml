@@ -1538,6 +1538,98 @@
 #   llm-updates — 2026-09-25; openrouter.ai/xiaomi/mimo-v2.6-pro and
 #   kingy.ai (MiMo free-access article, 2026-09-21) — 2026-09-25;
 #   github.com/ollama/ollama/releases and local `brew info ollama` — 2026-09-25.
+# NOTE 2026-09-26: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for a 4th day: 3/3 clean 200 OK (1.6s, 1.7s, 1.8s),
+#   correct answer. PROBE CAVEAT: the Mac was on battery and entered
+#   'Maintenance Sleep' five times during this audit (pmset -g log: 02:30,
+#   02:31 for 928s, 02:47 for 767s, 03:16, 03:33 for 903s); every probe
+#   whose wall time exceeded curl's --max-time 30 (483s/946s/106s/929s
+#   readings) is a sleep artifact, not a hang, and was discarded and re-run.
+#   `caffeinate -i -s` does NOT prevent this on battery; `caffeinate -u -i`
+#   only partly helped. Clean results only below.
+#   Groq: openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b all
+#   200 OK 1.3s. Gemini: gemini-3.5-flash 200 OK 11.5s/14.8s (one probe
+#   hit finish_reason=length at max_tokens 64 — thinking budget, not a
+#   fault); gemini-3.1-flash-lite 200 OK 1.7s. OpenRouter: cohere/north-
+#   mini-code:free 200 OK 1.7s; nvidia/nemotron-3-super-120b-a12b:free
+#   200 OK 2.6s (empty content at max_tokens 64 — reasoning tokens, fine);
+#   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free HTTP 200 with the
+#   same NIM "ResourceExhausted: Worker local total request limit reached"
+#   body as yesterday (NIM congestion proxied, not EOL, kept); google/
+#   gemma-4-{31b,26b-a4b}-it:free and poolside/laguna-s-2.1:free 429
+#   (free-tier rate limit, NOT EOL — kept).
+#   NIM flaky set: moonshotai/kimi-k3 3/3 200 OK (2.5s, 2.8s, 2.9s — much
+#   faster than yesterday's ~16s), 2nd consecutive clean day. Still not
+#   re-pinned: arena.ai's refreshed leaderboard (now dated 2026-09-25) puts
+#   Kimi K3 #16 1488±5 vs GLM-5.3 Max #24 1480±6 — CIs still touch, and
+#   glm-5.3 is faster and has held 4 days; a flip needs a hang, not a
+#   5-point edge. z-ai/glm-5.3-flash RECOVERED: 3/3 200 OK (1.7s, 12.7s,
+#   26.0s, correct answer) after 8 consecutive days of hanging (removed
+#   09-14/09-22). Not re-added — one clean day after 8 bad ones, and glm-5.3
+#   (full) already covers every slot it held; recheck tomorrow. deepseek-ai/
+#   deepseek-v4.1-flash: NO clean probe today — all 5 attempts were sleep
+#   artifacts; last clean data is yesterday's 0/2 timeouts. moonshotai/
+#   kimi-k2.6 still 404 "Function not found" (listed, not served — unchanged
+#   since 09-24). Control nvidia/nemotron-3-super-120b-a12b 200 OK 2.0s;
+#   google/gemma-4-31b-it (NIM) 200 OK 13.5s.
+#   Live catalogs: NIM /v1/models 82 entries (unchanged). OpenRouter :free
+#   17 entries, DOWN from 20 — dropped: inclusionai/ling-3.0-flash-vl:free,
+#   nex-agi/nex-n2.5-mini:free, nex-agi/nex-n2.5-pro:free (none in the
+#   cascade, no action). Also probed, not in cascade: nvidia/nemotron-3.5-
+#   lightning:free 200 OK 21.0s; nvidia/nemotron-3-ultra-550b-a55b:free
+#   200 OK 2.1s (removed 09-10 for hangs — one clean probe is not enough to
+#   restore, watch); thinkingmachines/inkling:free 403 "only available on
+#   agentic harnesses" (not usable via plain chat API — do not add);
+#   inclusionai/ling-3.0-flash-sante:free (health-domain, off-category).
+#   Rankings: arena.ai Text leaderboard refreshed 2026-09-25 (was 09-13):
+#   Kimi K3 #16 1488±5, MiMo-V2.6-Pro #23 1480±9 (first listing), GLM-5.3
+#   Max #24 1480±6, Qwen3.8 Max #25 1479±5, DeepSeek V4.1 Flash Max #29
+#   1477±8, GLM-5.3 Flash #35 1474±6. Artificial Analysis Intelligence
+#   Index unchanged: MiMo-V2.6-Pro 46, GLM-5.3 45, Qwen3.8 Max 45, Kimi K3
+#   44, DeepSeek V4.1 Flash 39. The two sources agree MiMo-V2.6-Pro is top
+#   open-weight on AA but only tied with GLM-5.3 on arena — still paid-only
+#   everywhere (not on NIM, no :free slug), no action. Releases 09-19..09-26
+#   per llm-stats.com unchanged from yesterday (MiMo-V2.6 pair + proprietary
+#   Opus 5.5 / GPT-6 Luna+Sol / Grok 4.7). Nothing to add.
+#   PROVIDER CANDIDATES — two long-standing "unverified" leads now checked
+#   against PRIMARY docs (details in plans/new-cloud-providers.md):
+#   (1) Cloudflare Workers AI: 10,000 Neurons/day free on the Workers Free
+#   plan (developers.cloudflare.com/workers-ai/platform/pricing, updated
+#   2026-09-17); OpenAI-compatible endpoint https://api.cloudflare.com/
+#   client/v4/accounts/{account_id}/ai/v1 with a Bearer account API token
+#   (…/configuration/open-ai-compatibility, updated 2026-09-18); catalog
+#   page lists GLM-5.3, GLM-5.3-Flash, Kimi K2.6/K2.7-Code, DeepSeek V4 Pro
+#   0813, gpt-oss-120b/20b, Qwen3.8-27B, Gemma 4 26B-A4B, Nemotron 3 120B.
+#   gpt-oss-120b costs 31,818/68,182 neurons per Mtok in/out → ~147K output
+#   tok/day free. That is a real, independent, no-key-shared free tier that
+#   serves our current slot-0 model (glm-5.3) — strongest 5th-provider
+#   candidate found so far; needs a Cloudflare account + API token (user
+#   decision, not integrated). Card requirement not stated on the pricing
+#   page; klymentiev.com (verified 2026-09-25) reports none.
+#   (2) Mistral: mistral.ai/pricing (primary) now confirms the Free plan
+#   includes "$10 /mo in API credits", model-training "Opt-out", "subject
+#   to fair usage limits"; card requirement not stated on the page. Upgraded
+#   from "no clear differential" to a documented candidate, but it serves
+#   only Mistral's own models (Medium/Small/Codestral — none in our
+#   rankings), so it stays behind Cloudflare in priority. Needs a key.
+#   Local (Apple Silicon 16GB): ollama client still 0.21.2, server not
+#   running, brew stable 0.34.2; GitHub v0.34.4 stable (09-23) / v0.40.0
+#   pre-release (09-25, MLX default) unchanged from yesterday — `brew
+#   upgrade ollama` still pending. Local Model Watch weekly (2026-09-21)
+#   flags ternary-quantized "Bonsai 2 27B" (GGUF + MLX 2-bit, ~12GB) and a
+#   Qwen3.8-35B-A3B-Distill GGUF as 16GB-class releases — leads only, no
+#   independent benchmarks yet, nothing installed (server was down anyway).
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com — verified 2026-09-26;
+#   local `pmset -g log` — 2026-09-26; arena.ai/leaderboard/text (dated
+#   2026-09-25) — 2026-09-26; artificialanalysis.ai/leaderboards/models —
+#   2026-09-26; llm-stats.com/llm-updates — 2026-09-26; developers.
+#   cloudflare.com/workers-ai/{platform/pricing (2026-09-17), configuration/
+#   open-ai-compatibility (2026-09-18), models} — 2026-09-26; mistral.ai/
+#   pricing — 2026-09-26; klymentiev.com/blog/free-llm-api (verified
+#   2026-09-25) — 2026-09-26; localmodelwatch.tsuchitsuchi.com weekly
+#   2026-09-21 — 2026-09-26; github.com/ollama/ollama/releases — 2026-09-26.
 
 categories:
 

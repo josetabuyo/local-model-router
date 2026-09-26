@@ -35,8 +35,13 @@ el futuro, recheck.
 
 ## No integrados (evaluados, no encajan)
 
-- Mistral — free tier confirmado pero sin diferencial claro frente a lo que
-  ya cubre NVIDIA NIM en las categorías actuales; no hay urgencia.
+- Mistral — free tier confirmado en fuente primaria 2026-09-26
+  (mistral.ai/pricing): plan Free con "$10 /mo in API credits", training
+  "Opt-out", "subject to fair usage limits"; la página no dice si pide
+  tarjeta (klymentiev.com, verificado 2026-09-25, reporta que no). Sigue sin
+  diferencial de modelos: sólo sirve Mistral Medium/Small/Codestral, ninguno
+  está en `rankings/cloud.yaml`. Candidato de segunda prioridad detrás de
+  Cloudflare Workers AI (abajo); requeriría `MISTRAL_API_KEY` nueva.
 - Together AI, Vercel AI Gateway, Cloudflare AI Gateway, Requesty, Portkey,
   LiteLLM, Kong AI Gateway — son gateways/agregadores, no proveedores de
   modelo directo; no aportan modelos gratis nuevos, solo enrutan a los que ya
@@ -52,7 +57,7 @@ sin cruzarlas contra la fuente primaria (docs.sambanova.ai / cloud.sambanova.ai)
 Próximo paso si se decide evaluar: confirmar en la doc oficial que sigue sin
 pedir tarjeta y qué modelos sirve gratis, antes de proponer integración.
 
-## Cloudflare Workers AI — CANDIDATO SIN VERIFICAR, 2026-09-21
+## Cloudflare Workers AI — VERIFICADO EN DOCS PRIMARIAS 2026-09-26, PROPUESTA PENDIENTE
 
 Encontrado en búsqueda web abierta (openrouter.ai/blog y varios agregadores,
 2026-09-21) como uno de los proveedores con free tier sin tarjeta más citados
@@ -73,6 +78,56 @@ Inconcluso (el free tier podría estar documentado en otra parte del sitio,
 no necesariamente no existe) — se mantiene como "sin verificar", no se
 promueve ni se descarta. Pendiente para un futuro pase con más tiempo para
 recorrer el resto de la doc.
+
+**Revisión 2026-09-26 — verificado contra la doc primaria de Cloudflare
+(no en vivo: requiere cuenta + API token, no hay tier anónimo):**
+- Free tier: "10,000 Neurons per day at no charge" en los planes Workers
+  Free y Paid (developers.cloudflare.com/workers-ai/platform/pricing,
+  actualizada 2026-09-17). Al superar el límite las llamadas fallan con
+  error (no cobra solo). La página no menciona tarjeta; klymentiev.com
+  (verificado 2026-09-25) reporta que el plan Free no la pide.
+- Endpoint OpenAI-compatible:
+  `https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1`
+  (`/chat/completions`, `/embeddings`, `/responses` sólo gpt-oss), header
+  `Authorization: Bearer {api_token}` (…/configuration/open-ai-compatibility,
+  actualizada 2026-09-18).
+- Catálogo (…/workers-ai/models, según la página tal como se bajó — los
+  slugs `@cf/...` exactos se confirman al integrar): GLM-5.3 (1M ctx),
+  GLM-5.3-Flash, Kimi K2.6 y K2.7-Code, DeepSeek V4 Pro 0813, gpt-oss-120b
+  y 20b, Qwen3.8-27B, Gemma 4 26B-A4B, Nemotron 3 120B-A12B, Llama 3.3 70B,
+  Llama 4 Scout, Mistral Small 3.1.
+- Costo en neurons por Mtok (pricing page): gpt-oss-120b 31,818 in /
+  68,182 out → ~147K tokens de salida/día gratis; Llama 3.3 70B 26,668 /
+  204,805; Kimi K2.7-Code 86,364 / 363,636.
+
+**Por qué es el candidato más fuerte hasta ahora:** es el único proveedor
+gratis encontrado que sirve el mismo modelo que hoy es slot 0 en 7
+categorías (`z-ai/glm-5.3`), con infraestructura totalmente independiente
+de NIM/Groq/OpenRouter/Gemini. Si NIM cuelga glm-5.3 (patrón rotativo
+documentado en `rankings/cloud.yaml`), Cloudflare lo cubriría sin bajar de
+calidad. ~147K tokens/día de gpt-oss-120b (o menos en GLM-5.3, que cuesta
+más neurons) alcanza para un cascade de fallback, no para bench masivo.
+
+**Pasos de integración si el usuario aprueba** (~1 hora, mismo patrón que
+Gemini):
+1. Usuario: cuenta Cloudflare (Workers Free), crear API token con permiso
+   Workers AI, anotar `account_id`. Agregar `CLOUDFLARE_ACCOUNT_ID` y
+   `CLOUDFLARE_API_TOKEN` a `.env` / `.env.example`.
+2. `benchmark/providers/cloudflare_provider.py`: copiar `groq_provider.py`,
+   base `https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1`.
+   `FREE_MODELS` con los slugs `@cf/...` de glm-5.3, gpt-oss-120b,
+   qwen3.8-27b (confirmar slugs con `GET .../ai/models/search`).
+3. `router/dispatcher.py`: `_call_cloudflare`, patrón `_call_gemini`.
+4. `router/registry.py`: `_PROVIDER_SPEED_RANK["cloudflare"]` después de
+   OpenRouter y antes de Gemini (sin datos de latencia todavía; ajustar tras
+   la primera sonda).
+5. `rankings/cloud.yaml`: GLM-5.3 vía Cloudflare como slot 1 (detrás del
+   NIM pin) en reasoning/coding/math/code_debug/context/summarization;
+   gpt-oss-120b como fallback adicional donde ya está por Groq.
+6. Test: sonda `curl` por modelo + `tests/` del registry.
+
+Riesgo: bajo (key nueva pero sin tarjeta; límite diario duro, no factura).
+Decisión del usuario — no se integra a ciegas.
 
 ## OVHcloud AI Endpoints — VERIFICADO EN VIVO, PROPUESTA PENDIENTE 2026-09-25
 
