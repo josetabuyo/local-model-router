@@ -10,6 +10,10 @@ POST /v1/chat/completions         — Hybrid full cascade; strategy via X-Router
                                     'local-first' (default): all local, then all cloud
                                     'cloud-first':           all cloud, then all local
 
+POST /v1/systemone                — TypeSafe Jev decisions (state + typed questions);
+                                    cascade typesafe → openrouter, then chat-model emulation.
+                                    X-Router-Strategy: 'jev' (default) | 'emulate' | 'jev-only'
+
 GET  /v1/models                   — list all routable model identifiers
 GET  /v1/router/rankings/{cat}    — full ranked list for a category
 GET  /health                      — liveness check
@@ -35,6 +39,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 import json
+import os
 import re
 import httpx
 from fastapi import FastAPI, HTTPException, Request
@@ -43,6 +48,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from router.cache import CACHE_ENABLED, ResponseCache, make_key
 from router.dispatcher import Dispatcher
 from router.registry import Registry
+from router import systemone
 
 app = FastAPI(title="local-model-router", version="1.0.0")
 registry = Registry()
@@ -328,3 +334,115 @@ async def chat_hybrid(request: Request):
         raise HTTPException(400, str(e))
 
     return await _dispatch_chain(chain, payload, endpoint="hybrid", requested=requested, strategy=strategy, want_stream=want_stream)
+
+
+# ── System One (Jev) ──────────────────────────────────────────────────────────
+
+
+async def _first_chat_content(chain: list[tuple[str, str]], payload: dict) -> tuple[str, str, list[str]]:
+    """Run a chat payload through a (provider, model) chain; return (content, resolved, errors)."""
+    errors: list[str] = []
+    for provider, model_id in chain:
+        try:
+            result = await dispatcher.call(provider, model_id, payload, timeout=_CASCADE_TIMEOUTS.get(provider))
+        except httpx.HTTPStatusError as e:
+            errors.append(f"{provider}/{model_id}: HTTP {e.response.status_code} — {e.response.text[:200]}")
+            continue
+        except Exception as e:
+            errors.append(f"{provider}/{model_id}: {e}")
+            continue
+        content = _extract_content(result)
+        if content:
+            return content, f"{provider}/{model_id}", errors
+        errors.append(f"{provider}/{model_id}: empty content")
+    return "", "", errors
+
+
+async def _emulate_systemone(state: str, questions: dict, errors: list[str]) -> tuple[dict, str]:
+    """Answer the questions with the ordinary chat cascade. Returns (answers, resolved)."""
+    chain = registry.resolve_chain("best:instruction", strategy="cloud-first")
+    payload = {"messages": systemone.build_emulation_messages(state, questions), "temperature": 0, "max_tokens": 400}
+    # Up to two attempts: a model that returns malformed JSON is skipped, not retried.
+    remaining = list(chain)
+    for _ in range(2):
+        if not remaining:
+            break
+        content, resolved, chain_errors = await _first_chat_content(remaining, payload)
+        errors.extend(chain_errors)
+        if not content:
+            break
+        try:
+            return systemone.parse_emulation(content, questions), resolved
+        except ValueError as e:
+            errors.append(f"{resolved}: {e}")
+            idx = next(i for i, (p, m) in enumerate(remaining) if f"{p}/{m}" == resolved)
+            remaining = remaining[idx + 1 :]
+    raise HTTPException(502, {"message": "System One: all providers and emulation failed", "errors": errors})
+
+
+@app.post("/v1/systemone")
+async def systemone_decide(request: Request):
+    """TypeSafe Jev-compatible decision endpoint (see router/systemone.py).
+
+    X-Router-Strategy header:
+      jev       (default) — real Jev providers first (typesafe → openrouter); if every
+                            one fails, emulate with a chat model unless JEV_EMULATE_FALLBACK=false
+      emulate             — skip Jev, answer with the chat cascade (no key needed)
+      jev-only            — real providers only, hard 502 otherwise
+    """
+    try:
+        raw = await request.json()
+    except Exception:
+        raise HTTPException(400, "Invalid JSON body")
+    try:
+        state, questions = systemone.validate(raw)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+    strategy = request.headers.get("x-router-strategy", "jev").lower()
+    if strategy not in ("jev", "emulate", "jev-only"):
+        raise HTTPException(400, "X-Router-Strategy must be 'jev', 'emulate' or 'jev-only'")
+
+    errors: list[str] = []
+    if strategy != "emulate":
+        chain = systemone.provider_chain()
+        if not chain:
+            errors.append("no System One provider configured (TYPESAFE_API_KEY / OPENROUTER_API_KEY)")
+        for i, (provider, default_model) in enumerate(chain):
+            model = raw.get("model") or default_model
+            try:
+                result = await systemone.call_jev(provider, model, state, questions)
+            except httpx.HTTPStatusError as e:
+                errors.append(f"{provider}/{model}: HTTP {e.response.status_code} — {e.response.text[:200]}")
+                continue
+            except Exception as e:
+                errors.append(f"{provider}/{model}: {e}")
+                continue
+            result["x_router"] = {
+                "endpoint": "systemone",
+                "resolved": f"{provider}/{model}",
+                "strategy": strategy,
+                "emulated": False,
+                "fallback_used": i > 0,
+                **({"errors": errors} if errors else {}),
+            }
+            return JSONResponse(result)
+
+        emulate_ok = os.getenv("JEV_EMULATE_FALLBACK", "true").lower() != "false"
+        if strategy == "jev-only" or not emulate_ok:
+            raise HTTPException(502, {"message": "System One: all Jev providers failed", "errors": errors})
+
+    answers, resolved = await _emulate_systemone(state, questions, errors)
+    return JSONResponse({
+        "model": f"emulated/{resolved}",
+        "answers": answers,
+        "usage": {},
+        "x_router": {
+            "endpoint": "systemone",
+            "resolved": resolved,
+            "strategy": strategy,
+            "emulated": True,
+            "fallback_used": strategy != "emulate",
+            **({"errors": errors} if errors else {}),
+        },
+    })

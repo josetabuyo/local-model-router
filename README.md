@@ -192,6 +192,7 @@ cp .env.example .env
 # NVIDIA_API_KEY=nvapi-...
 # GROQ_API_KEY=gsk_...
 # OPENROUTER_API_KEY=sk-or-...
+# TYPESAFE_API_KEY=...        # optional — Jev decisions via /v1/systemone
 ```
 
 ### Start the router
@@ -284,6 +285,34 @@ If a fallback was triggered:
   }
 }
 ```
+
+### `POST /v1/systemone` — TypeSafe Jev decisions
+
+[Jev](https://typesafe.ai) is not a chat model: it takes a `state` plus typed
+`questions` (`choice` / `score` / `noul`) and returns calibrated structured
+decisions. This endpoint speaks TypeSafe's request/response schema, so a
+client written against it can point at `api.typesafe.ai` unchanged.
+
+```bash
+curl http://localhost:9002/v1/systemone \
+  -H "Content-Type: application/json" \
+  -d @plans/jev-example.json
+```
+
+Provider cascade: `typesafe` (`TYPESAFE_API_KEY`, key from
+[console.typesafe.ai](https://console.typesafe.ai)) → `openrouter`
+(`/api/v1/systemone`, needs OpenRouter credits — Jev is not a `:free` model).
+`X-Router-Strategy` header:
+
+| Value | Behaviour |
+|---|---|
+| `jev` (default) | real providers; if all fail, emulate with the chat cascade (`JEV_EMULATE_FALLBACK=false` disables) |
+| `emulate` | skip Jev, answer with `best:instruction` forced into JSON — works with no Jev key |
+| `jev-only` | real providers only, hard 502 otherwise |
+
+Emulated answers carry `x_router.emulated: true` — their probabilities come
+from an LLM, not from a calibrated System One model. See
+[`plans/jev-systemone.md`](plans/jev-systemone.md).
 
 ### Utility endpoints
 
@@ -416,6 +445,7 @@ llm = ChatOpenAI(
 NVIDIA NIM is now live as a provider (see [`plans/nvidia-nim.md`](plans/nvidia-nim.md) for the original plan) — it leads the cascade for most categories in `rankings/cloud.yaml`.
 
 Near-term:
+- [x] TypeSafe Jev / System One endpoint (`POST /v1/systemone`, 2026-09-27) — waiting on a `TYPESAFE_API_KEY`
 - [ ] Streaming support (`stream: true`)
 - [ ] `context_long` benchmark category (50k–100k token tasks)
 - [ ] `best:fast` meta-category — always routes to the fastest available model regardless of quality tier
