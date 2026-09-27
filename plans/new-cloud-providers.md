@@ -48,14 +48,33 @@ el futuro, recheck.
   tenemos o a proveedores pagos. Fuera de alcance de este proyecto (el router
   ya es el propio agregador).
 
-## SambaNova — CANDIDATO SIN VERIFICAR, 2026-08-27 (revisado 2026-09-02)
+## SambaNova — VERIFICADO EN DOCS PRIMARIAS 2026-09-27, ÚLTIMO RECURSO
 
-Encontrado en búsqueda web abierta (blogs agregadores, no fuente primaria):
-free tier sin tarjeta, 200,000 tokens/día por modelo. No verificado en vivo
-todavía — este proyecto tiene política de no confiar en specs de blogs SEO
-sin cruzarlas contra la fuente primaria (docs.sambanova.ai / cloud.sambanova.ai).
-Próximo paso si se decide evaluar: confirmar en la doc oficial que sigue sin
-pedir tarjeta y qué modelos sirve gratis, antes de proponer integración.
+Historial: encontrado 2026-08-27 en blogs agregadores (revisado 2026-09-02,
+sin verificar). El 2026-09-27 se cruzó contra la fuente primaria
+`docs.sambanova.ai/docs/en/models/rate-limits` (no verificado en vivo — hace
+falta cuenta + API key):
+
+- **Sin tarjeta confirmado**: la doc define el Free Tier como el que
+  "applies when there is no payment method linked with your account"; el
+  Developer tier (límites más altos) requiere "link a payment method".
+- **Límites Free (idénticos para todos los modelos): 20 RPM, 20 RPD,
+  200,000 TPD.** El dato clave es *20 requests por día* — mucho más chico de
+  lo que decían los blogs (que sólo citaban los 200K TPD). Con 20 RPD no
+  sirve como pata regular del cascade; sólo como último recurso muy
+  puntual, del mismo tenor que OVHcloud anónimo (2 RPM).
+- **Modelos Free**: producción `DeepSeek-V3.1`, `Meta-Llama-3.3-70B-Instruct`,
+  `gpt-oss-120b`; preview `DeepSeek-V3.2`, `gemma-4-31B-it`. Sólo
+  `gpt-oss-120b` y `gemma-4-31B-it` están en `rankings/cloud.yaml` (ya
+  cubiertos por Groq y OpenRouter respectivamente); DeepSeek V3.x es una
+  generación atrás de lo que usamos (V4.x).
+- API OpenAI-compatible (`https://api.sambanova.ai/v1`), integración sería
+  el mismo patrón que `groq_provider.py`. Requeriría `SAMBANOVA_API_KEY`.
+
+Conclusión: verificado pero **no propuesto para integrar** — 20 RPD y sin
+modelos que no tengamos ya lo dejan detrás de Cloudflare Workers AI
+(10K neurons/día, sirve glm-5.3) y de Mistral. Si el Free tier sube el RPD
+o agrega DeepSeek V4.x / GLM-5.3, reevaluar.
 
 ## Cloudflare Workers AI — VERIFICADO EN DOCS PRIMARIAS 2026-09-26, PROPUESTA PENDIENTE
 
