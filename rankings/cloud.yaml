@@ -1731,6 +1731,33 @@
 #   releases — 2026-09-27; localmodelwatch.tsuchitsuchi.com (items dated
 #   2026-09-26) — 2026-09-27.
 
+# NOTE 2026-09-27 (2nd run, interactive, Mac on AC power — no sleep
+#   artifacts): re-probed the pinned cascade after the 07:35 headless run,
+#   all consistent. NIM z-ai/glm-5.3 200 OK 1.4s (correct); moonshotai/
+#   kimi-k3 200 OK 8.2s (4th clean day, still slower than glm-5.3 — not
+#   re-pinned). Groq openai/gpt-oss-120b 0.8s, qwen/qwen3.8-27b 0.7s.
+#   OpenRouter cohere/north-mini-code:free 1.1s, nvidia/nemotron-3-super-
+#   120b-a12b:free 1.4s, google/gemma-4-31b-it:free 429 (4th day, rate
+#   limit not EOL). Gemini gemini-3.1-flash-lite 8.7s, gemini-3.5-flash
+#   12.0s (200 OK, no 503 this time). NIM catalog still has no typesafe/
+#   jev; OpenRouter :free still 17. NO CASCADE CHANGES.
+#   NEW (not a chat model, so not ranked here): TypeSafe Jev is now served
+#   by OpenRouter — `typesafe/jev-router` in /api/v1/models (created
+#   2026-09-21, 1M ctx, pricing -1 = variable) and a live
+#   POST openrouter.ai/api/v1/systemone endpoint that validates TypeSafe's
+#   schema and accepts model id `jev-1.13`. Our OpenRouter key is
+#   free-tier with 0 credits (`/auth/key`: limit 0) → 403 "Key limit
+#   exceeded"; Jev is paid ($0.042/M input, output free). Direct console
+#   (console.typesafe.ai/login) is live with Google/email login. Router
+#   now exposes POST /v1/systemone (typesafe → openrouter → chat-model
+#   emulation) — see plans/jev-systemone.md. OpenRouter free-model daily
+#   quota observed: 50 requests/day per key (`free_model_daily_requests`),
+#   11 used by today's two audits — keep audit probe counts in mind.
+#   Sources: own live probes 2026-09-27; openrouter.ai/api/v1/{models,
+#   auth/key,credits,systemone}; docs.typesafe.ai/introduction/quickstart;
+#   openrouter.ai/docs/guides/community/typesafe-sdk; console.typesafe.ai
+#   (browser) — all 2026-09-27.
+
 categories:
 
   reasoning:

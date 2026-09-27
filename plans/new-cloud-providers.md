@@ -216,3 +216,12 @@ del usuario — no se integra a ciegas.
 Cascade actual (NVIDIA/Groq/OpenRouter/Gemini) ya tiene 4 proveedores
 independientes sin tarjeta — no hay urgencia de agregar un 5to salvo que se
 repita un incidente de caída simultánea como el de Luganense (2026-08-24).
+
+## TypeSafe Jev vía OpenRouter — DISPONIBLE, PAGO (2026-09-27)
+
+No es un proveedor de chat: es el modelo de decisiones estructuradas de
+TypeSafe (System One). OpenRouter lo sirve en `POST /api/v1/systemone`
+(verificado en vivo: valida el esquema y acepta `model: "jev-1.13"`), pero es
+pago y nuestra key es free-tier con 0 créditos → 403 "Key limit exceeded".
+La vía directa (`console.typesafe.ai`, login Google/email, sin tarjeta según
+blogs) está viva. Integración completa y estado en `plans/jev-systemone.md`.
