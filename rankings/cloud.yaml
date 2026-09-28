@@ -1758,6 +1758,93 @@
 #   openrouter.ai/docs/guides/community/typesafe-sdk; console.typesafe.ai
 #   (browser) — all 2026-09-27.
 
+# NOTE 2026-09-28: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for a 6th day: 2/2 clean 200 OK (12.5s, 8.3s — slower
+#   than yesterday's 1.4s but well inside the 30s budget), correct answer
+#   on the arithmetic check. PROBE CAVEAT, corrected: the Mac was on AC at
+#   100% and STILL entered 'Maintenance Sleep' at 02:24:49 for 927s
+#   (pmset -g log, "Using AC (Charge:100%)") — yesterday's assumption that
+#   AC power alone avoids sleep artifacts was wrong; it is the headless/
+#   display-off state that triggers it. One reading (gemini-3.1-flash-lite,
+#   HTTP 000 at 925.6s) is that artifact, discarded. `caffeinate -s -i`
+#   DOES hold the machine awake on AC (unlike on battery): every probe
+#   re-run under it came back clean (gemini-3.1-flash-lite 200 OK 2.4s,
+#   1.6s). Headless audits should wrap probes in `caffeinate -s -i` from
+#   now on. Clean-only below.
+#   Groq: openai/gpt-oss-120b 200 OK 0.7s, openai/gpt-oss-20b 0.4s,
+#   qwen/qwen3.8-27b 0.4s. Gemini: gemini-3.5-flash 200 OK 11.4s (no 503
+#   today). OpenRouter: cohere/north-mini-code:free 200 OK 1.3s; nvidia/
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free 1.2s; nvidia/nemotron-3-
+#   super-120b-a12b:free 0.8s; google/gemma-4-31b-it:free 429 x2 (5th
+#   consecutive day) and google/gemma-4-26b-a4b-it:free 429 (free-tier
+#   "temporarily rate-limited", NOT EOL — kept); poolside/laguna-s-2.1:free
+#   429 for the FIRST time (same rate-limit body, kept, watch). OpenRouter
+#   key quota after the run: free_model_daily_requests used 3/50 — 429'd
+#   calls evidently do not count against the daily cap.
+#   NIM flaky set: moonshotai/kimi-k3 RELAPSED — 0/5 today, every probe a
+#   real HTTP 000 timeout at 30.2s (3 in the first pass, 2 more under
+#   caffeinate), while the control nvidia/nemotron-3-super-120b-a12b (NIM)
+#   returned 200 OK 1.1s in the same pass. That ends its 4-day clean streak
+#   and validates never re-pinning it on a 5-point ELO edge. z-ai/glm-5.3-
+#   flash 0/1 timeout (30.2s), deepseek-ai/deepseek-v4.1-flash 0/1 timeout
+#   (30.2s) — both still hanging, stay out. moonshotai/kimi-k2.6 still 404
+#   "Function not found" (listed, not served, 5th day).
+#   Live catalogs: NIM /v1/models 82 entries (unchanged). OpenRouter :free
+#   17 entries (unchanged). Also probed, not in cascade: nvidia/nemotron-3-
+#   ultra-550b-a55b:free 200 OK 2.2s — 3rd consecutive clean day and much
+#   faster than yesterday's 14.6s. Artificial Analysis puts Nemotron 3
+#   Ultra at Intelligence Index 23, above every open-weight model currently
+#   in the OpenRouter tier (Gemma 4 31B 19, Nemotron 3 Super 13, gpt-oss-
+#   120b 12). Candidate to RESTORE to reasoning/coding/context if it clears
+#   a 4th clean day tomorrow — not restored today (the 09-10 removal was
+#   for hangs, one more day of evidence is cheap).
+#   Rankings: arena.ai Text leaderboard STILL dated 2026-09-25 (3rd day
+#   without a refresh) — Kimi K3 #16 1488±5, MiMo-V2.6-Pro #23 1480±9,
+#   GLM-5.3 Max #24 1480±6, Qwen3.8 Max #25 1479±5, gemini-3.5-flash-high
+#   #27 1477±4, DeepSeek V4.1-Flash-Max #29 1477±8, GLM-5.3 Flash #35
+#   1474±6, Gemma 4 31B #73 1453±7, gemini-3.1-flash-lite #105 1433±4; no
+#   open-weight model new in the top 30. Artificial Analysis unchanged
+#   (MiMo-V2.6-Pro 46, GLM-5.3 45, Qwen3.8 Max 45, Kimi K3 44, DeepSeek
+#   V4.1 Flash 39). Releases 09-21..09-28 per llm-stats.com/llm-updates
+#   unchanged (MiMo-V2.6 Flash/Pro 09-22, plus proprietary Opus 5.5 /
+#   GPT-6 Luna+Sol / Grok 4.7). MiMo-V2.6 still has no :free OpenRouter
+#   slug and is not on NIM (catalog grep) — watch item stands. Nothing to
+#   add.
+#   PROVIDER CANDIDATES: no new free-tier inference provider found. The
+#   one new write-up this week (dev.to "Free LLM gateways, tested ...
+#   September 2026", published 09-21, edited 09-27, author discloses
+#   working on FreeModel/Aiglade) covers only gateways — OpenRouter,
+#   Cloudflare AI Gateway, Vercel AI Gateway, LiteLLM, Portkey, FreeModel —
+#   all already classified as gateways/aggregators (not providers) in
+#   plans/new-cloud-providers.md; nothing to re-evaluate. Search-result
+#   roundups (stationx, kdnuggets, mnfst/awesome-free-llm-apis) list the
+#   same NIM/Groq/OpenRouter/Google/Cloudflare/Mistral/Cerebras set. Cloud-
+#   flare / Mistral / OVHcloud proposals unchanged, still waiting on a user
+#   decision (each needs a new key); SambaNova stays last-resort.
+#   Local (Apple Silicon 16GB): ollama client still 0.21.2 (Homebrew
+#   Cellar 0.21.2_1), server not running, brew stable 0.34.2, GitHub stable
+#   v0.34.4 (09-23). v0.40.0-rc0 (09-25, pre-release) body verified via the
+#   GitHub API: "model architectures supported by the MLX runtime will
+#   automatically run on MLX" on Apple Silicon, additional models being
+#   enabled during the pre-release — NO memory floor is stated in the
+#   release notes. The "MLX backend targets Macs with 32GB or more" claim
+#   circulating in search results comes from a dev.to article dated
+#   2026-07-07 about the 0.19 preview; stale and unverified for 0.40 —
+#   treat as unknown until tested on this machine. `brew upgrade ollama`
+#   still pending. No new open-weight release, GGUF/MLX quantization
+#   technique, or 16GB-class model found this week.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com — verified 2026-09-28;
+#   local `pmset -g log` — 2026-09-28; openrouter.ai/api/v1/auth/key
+#   (free_model_daily_requests) — 2026-09-28; arena.ai/leaderboard/text
+#   (dated 2026-09-25) — 2026-09-28; artificialanalysis.ai/leaderboards/
+#   models — 2026-09-28; llm-stats.com/llm-updates — 2026-09-28; api.github.
+#   com/repos/ollama/ollama/releases (v0.40.0-rc0, v0.34.4, v0.34.3) —
+#   2026-09-28; dev.to/yummy342/free-llm-gateways-tested-... (2026-09-21,
+#   ed. 2026-09-27) — 2026-09-28; dev.to/jacksonxly/mlx-vs-gguf-on-apple-
+#   silicon-... (2026-07-07) — 2026-09-28.
+
 categories:
 
   reasoning:
