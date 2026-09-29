@@ -1844,6 +1844,80 @@
 #   2026-09-28; dev.to/yummy342/free-llm-gateways-tested-... (2026-09-21,
 #   ed. 2026-09-27) — 2026-09-28; dev.to/jacksonxly/mlx-vs-gguf-on-apple-
 #   silicon-... (2026-07-07) — 2026-09-28.
+# NOTE 2026-09-29: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for a 7th day: 2/2 clean 200 OK (11.2s, 21.6s —
+#   slowest yet, still inside the 30s budget), correct answer. PROBE
+#   CAVEAT: Mac on battery (38%, discharging), where `caffeinate` does not
+#   hold it awake — the four ~948s HTTP 000 readings (glm-5.3-flash and
+#   deepseek-v4.1-flash, twice each) are sleep artifacts, NOT evidence
+#   either way; both models stay out on prior evidence. Clean-only below.
+#   NIM: nvidia/nemotron-3-super-120b-a12b 200 OK 2.7s. moonshotai/kimi-k3
+#   CHANGED failure mode: now 404 "Specified function ... not found" in
+#   0.8-1.2s (2/2) instead of yesterday's 30s hangs — listed in /v1/models
+#   but not served, same state as moonshotai/kimi-k2.6 (404, 6th day).
+#   Already out of the cascade, no action.
+#   Groq: openai/gpt-oss-120b 200 OK 0.9s, openai/gpt-oss-20b 0.7s,
+#   qwen/qwen3.8-27b 1.0s. Gemini: gemini-3.1-flash-lite 200 OK 3.4s,
+#   gemini-3.5-flash 2.1s. OpenRouter: cohere/north-mini-code:free 200 OK
+#   1.8s; nvidia/nemotron-3-super-120b-a12b:free 0.8s; nvidia/nemotron-3-
+#   nano-omni-30b-a3b-reasoning:free HTTP 200 but body "Upstream error from
+#   Nvidia: ResourceExhausted: Worker local total request limit reached
+#   (16/16)" (2/2) — an upstream capacity limit wrapped in a 200, NOT EOL,
+#   kept (the router already falls through on a 200 with no choices —
+#   router/server.py _extract_content returns '' — verified). google/gemma-4-31b-it:free 429 (6th
+#   day), google/gemma-4-26b-a4b-it:free 429, poolside/laguna-s-2.1:free
+#   429 (2nd day) — rate limits, kept.
+#   Live catalogs: NIM /v1/models 81 entries (DOWN 1 from 82; none of the
+#   dropped-candidate ids are referenced here — every model in this file is
+#   still listed). OpenRouter :free 16 entries (DOWN from 17): z-ai/glm-
+#   5.2:free dropped, paid z-ai/glm-5.2 remains ($0.325/Mtok in). Not in
+#   the cascade (active entries only reference NIM z-ai/glm-5.3), no action.
+#   WATCH ITEM — nvidia/nemotron-3-ultra-550b-a55b:free 200 OK 2.7s,
+#   correct answer: 4th consecutive clean day, which meets the restore bar
+#   set yesterday. NOT restored, because the two ranking sources now
+#   disagree sharply: arena.ai lists Nemotron-3-Ultra-550b for the first
+#   time at #115, 1425±7 — BELOW Gemma-4-31b (#73, 1453±7, already in the
+#   OpenRouter tier) and gemini-3.1-flash-lite (#105, 1433±4) — while
+#   Artificial Analysis puts it at Intelligence Index 23, above Gemma 4 31B
+#   (19) and Nemotron 3 Super (13). Arena measures human chat preference,
+#   AA measures reasoning/coding evals; restoring it to reasoning/coding
+#   follows AA, but to context/instruction it would follow Arena and lose.
+#   Left for the user to decide.
+#   Rankings: arena.ai Text leaderboard STILL dated 2026-09-25 (4th day
+#   without a refresh), top open-weight positions unchanged (Kimi K3 Max
+#   #16 1488±5, MiMo-V2.6-Pro #23, GLM-5.3-Max #24, Qwen3.8-Max #25,
+#   DeepSeek-V4.1-Flash-Max #29, GLM-5.3-Flash #35). llm-stats.com: no
+#   open-weight release 09-25..09-29 (only proprietary Claude Sonnet 5.5,
+#   09-28). Nothing to add.
+#   PROVIDER CANDIDATES: openrouter.ai/blog/tutorials/free-llm-apis-compared
+#   (updated 2026-09-24) lists 13 free APIs; beyond the already-evaluated
+#   set it names GitHub Models, Cohere, Hugging Face and Chutes. GitHub
+#   Models and Cohere are 15-20 RPM / ~100-1,000 RPD trial-style tiers
+#   serving mostly proprietary models already covered here; Hugging Face
+#   and Chutes are "variable/community" with no stated quota. None is a
+#   clear improvement over the current four providers — not proposed.
+#   LOCAL (Apple Silicon 16GB) — NEW: Ollama v0.35.0 (pre-release,
+#   2026-09-28) adds decision models on /v1/systemone "based on TypeSafe's
+#   Jev API" — same choice/noul/score question schema the router's
+#   /v1/systemone already speaks. Models: tev1 (Together AI, 4B, q4_K_M
+#   2.7GB / 0.8B 812MB, 256K ctx) and nimble (Bespoke Labs, 9B from
+#   Qwen3.5-9B, 9.5GB, Apache 2.0, "requires Ollama 0.35", 75.7% across 13
+#   public datasets). That is a FREE LOCAL Jev backend for the systemone
+#   cascade, which is currently blocked on a TypeSafe key / OpenRouter
+#   credits. Proposal written to plans/jev-systemone.md; needs
+#   the Ollama upgrade (local 0.21.2, brew stable 0.34.2 — 0.35 is
+#   pre-release only) so it is not integrated.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com — verified 2026-09-29;
+#   openrouter.ai/api/v1/models (:free list and z-ai/glm-5.2 pricing) —
+#   2026-09-29; arena.ai/leaderboard/text (dated 2026-09-25) — 2026-09-29;
+#   llm-stats.com/llm-updates — 2026-09-29; openrouter.ai/blog/tutorials/
+#   free-llm-apis-compared (updated 2026-09-24) — 2026-09-29; api.github.
+#   com/repos/ollama/ollama/releases (v0.35.0, 2026-09-28) — 2026-09-29;
+#   ollama.com/library/nimble and ollama.com/library/tev1/tags —
+#   2026-09-29. AA Intelligence 23 for Nemotron 3 Ultra carried over from
+#   the 2026-09-28 note (artificialanalysis.ai/leaderboards/models).
 
 categories:
 

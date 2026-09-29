@@ -44,3 +44,39 @@ docs.typesafe.ai/introduction/quickstart (verificadas 2026-09-27).
    (`-H 'X-Router-Strategy: emulate'`) y anotar la diferencia de calibración.
 4. Si Jev rinde: exponer categorías de decisión (`classify`, `guardrail`)
    para Pulpo/Luganense, que hoy clasifican con `best:instruction`.
+
+## Nueva vía: Ollama local (hallado por model-scout 2026-09-29)
+
+Ollama **v0.35.0** (pre-release, 2026-09-28) agrega modelos de decisión en
+`POST /v1/systemone`, "based on TypeSafe's Jev API": mismo esquema de
+`state` + `questions` con tipos `choice` / `noul` / `score`, respuesta con
+`answers.<q>.choice` + `probabilities` + `confidence` y `usage`. Fuente:
+github.com/ollama/ollama/releases/tag/v0.35.0 (verificado 2026-09-29).
+
+| Modelo | Origen | Tamaño | Notas |
+|---|---|---|---|
+| `tev1:4b-q4_K_M` | Together AI, 4B | 2.7 GB | 256K ctx. El que entra cómodo en 16 GB junto con qwen2.5:7b |
+| `tev1:0.8b` | Together AI, 0.8B | 812 MB | Para clasificación rápida/barata |
+| `nimble` | Bespoke Labs, 9B (fine-tune de Qwen3.5-9B) | 9.5 GB | Apache 2.0, "requires Ollama 0.35". 75.7% en 13 datasets públicos; choice 81.6%, score 54.6%. Justo para 16 GB |
+
+Fuentes: ollama.com/library/tev1/tags, ollama.com/library/nimble (2026-09-29).
+
+Sería un backend **gratis y local** para el cascade de `router/systemone.py`,
+sin key ni créditos, y con probabilidades que vienen de un modelo de decisión,
+no de la emulación con un LLM de chat. Todavía **no está integrado** porque:
+
+- El cliente local es 0.21.2 y brew stable es 0.34.2; 0.35 hoy es sólo
+  pre-release (instalarla a mano desde GitHub o esperar a brew).
+- No está verificado que las probabilidades de tev1/nimble estén calibradas
+  igual que las de Jev: Ollama dice "based on", no que sea el mismo modelo.
+
+Pasos propuestos (decide José):
+
+1. Instalar Ollama ≥ 0.35 (pre-release desde GitHub, o `brew upgrade ollama`
+   cuando llegue a stable) y `ollama pull tev1:4b-q4_K_M`.
+2. Probar `curl localhost:11434/v1/systemone -d @plans/jev-example.json`.
+3. Agregar `ollama` como primer proveedor del cascade en `router/systemone.py`
+   (antes de `typesafe` → `openrouter`), con el modelo configurable
+   (`JEV_LOCAL_MODEL`, default `tev1`), y marcar `x_router.provider` en la
+   respuesta para distinguir local de Jev real.
+4. Comparar local, emulación y (si aparece la key) Jev real con el mismo body.
