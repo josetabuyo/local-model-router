@@ -47,7 +47,7 @@ docs.typesafe.ai/introduction/quickstart (verificadas 2026-09-27).
 
 ## Nueva vía: Ollama local (hallado por model-scout 2026-09-29)
 
-Ollama **v0.35.0** (pre-release, 2026-09-28) agrega modelos de decisión en
+Ollama **v0.35.0** (2026-09-28; stable en GitHub y en Homebrew desde 2026-09-30) agrega modelos de decisión en
 `POST /v1/systemone`, "based on TypeSafe's Jev API": mismo esquema de
 `state` + `questions` con tipos `choice` / `noul` / `score`, respuesta con
 `answers.<q>.choice` + `probabilities` + `confidence` y `usage`. Fuente:
@@ -65,15 +65,15 @@ Sería un backend **gratis y local** para el cascade de `router/systemone.py`,
 sin key ni créditos, y con probabilidades que vienen de un modelo de decisión,
 no de la emulación con un LLM de chat. Todavía **no está integrado** porque:
 
-- El cliente local es 0.21.2 y brew stable es 0.34.2; 0.35 hoy es sólo
-  pre-release (instalarla a mano desde GitHub o esperar a brew).
+- El cliente local es 0.21.2. Desde 2026-09-30 brew stable ya es 0.35.0
+  (formulae.brew.sh), así que alcanza con `brew upgrade ollama` — falta
+  que José lo corra.
 - No está verificado que las probabilidades de tev1/nimble estén calibradas
   igual que las de Jev: Ollama dice "based on", no que sea el mismo modelo.
 
 Pasos propuestos (decide José):
 
-1. Instalar Ollama ≥ 0.35 (pre-release desde GitHub, o `brew upgrade ollama`
-   cuando llegue a stable) y `ollama pull tev1:4b-q4_K_M`.
+1. `brew upgrade ollama` (stable 0.35.0 desde 2026-09-30) y `ollama pull tev1:4b-q4_K_M`.
 2. Probar `curl localhost:11434/v1/systemone -d @plans/jev-example.json`.
 3. Agregar `ollama` como primer proveedor del cascade en `router/systemone.py`
    (antes de `typesafe` → `openrouter`), con el modelo configurable

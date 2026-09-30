@@ -1918,6 +1918,50 @@
 #   ollama.com/library/nimble and ollama.com/library/tev1/tags —
 #   2026-09-29. AA Intelligence 23 for Nemotron 3 Ultra carried over from
 #   the 2026-09-28 note (artificialanalysis.ai/leaderboards/models).
+# NOTE 2026-09-30: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for an 8th day: 200 OK 1.9s, correct answer ("51").
+#   PROBE CAVEAT: Mac on battery again (100%, discharging) — readings of
+#   ~190-950s (glm-5.3-flash 948s, kimi-k3 192s, a laguna-s-2.1:free retry
+#   930s) blow through curl's -m 40 and are sleep artifacts, not evidence.
+#   Clean readings: deepseek-ai/deepseek-v4.1-flash timed out at exactly
+#   40.2s (a genuine timeout, stays out). moonshotai/kimi-k2.6 404 (7th
+#   day). nvidia/nemotron-3-super-120b-a12b 200 OK 1.3s.
+#   Groq: gpt-oss-120b 200 OK 0.9s, gpt-oss-20b 0.3s, qwen3.8-27b 0.3s.
+#   Gemini: gemini-3.1-flash-lite 200 OK 2.1s, gemini-3.5-flash 11.8s.
+#   OpenRouter: cohere/north-mini-code:free 200 OK 0.9s; nemotron-3-super-
+#   120b-a12b:free 1.0s; poolside/laguna-s-2.1:free 200 OK 1.1s (429 streak
+#   over); nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free 200 OK with
+#   a real answer ("51", 2/2) — yesterday's 16/16 worker-limit error is
+#   gone. google/gemma-4-31b-it:free and gemma-4-26b-a4b-it:free 429
+#   "temporarily rate-limited upstream" (7th day for 31b) — kept.
+#   WATCH ITEM — nvidia/nemotron-3-ultra-550b-a55b:free: HTTP 200 but body
+#   "Upstream error from Nvidia: Service temporarily overloaded" (503,
+#   provider_overloaded), 2/2. Not EOL, but NOT a clean day either — the
+#   4-day clean streak is broken, so the restore question is moot until it
+#   rebuilds. Still out.
+#   Live catalogs: NIM /v1/models 81 entries (same as yesterday). OpenRouter
+#   :free 16 entries, same set as yesterday — every slug already evaluated.
+#   Rankings: arena.ai Text leaderboard STILL dated 2026-09-25 (5th day
+#   without a refresh); values unchanged (Kimi-K3-Max #16 1488±5, GLM-5.3-
+#   Max #24 1480±6, GLM-5.3-Flash #35 1474±6, Gemma-4-31b #73 1453±7,
+#   Nemotron-3-Ultra #115 1425±7). llm-stats.com: no open-weight release
+#   09-26..09-30 (only proprietary GPT-6.1 Sol 09-29 and Claude Sonnet 5.5
+#   09-28). No new free provider found beyond the set already evaluated.
+#   LOCAL (Apple Silicon 16GB) — CHANGED: Ollama v0.35.0 is now a STABLE
+#   GitHub release and Homebrew stable (formulae.brew.sh: 0.35.0), no
+#   longer pre-release. That removes the "pre-release only" blocker on the
+#   local Jev backend (plans/jev-systemone.md updated): `brew upgrade
+#   ollama` (local client still 0.21.2) is now enough to pull nimble/tev1.
+#   v0.35.1-rc0 (2026-09-29) is a pre-release with MLX and llama.cpp bumps
+#   only, nothing to act on. v0.40.0-rc0 (MLX default) still pre-release.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com — verified 2026-09-30;
+#   integrate.api.nvidia.com/v1/models and openrouter.ai/api/v1/models —
+#   2026-09-30; arena.ai/leaderboard/text (dated 2026-09-25) — 2026-09-30;
+#   llm-stats.com/llm-updates — 2026-09-30; api.github.com/repos/ollama/
+#   ollama/releases and formulae.brew.sh/api/formula/ollama.json —
+#   2026-09-30.
 
 categories:
 
