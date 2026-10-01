@@ -1,5 +1,6 @@
-# Local model rankings — own benchmark run 2026-06-20
-# Source: results/benchmark_20260620_101129.json
+# Local model rankings — own benchmark runs 2026-06-20 (qwen2.5/deepseek), 2026-07-27
+# (qwen2.5-coder) and 2026-10-01 (qwen3.5:9b, Ollama 0.35.0, default thinking ON).
+# Sources: results/benchmark_20260620_101129.json, results/benchmark_20261001_091330.json
 # Slot 0 = best for that category (used by best:<category>)
 # Models not ranked top in any category can be removed from Ollama to free disk space.
 
@@ -18,6 +19,10 @@ categories:
       tokens_per_sec: 4.61
       wall_clock_s: 60.0
       note: "Slow, not competitive. Removed from Ollama 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 16.02
+      wall_clock_s: 115.8
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct, but thinking-on output is 1855 tokens — 6x the wall clock of qwen2.5:7b for the same task. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   coding:
     - model: qwen2.5-coder:7b
@@ -36,6 +41,10 @@ categories:
       tokens_per_sec: 8.76
       wall_clock_s: 12.2
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 18.27
+      wall_clock_s: 68.4
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct sieve. 1249 output tokens with reasoning trace; qwen2.5-coder:7b does it in 11s. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   summarization:
     - model: qwen2.5:7b
@@ -48,6 +57,10 @@ categories:
       tokens_per_sec: 8.96
       wall_clock_s: 7.0
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 16.47
+      wall_clock_s: 81.2
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Good summary, but 1337 tokens / 81s — thinking overhead dominates a trivial task. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   instruction:
     - model: qwen2.5:7b
@@ -62,6 +75,10 @@ categories:
       tokens_per_sec: 8.18
       wall_clock_s: 2.8
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 16.15
+      wall_clock_s: 129.3
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct answer after 2088 tokens of reasoning (129s) vs 27 tokens / 1.3s for qwen2.5:7b. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   math:
     - model: qwen2.5:7b
@@ -74,6 +91,10 @@ categories:
       tokens_per_sec: 7.02
       wall_clock_s: 85.5
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 17.84
+      wall_clock_s: 97.9
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct derivative. 1746 tokens, 98s. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   multilingual:
     - model: qwen2.5:7b
@@ -86,6 +107,11 @@ categories:
       tokens_per_sec: 6.09
       wall_clock_s: 11.3
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 0.0
+      wall_clock_s: 180.1
+      error: "timed out"
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). TIMED OUT at 180s (0 output tokens) — the only failure of the run. Do not rank for this category until re-run. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   code_debug:
     - model: qwen2.5-coder:7b
@@ -102,6 +128,10 @@ categories:
       tokens_per_sec: 6.95
       wall_clock_s: 11.8
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 18.03
+      wall_clock_s: 30.6
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct fix, 551 tokens / 31s — its best result relative to the 7B models (8-10s). Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
 
   context:
     - model: deepseek-r1:8b
@@ -116,3 +146,7 @@ categories:
       tokens_per_sec: 1.35
       wall_clock_s: 28.1
       note: "Removed 2026-06-21."
+    - model: qwen3.5:9b
+      tokens_per_sec: 18.16
+      wall_clock_s: 63.8
+      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct (Pepper). 64s vs deepseek-r1:8b's 23.5s — slower, same answer. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."

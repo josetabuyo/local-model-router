@@ -47,15 +47,18 @@ _(ninguno)_
 
 ## 4. Modelos locales (Ollama)
 
-Benchmark propio — ver fecha y archivo de resultados en la cabecera de
-`rankings/local.yaml`. `qwen3.5:9b` (daily driver desde 2026-08-12) todavía no
-está rankeado ahí: pendiente de un run del harness.
+Benchmark propio — ver fechas y archivos de resultados en la cabecera de
+`rankings/local.yaml`. `qwen3.5:9b` (daily driver interactivo desde 2026-08-12)
+se midió el 2026-10-01 con thinking activado: correcto en 7/8 tareas pero con
+1,200–2,100 tokens de razonamiento por tarea (30–130 s), y timeout en
+`multilingual`; queda último en cada categoría hasta re-medirlo con `think=false`.
 
 | Modelo | Categorías donde gana (slot 0) | tok/s (medido) | Nota |
 |---|---|---|---|
 | `qwen2.5:7b` | reasoning, summarization, instruction, math, multilingual | 21.3 |  |
 | `deepseek-r1:8b` | context | 20.9 |  |
 | `qwen2.5:14b` | — | 6.5 | eliminado de Ollama |
+| `qwen3.5:9b` | — | 17.3 |  |
 | `qwen2.5-coder:7b` | coding, code_debug | 13.4 |  |
 
 ## 5. Modelos de decisión (Jev-style, `POST /v1/systemone`)

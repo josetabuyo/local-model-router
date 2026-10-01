@@ -108,9 +108,11 @@ pagos al final.
 
 ## 4. Modelos locales (Ollama)
 
-Benchmark propio — ver fecha y archivo de resultados en la cabecera de
-`rankings/local.yaml`. `qwen3.5:9b` (daily driver desde 2026-08-12) todavía no
-está rankeado ahí: pendiente de un run del harness.
+Benchmark propio — ver fechas y archivos de resultados en la cabecera de
+`rankings/local.yaml`. `qwen3.5:9b` (daily driver interactivo desde 2026-08-12)
+se midió el 2026-10-01 con thinking activado: correcto en 7/8 tareas pero con
+1,200–2,100 tokens de razonamiento por tarea (30–130 s), y timeout en
+`multilingual`; queda último en cada categoría hasta re-medirlo con `think=false`.
 
 {local_table(local)}
 
