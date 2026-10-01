@@ -1,4 +1,4 @@
-# Jev (TypeSafe System One) en el router — estado 2026-09-27
+# Jev (TypeSafe System One) en el router — estado 2026-10-01
 
 ## Qué es
 
@@ -80,3 +80,24 @@ Pasos propuestos (decide José):
    (`JEV_LOCAL_MODEL`, default `tev1`), y marcar `x_router.provider` en la
    respuesta para distinguir local de Jev real.
 4. Comparar local, emulación y (si aparece la key) Jev real con el mismo body.
+
+## 2026-10-01 — INTEGRADO el backend local
+
+- `brew upgrade ollama` hecho (0.21.2 → 0.35.0), `ollama pull tev1:4b-q4_K_M`
+  (2.7 GB). Probe directo a `localhost:11434/v1/systemone` con
+  `plans/jev-example.json`: `technical` 0.96, `is_urgent` 0.97, `frustration`
+  1.46 (entre "civil" y "enojado"), 7.9 s en frío (carga del modelo), ~0.2 s
+  en caliente.
+- `router/systemone.py`: `ollama` es ahora el primer proveedor del cascade
+  (`JEV_PROVIDER_ORDER=ollama,typesafe,openrouter`, `JEV_LOCAL_MODEL`
+  default `tev1:4b-q4_K_M`). Un `model` explícito que empiece con `jev`
+  va sólo a los proveedores cloud; cualquier otro se trata como tag local.
+  La respuesta lleva `x_router.local: true`.
+- `nimble` (9B, 9.5 GB) NO se bajó: con 16 GB de disco libre y qwen3.5:9b
+  (6.6 GB) ya cargado, es apretado. Si se quiere calidad máxima local:
+  `ollama pull nimble` y `JEV_LOCAL_MODEL=nimble` en `.env`.
+- ngrok AI Gateway (newsletter 2026-10-01) también sirve Jev, pero su
+  quickstart exige comprar ≥ USD 5 de créditos (plan gratis: USD 1 de
+  crédito inicial en early access) y el catálogo público aún no lista
+  TypeSafe — misma categoría que OpenRouter (pago), sin ventaja sobre el
+  backend local. No integrado.

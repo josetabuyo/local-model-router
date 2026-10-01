@@ -20,10 +20,19 @@ Request body::
       }
     }
 
-Real providers (tried in this order, each only if its key is set):
-  1. ``typesafe``   — direct, ``TYPESAFE_API_KEY``, POST api.typesafe.ai/v1/systemone
-  2. ``openrouter`` — ``OPENROUTER_API_KEY``, POST openrouter.ai/api/v1/systemone
+Real providers, tried in ``JEV_PROVIDER_ORDER`` order (default
+``ollama,typesafe,openrouter``), each only if it is configured:
+  1. ``ollama``     — local decision model on Ollama >= 0.35 (``/v1/systemone``,
+                       "based on TypeSafe's Jev API"). Model from ``JEV_LOCAL_MODEL``
+                       (default ``tev1:4b-q4_K_M``; ``nimble`` is the 9B option).
+                       Free, no network. Skipped if ``JEV_LOCAL_MODEL`` is empty.
+  2. ``typesafe``   — direct, ``TYPESAFE_API_KEY``, POST api.typesafe.ai/v1/systemone
+  3. ``openrouter`` — ``OPENROUTER_API_KEY``, POST openrouter.ai/api/v1/systemone
                        (paid: needs OpenRouter credits — the :free tier does not cover Jev)
+
+An explicit ``model`` in the request is forwarded to the cloud providers only
+when it looks like a Jev id (``jev*``); otherwise it is treated as a local
+Ollama tag. Each provider keeps its default for the other case.
 
 Emulation (``X-Router-Strategy: emulate`` or when no Jev provider answers and
 ``JEV_EMULATE_FALLBACK`` is not "false"): the same questions are answered by
@@ -37,6 +46,8 @@ import re
 
 import httpx
 
+from router.dispatcher import OLLAMA_BASE
+
 TYPESAFE_BASE = "https://api.typesafe.ai/v1"
 OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 
@@ -47,6 +58,10 @@ DEFAULT_MODELS: dict[str, str] = {
     "typesafe": "jev-latest",
     "openrouter": "jev-1.13",
 }
+DEFAULT_LOCAL_MODEL = "tev1:4b-q4_K_M"   # 2.7 GB, fits 16 GB alongside a 7-9B chat model
+DEFAULT_PROVIDER_ORDER = "ollama,typesafe,openrouter"
+# Local first-call latency includes loading the model; cloud Jev answers in <1s.
+TIMEOUTS: dict[str, float] = {"ollama": 90.0, "typesafe": 30.0, "openrouter": 30.0}
 
 VALID_TYPES = ("noul", "boolean", "choice", "score")
 
@@ -82,31 +97,48 @@ def validate(body: dict) -> tuple[str, dict]:
 
 
 def provider_chain() -> list[tuple[str, str]]:
-    """(provider, model) pairs for every Jev provider that has a key configured."""
-    chain: list[tuple[str, str]] = []
-    if os.getenv("TYPESAFE_API_KEY"):
-        chain.append(("typesafe", DEFAULT_MODELS["typesafe"]))
-    if os.getenv("OPENROUTER_API_KEY"):
-        chain.append(("openrouter", DEFAULT_MODELS["openrouter"]))
-    return chain
+    """(provider, default model) pairs for every configured Jev provider, in JEV_PROVIDER_ORDER."""
+    local_model = os.getenv("JEV_LOCAL_MODEL", DEFAULT_LOCAL_MODEL).strip()
+    available = {
+        "ollama": local_model or None,
+        "typesafe": DEFAULT_MODELS["typesafe"] if os.getenv("TYPESAFE_API_KEY") else None,
+        "openrouter": DEFAULT_MODELS["openrouter"] if os.getenv("OPENROUTER_API_KEY") else None,
+    }
+    order = [p.strip() for p in os.getenv("JEV_PROVIDER_ORDER", DEFAULT_PROVIDER_ORDER).split(",") if p.strip()]
+    return [(p, available[p]) for p in order if available.get(p)]
 
 
-async def call_jev(provider: str, model: str, state: str, questions: dict, timeout: float = 30.0) -> dict:
+def model_for(provider: str, default: str, requested: str | None) -> str:
+    """Resolve the model one provider should use given an optional client override."""
+    if not requested:
+        return default
+    is_jev_id = requested.lower().startswith("jev")
+    if provider == "ollama":
+        return default if is_jev_id else requested
+    return requested if is_jev_id else default
+
+
+async def call_jev(provider: str, model: str, state: str, questions: dict, timeout: float | None = None) -> dict:
     """POST one System One request to a real provider; raises on HTTP/network error."""
-    if provider == "typesafe":
+    headers = {"User-Agent": "local-model-router/1.0"}
+    if provider == "ollama":
+        base = f"{OLLAMA_BASE}/v1"
+    elif provider == "typesafe":
         base, key = TYPESAFE_BASE, os.getenv("TYPESAFE_API_KEY", "")
     elif provider == "openrouter":
         base, key = OPENROUTER_BASE, os.getenv("OPENROUTER_API_KEY", "")
     else:
         raise ValueError(f"Unknown System One provider '{provider}'")
-    if not key:
-        raise ValueError(f"{provider.upper()}_API_KEY is not set")
+    if provider != "ollama":
+        if not key:
+            raise ValueError(f"{provider.upper()}_API_KEY is not set")
+        headers["Authorization"] = f"Bearer {key}"
     async with httpx.AsyncClient() as client:
         resp = await client.post(
             f"{base}/systemone",
             json={"model": model, "state": state, "questions": questions},
-            headers={"Authorization": f"Bearer {key}", "User-Agent": "local-model-router/1.0"},
-            timeout=timeout,
+            headers=headers,
+            timeout=timeout or TIMEOUTS.get(provider, 30.0),
         )
         resp.raise_for_status()
         return resp.json()

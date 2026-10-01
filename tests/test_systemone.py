@@ -84,13 +84,13 @@ def test_endpoint_400_on_invalid_body():
 
 
 def test_typesafe_first_when_key_set():
-    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "or"}), \
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "or", "JEV_LOCAL_MODEL": ""}), \
          patch("router.systemone.call_jev", new=AsyncMock(return_value=dict(JEV_RESPONSE))) as call:
         resp = client.post("/v1/systemone", json=BODY)
     assert resp.status_code == 200
     body = resp.json()
-    assert body["x_router"] == {"endpoint": "systemone", "resolved": "typesafe/jev-latest",
-                                "strategy": "jev", "emulated": False, "fallback_used": False}
+    assert body["x_router"] == {"endpoint": "systemone", "resolved": "typesafe/jev-latest", "strategy": "jev",
+                                "emulated": False, "local": False, "fallback_used": False}
     assert body["answers"]["department"]["choice"] == "technical"
     assert call.await_args.args[:2] == ("typesafe", "jev-latest")
 
@@ -100,7 +100,7 @@ def test_openrouter_fallback_when_typesafe_fails():
         if provider == "typesafe":
             raise _http_error(401, "bad key")
         return dict(JEV_RESPONSE)
-    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "or"}), \
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "or", "JEV_LOCAL_MODEL": ""}), \
          patch("router.systemone.call_jev", new=fake):
         resp = client.post("/v1/systemone", json=BODY)
     body = resp.json()
@@ -111,14 +111,14 @@ def test_openrouter_fallback_when_typesafe_fails():
 
 
 def test_model_override_is_forwarded():
-    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts"}), \
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "JEV_LOCAL_MODEL": ""}), \
          patch("router.systemone.call_jev", new=AsyncMock(return_value=dict(JEV_RESPONSE))) as call:
         client.post("/v1/systemone", json={**BODY, "model": "jev-1.13"})
     assert call.await_args.args[1] == "jev-1.13"
 
 
 def test_jev_only_returns_502_when_all_fail():
-    with patch.dict(os.environ, {"OPENROUTER_API_KEY": "or"}), \
+    with patch.dict(os.environ, {"OPENROUTER_API_KEY": "or", "JEV_LOCAL_MODEL": ""}), \
          patch("router.systemone.call_jev", new=AsyncMock(side_effect=_http_error(403, "Key limit exceeded"))):
         resp = client.post("/v1/systemone", json=BODY, headers={"X-Router-Strategy": "jev-only"})
     assert resp.status_code == 502
@@ -157,7 +157,7 @@ def test_emulate_strategy_uses_chat_cascade():
 
 
 def test_falls_back_to_emulation_when_jev_fails():
-    with patch.dict(os.environ, {"OPENROUTER_API_KEY": "or"}), \
+    with patch.dict(os.environ, {"OPENROUTER_API_KEY": "or", "JEV_LOCAL_MODEL": ""}), \
          patch("router.systemone.call_jev", new=AsyncMock(side_effect=_http_error(403, "Key limit exceeded"))), \
          patch("router.server.dispatcher.call", new=AsyncMock(return_value=_chat("```json\n" + EMULATED_JSON + "\n```"))):
         resp = client.post("/v1/systemone", json=BODY)
@@ -184,3 +184,56 @@ def test_parse_emulation_rejects_unknown_choice():
 def test_parse_emulation_rejects_score_out_of_range():
     with pytest.raises(ValueError):
         systemone.parse_emulation(json.dumps({"department": "billing", "frustration": 7, "is_urgent": 1}), QUESTIONS)
+
+
+# ── local Ollama decision models (Ollama >= 0.35 /v1/systemone) ───────────────
+
+
+def test_provider_chain_default_order_and_env_gating():
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "or"}, clear=False):
+        os.environ.pop("JEV_LOCAL_MODEL", None)
+        os.environ.pop("JEV_PROVIDER_ORDER", None)
+        assert systemone.provider_chain() == [("ollama", "tev1:4b-q4_K_M"), ("openrouter", "jev-1.13")]
+    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "nimble", "TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "",
+                                 "JEV_PROVIDER_ORDER": "typesafe,ollama"}):
+        assert systemone.provider_chain() == [("typesafe", "jev-latest"), ("ollama", "nimble")]
+    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "", "TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": ""}):
+        assert systemone.provider_chain() == []
+
+
+@pytest.mark.parametrize("provider,default,requested,expected", [
+    ("ollama", "tev1:4b-q4_K_M", None, "tev1:4b-q4_K_M"),
+    ("ollama", "tev1:4b-q4_K_M", "jev-latest", "tev1:4b-q4_K_M"),   # Jev id never sent to Ollama
+    ("ollama", "tev1:4b-q4_K_M", "nimble", "nimble"),                # local tag override
+    ("typesafe", "jev-latest", "jev-1.13", "jev-1.13"),              # Jev id forwarded
+    ("openrouter", "jev-1.13", "nimble", "jev-1.13"),                # local tag ignored by cloud
+])
+def test_model_for(provider, default, requested, expected):
+    assert systemone.model_for(provider, default, requested) == expected
+
+
+def test_local_ollama_is_first_and_tagged_local():
+    local_resp = {"model": "tev1:4b-q4_K_M", "answers": JEV_RESPONSE["answers"], "usage": {"input_tokens": 814, "output_tokens": 4}}
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "or", "JEV_LOCAL_MODEL": "tev1:4b-q4_K_M"}), \
+         patch("router.systemone.call_jev", new=AsyncMock(return_value=dict(local_resp))) as call:
+        resp = client.post("/v1/systemone", json=BODY)
+    body = resp.json()
+    assert resp.status_code == 200
+    assert call.await_args.args[:2] == ("ollama", "tev1:4b-q4_K_M")
+    assert body["x_router"]["resolved"] == "ollama/tev1:4b-q4_K_M"
+    assert body["x_router"]["local"] is True and body["x_router"]["emulated"] is False
+
+
+def test_ollama_down_falls_through_to_cloud_jev():
+    async def fake(provider, model, state, questions, timeout=None):
+        if provider == "ollama":
+            raise httpx.ConnectError("Connection refused")
+        return dict(JEV_RESPONSE)
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "ts", "JEV_LOCAL_MODEL": "tev1:4b-q4_K_M"}), \
+         patch("router.systemone.call_jev", new=fake):
+        resp = client.post("/v1/systemone", json=BODY)
+    body = resp.json()
+    assert resp.status_code == 200
+    assert body["x_router"]["resolved"] == "typesafe/jev-latest"
+    assert body["x_router"]["local"] is False and body["x_router"]["fallback_used"] is True
+    assert body["x_router"]["errors"] == ["ollama/tev1:4b-q4_K_M: Connection refused"]

@@ -6,5 +6,8 @@ set -euo pipefail
 
 cd /Users/josetabuyo/Development/local-models
 
-/Users/josetabuyo/.local/bin/claude -p "/model-scout" \
+# caffeinate -s -i: Maintenance Sleep fires on battery AND on AC (audit notes
+# 2026-09-27/28) and turns live probes into HTTP 000 artifacts. -s only holds
+# on AC; on battery the probes may still be interrupted — plug the Mac in.
+/usr/bin/caffeinate -s -i /Users/josetabuyo/.local/bin/claude -p "/model-scout" \
   --dangerously-skip-permissions

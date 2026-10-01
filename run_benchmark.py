@@ -4,7 +4,7 @@ LLM Benchmark Harness
 Usage:
   uv run run_benchmark.py                        # local models, all tasks
   uv run run_benchmark.py --provider all         # local + Groq
-  uv run run_benchmark.py --provider groq        # Groq only
+  uv run run_benchmark.py --provider groq        # Groq only (also: nvidia, openrouter, gemini)
   uv run run_benchmark.py --task coding          # single task
   uv run run_benchmark.py --models qwen2.5:7b    # specific model(s)
   uv run run_benchmark.py --throttle             # low-impact mode (slower, less CPU)
@@ -26,6 +26,7 @@ from benchmark.providers.ollama_provider import OllamaProvider
 from benchmark.providers.groq_provider import GroqProvider, FREE_MODELS as GROQ_MODELS
 from benchmark.providers.openrouter_provider import OpenRouterProvider, FREE_MODELS as OR_MODELS
 from benchmark.providers.gemini_provider import GeminiProvider, FREE_MODELS as GEMINI_MODELS
+from benchmark.providers.nvidia_provider import NvidiaProvider, FREE_MODELS as NVIDIA_MODELS
 from benchmark.runner import run_benchmark, save_results
 from benchmark.report import print_result_live, print_summary
 from benchmark.tasks import TASKS
@@ -46,6 +47,14 @@ def build_providers(args: argparse.Namespace):
             pairs.append((ollama, local_models))
         else:
             console.print("[yellow]No local Ollama models found.[/yellow]")
+
+    if args.provider in ("nvidia", "cloud", "all"):
+        key = os.getenv("NVIDIA_API_KEY")
+        if not key:
+            console.print("[yellow]NVIDIA_API_KEY not set — skipping NVIDIA NIM.[/yellow]")
+        else:
+            models = NVIDIA_MODELS if args.all_cloud else NVIDIA_MODELS[:2]
+            pairs.append((NvidiaProvider(key), models))
 
     if args.provider in ("groq", "cloud", "all"):
         key = os.getenv("GROQ_API_KEY")
@@ -77,7 +86,7 @@ def build_providers(args: argparse.Namespace):
 def main() -> None:
     parser = argparse.ArgumentParser(description="LLM Benchmark Harness")
     parser.add_argument(
-        "--provider", choices=["ollama", "local", "groq", "openrouter", "cloud", "all"],
+        "--provider", choices=["ollama", "local", "nvidia", "groq", "openrouter", "gemini", "cloud", "all"],
         default=None,
     )
     parser.add_argument("--task", choices=[t.id for t in TASKS], default=None)

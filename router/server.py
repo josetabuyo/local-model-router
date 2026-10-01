@@ -10,8 +10,9 @@ POST /v1/chat/completions         — Hybrid full cascade; strategy via X-Router
                                     'local-first' (default): all local, then all cloud
                                     'cloud-first':           all cloud, then all local
 
-POST /v1/systemone                — TypeSafe Jev decisions (state + typed questions);
-                                    cascade typesafe → openrouter, then chat-model emulation.
+POST /v1/systemone                — Jev-style decisions (state + typed questions);
+                                    cascade ollama (tev1/nimble) → typesafe → openrouter,
+                                    then chat-model emulation.
                                     X-Router-Strategy: 'jev' (default) | 'emulate' | 'jev-only'
 
 GET  /v1/models                   — list all routable model identifiers
@@ -385,8 +386,9 @@ async def systemone_decide(request: Request):
     """TypeSafe Jev-compatible decision endpoint (see router/systemone.py).
 
     X-Router-Strategy header:
-      jev       (default) — real Jev providers first (typesafe → openrouter); if every
-                            one fails, emulate with a chat model unless JEV_EMULATE_FALLBACK=false
+      jev       (default) — real decision models first (ollama → typesafe → openrouter,
+                            see JEV_PROVIDER_ORDER); if every one fails, emulate with a
+                            chat model unless JEV_EMULATE_FALLBACK=false
       emulate             — skip Jev, answer with the chat cascade (no key needed)
       jev-only            — real providers only, hard 502 otherwise
     """
@@ -407,9 +409,9 @@ async def systemone_decide(request: Request):
     if strategy != "emulate":
         chain = systemone.provider_chain()
         if not chain:
-            errors.append("no System One provider configured (TYPESAFE_API_KEY / OPENROUTER_API_KEY)")
+            errors.append("no System One provider configured (JEV_LOCAL_MODEL / TYPESAFE_API_KEY / OPENROUTER_API_KEY)")
         for i, (provider, default_model) in enumerate(chain):
-            model = raw.get("model") or default_model
+            model = systemone.model_for(provider, default_model, raw.get("model"))
             try:
                 result = await systemone.call_jev(provider, model, state, questions)
             except httpx.HTTPStatusError as e:
@@ -423,6 +425,7 @@ async def systemone_decide(request: Request):
                 "resolved": f"{provider}/{model}",
                 "strategy": strategy,
                 "emulated": False,
+                "local": provider == "ollama",
                 "fallback_used": i > 0,
                 **({"errors": errors} if errors else {}),
             }

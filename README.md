@@ -57,38 +57,21 @@ results/            raw benchmark JSON — historical record
 
 ## Supported Models
 
-### Local — Ollama
+The full, current inventory lives in [`models.md`](models.md) — **generated** from
+`rankings/cloud.yaml` and `rankings/local.yaml` by `scripts/render_models.py`
+(the `/model-scout` daily audit re-renders it; `--check` fails if it is stale).
+Cascade order per category is whatever the yaml lists; the slot-0 picks as of
+2026-10-01:
 
-Models currently installed and ranked:
+| Category | Slot 0 (cloud) | Slot 0 (local, Ollama) |
+|---|---|---|
+| reasoning, coding, math, summarization, code_debug, context | `nvidia/z-ai/glm-5.3` | `qwen2.5:7b` / `qwen2.5-coder:7b` / `deepseek-r1:8b` |
+| instruction | `groq/qwen/qwen3.8-27b` | `qwen2.5:7b` |
+| multilingual | `groq/openai/gpt-oss-20b` | `qwen2.5:7b` |
+| decisions (`/v1/systemone`) | `typesafe/jev-latest` (needs key) | `tev1:4b-q4_K_M` |
 
-| Model | Size | Speed (avg) | Top categories |
-|-------|------|-------------|----------------|
-| `qwen2.5:7b` | 4.7 GB | ~22 tok/s | reasoning, coding, math, summarization, instruction, multilingual, code_debug |
-| `deepseek-r1:8b` | 5.2 GB | ~20 tok/s | context |
-
-Models tested and removed (not competitive enough to justify disk space):
-
-| Model | Size | Why removed |
-|-------|------|-------------|
-| `qwen2.5:14b` | 9.0 GB | ~7 tok/s average — 3× slower than `qwen2.5:7b` with no quality advantage |
-
-### Cloud
-
-Ranked by published benchmarks (no live calls — see [benchmark policy](#benchmark-policy)). Cascade order: **NVIDIA NIM → Groq → OpenRouter**.
-
-| Model | Provider | Top categories | Notes |
-|-------|----------|-----------------|-------|
-| `z-ai/glm-5.2` | NVIDIA NIM | coding, code_debug, context | 753B MoE, 1M context, MIT license. Top open-weight coding model (SWE-bench Pro 62.1). Successor to `glm-5.1` (EOL 2026-07-02) |
-| `moonshotai/kimi-k2.6` | NVIDIA NIM | reasoning, math | Arena ELO 1461 |
-| `qwen/qwen3.5-397b-a17b` | NVIDIA NIM | coding, math, instruction | MoE 397B, 256K context |
-| `deepseek-ai/deepseek-v4-pro` | NVIDIA NIM | reasoning, coding, math, context | 1M token context |
-| `minimaxai/minimax-m3` | NVIDIA NIM | summarization, context | 1M token context, best for long documents |
-| `qwen/qwen3.6-27b` | Groq | coding, math, code_debug | 94.1% AIME 2026; 83.9 LiveCodeBench v6 |
-| `llama-3.1-8b-instant` | Groq | multilingual, instruction | Fastest; primary for latency-sensitive multilingual (2-8s vs 40-60s NIM fallback) |
-| `openai/gpt-oss-120b` | Groq | reasoning, summarization, context | ~500 tok/s. **Deprecated 2026-06-29, decommissioned 2026-08-16** |
-| `google/gemma-4-31b-it:free` | OpenRouter | reasoning, coding, math, summarization | Arena ELO 1451; 262K context; free-tier last resort |
-
-> `llama-3.3-70b-versatile` (previously the top Groq model) was deprecated 2026-06-29 and is being phased out of the rankings.
+NVIDIA NIM's frontier models hang on a rotating basis (see the dated `NOTE`s in
+`rankings/cloud.yaml`); Groq, OpenRouter `:free` and Gemini are the stable backbone.
 
 ---
 
@@ -286,12 +269,13 @@ If a fallback was triggered:
 }
 ```
 
-### `POST /v1/systemone` — TypeSafe Jev decisions
+### `POST /v1/systemone` — Jev-style decisions
 
 [Jev](https://typesafe.ai) is not a chat model: it takes a `state` plus typed
 `questions` (`choice` / `score` / `noul`) and returns calibrated structured
-decisions. This endpoint speaks TypeSafe's request/response schema, so a
-client written against it can point at `api.typesafe.ai` unchanged.
+decisions. This endpoint speaks TypeSafe's request/response schema (the same
+one Ollama ≥ 0.35 adopted for its local decision models), so a client written
+against it can point at `api.typesafe.ai` or `localhost:11434` unchanged.
 
 ```bash
 curl http://localhost:9002/v1/systemone \
@@ -299,20 +283,25 @@ curl http://localhost:9002/v1/systemone \
   -d @plans/jev-example.json
 ```
 
-Provider cascade: `typesafe` (`TYPESAFE_API_KEY`, key from
-[console.typesafe.ai](https://console.typesafe.ai)) → `openrouter`
-(`/api/v1/systemone`, needs OpenRouter credits — Jev is not a `:free` model).
+Provider cascade (`JEV_PROVIDER_ORDER`, default `ollama,typesafe,openrouter`):
+
+| Provider | What | Needs |
+|---|---|---|
+| `ollama` | local decision model (`JEV_LOCAL_MODEL`, default `tev1:4b-q4_K_M`; `nimble` 9B is stronger) | Ollama ≥ 0.35, `ollama pull tev1:4b-q4_K_M` — free, ~0.2 s warm on an M-series 16 GB |
+| `typesafe` | real Jev, direct | `TYPESAFE_API_KEY` from [console.typesafe.ai](https://console.typesafe.ai) |
+| `openrouter` | Jev via `/api/v1/systemone` | OpenRouter credits (Jev is not a `:free` model) |
+
 `X-Router-Strategy` header:
 
 | Value | Behaviour |
 |---|---|
-| `jev` (default) | real providers; if all fail, emulate with the chat cascade (`JEV_EMULATE_FALLBACK=false` disables) |
-| `emulate` | skip Jev, answer with `best:instruction` forced into JSON — works with no Jev key |
-| `jev-only` | real providers only, hard 502 otherwise |
+| `jev` (default) | real decision models in cascade order; if all fail, emulate with the chat cascade (`JEV_EMULATE_FALLBACK=false` disables) |
+| `emulate` | skip decision models, answer with `best:instruction` forced into JSON |
+| `jev-only` | decision models only, hard 502 otherwise |
 
-Emulated answers carry `x_router.emulated: true` — their probabilities come
-from an LLM, not from a calibrated System One model. See
-[`plans/jev-systemone.md`](plans/jev-systemone.md).
+The response's `x_router` says which leg answered: `local: true` for Ollama,
+`emulated: true` when a chat LLM produced the probabilities (not calibrated).
+See [`plans/jev-systemone.md`](plans/jev-systemone.md).
 
 ### Utility endpoints
 
@@ -445,7 +434,7 @@ llm = ChatOpenAI(
 NVIDIA NIM is now live as a provider (see [`plans/nvidia-nim.md`](plans/nvidia-nim.md) for the original plan) — it leads the cascade for most categories in `rankings/cloud.yaml`.
 
 Near-term:
-- [x] TypeSafe Jev / System One endpoint (`POST /v1/systemone`, 2026-09-27) — waiting on a `TYPESAFE_API_KEY`
+- [x] Jev-style decision endpoint (`POST /v1/systemone`, 2026-09-27) — local `tev1` on Ollama 0.35 live since 2026-10-01; real Jev slots wait on a `TYPESAFE_API_KEY`
 - [ ] Streaming support (`stream: true`)
 - [ ] `context_long` benchmark category (50k–100k token tasks)
 - [ ] `best:fast` meta-category — always routes to the fastest available model regardless of quality tier
