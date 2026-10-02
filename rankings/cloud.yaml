@@ -2004,6 +2004,62 @@
 #   llm-stats.com/llm-updates — 2026-10-01; github.com/ollama/ollama/
 #   releases and formulae.brew.sh/api/formula/ollama.json — 2026-10-01.
 
+# NOTE 2026-10-02: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for a 10th day: 200 OK 3.8s, correct answer ("51").
+#   OpenRouter free quota at start: 0/50 used (~12 spent today).
+#   PROBE CAVEAT: Mac on battery (55%, discharging) — z-ai/glm-5.3-flash
+#   (936s) and deepseek-ai/deepseek-v4.1-flash (960s) read HTTP 000 far past
+#   curl -m 40/60: sleep artifacts despite caffeinate, not evidence. Both
+#   stay out. (glm-5.3-flash did return one 200 at 28.1s with empty content
+#   before that — slow, not a restore.)
+#   moonshotai/kimi-k3 200 OK 2.4s, correct — 2nd consecutive clean day
+#   after the 09-29 404. Still watch only: ranks above glm-5.3 by 9 ELO
+#   (within CI overlap) and has relapsed 3 times this month.
+#   moonshotai/kimi-k2.6 404 (9th day). nvidia/nemotron-3-super-120b-a12b
+#   200 OK 3.3s. openai/gpt-oss-20b (NIM) 200 OK 1.5s.
+#   Groq: gpt-oss-120b, gpt-oss-20b, qwen3.8-27b all 200 OK ~1.0s.
+#   Gemini: gemini-3.1-flash-lite 200 OK 3.4s, gemini-3.5-flash 10.5s.
+#   OpenRouter: nemotron-3-super-120b-a12b:free 2.1s, laguna-s-2.1:free
+#   3.1s, gemma-4-26b-a4b-it:free 2.4s — all 200 correct. google/gemma-4-
+#   31b-it:free 429 (9th day) — kept. cohere/north-mini-code:free and
+#   nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free 200 with empty
+#   content at max_tokens 600, then 200 with "51" at max_tokens 1500 (budget
+#   eaten by reasoning, not a fault) — nano-omni's worker-limit error gone.
+#   WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free: 200 with a real
+#   answer ("51", 1.1s) — first clean day after two overloaded days. Day 1
+#   of a new streak; still out (Arena #115 vs AA ranking, user decision).
+#   NEW SLUG evaluated, NOT added: apodex/apodex-1.1-mini:free (35B open-
+#   weight MoE, 256K ctx, released 2026-08-24, on OpenRouter free since
+#   ~2026-09-30). Live probe 200 OK 1.9s, correct. Only vendor-reported
+#   agentic scores (FrontierFinance 50.2, APEX-Agents 27.7); not on
+#   arena.ai, no independent Artificial Analysis score for Mini (the 1.1
+#   flagship has Intelligence Index 44). Cannot beat any slot 0 without an
+#   independent number. Locally: GGUF exists but 35B at Q4 ≈ 20 GB > 16 GB.
+#   Revisit if Arena/AA list it.
+#   Live catalogs: NIM /v1/models 81 entries (unchanged). OpenRouter :free
+#   17 entries (16 + apodex-1.1-mini). typesafe/jev-router still pricing -1
+#   (paid router), no :free Jev.
+#   Rankings: arena.ai Text leaderboard still dated 2026-09-30, values
+#   identical to yesterday (Kimi K3 #17 1488±5, GLM-5.3 Max #26 1479±6).
+#   llm-stats.com: no open-weight release 09-28..10-02. No new free
+#   provider found.
+#   LOCAL (Apple Silicon 16GB) — CHANGED: local Ollama client is now 0.35.0
+#   (was 0.21.2), tev1:4b-q4_K_M installed; /v1/systemone live probe with
+#   plans/jev-example.json 200 OK 19.6s, sane answer (department=technical
+#   0.96). Local Jev backend is unblocked and working. Ollama v0.35.1-rc2
+#   and v0.40.0-rc0 still pre-release; brew stable 0.35.0. tev1 (0.8b, 4b)
+#   and nimble (9b) tag lists unchanged — no new decision-model versions.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 —
+#   verified 2026-10-02; integrate.api.nvidia.com/v1/models and
+#   openrouter.ai/api/v1/models — 2026-10-02; arena.ai/leaderboard/text
+#   (dated 2026-09-30) — 2026-10-02; llm-stats.com/llm-updates —
+#   2026-10-02; huggingface.co/apodex/Apodex-1.1-mini and
+#   benchlm.ai/models/apodex-1-1-mini — 2026-10-02; github.com/ollama/
+#   ollama/releases, formulae.brew.sh/api/formula/ollama.json,
+#   ollama.com/library/tev1/tags, ollama.com/library/nimble/tags —
+#   2026-10-02.
 categories:
 
   reasoning:
