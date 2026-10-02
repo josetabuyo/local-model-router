@@ -1,0 +1,146 @@
+[
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "reasoning",
+    "task_name": "Reasoning",
+    "ttft_s": null,
+    "total_s": 25.44580829096958,
+    "prompt_tokens": 69,
+    "output_tokens": 300,
+    "tokens_per_sec": 11.78976107064622,
+    "cost_usd": 3.180726036371198e-05,
+    "response": "Here is the step-by-step solution to find out how much change Maria receives.\n\n### Step 1: Calculate the total cost of the apples\nMaria buys 8 apples at $\\$0.75$ each.\n$$ \\text{Cost of Apples} = 8 \\times 0.75 $$\n\nCalculation breakdown:\n*   $8 \\times 0.75$ is the same as $8 \\times \\frac{3}{4}$\n*   $8 \\div 4 = 2$\n*   $2 \\times 3 = 6$\n\n$$ \\text{Cost of Apples} = \\$6.00 $$\n\n### Step 2: Calculate the total cost of the oranges\nMaria buys 5 oranges at $\\$1.20$ each.\n$$ \\text{Cost of Oranges} = 5 \\times 1.20 $$\n\nCalculation breakdown:\n*   $5 \\times 1 = 5$\n*   $5 \\times 0.20 = 1.00$\n*   $5 + 1 = 6$\n\n$$ \\text{Cost of Oranges} = \\$6.00 $$\n\n### Step 3: Calculate the total amount spent\nAdd the cost of the apples and the cost of the oranges together.\n$$ \\text{Total Cost} = \\text{Cost of Apples",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "coding",
+    "task_name": "Coding",
+    "ttft_s": null,
+    "total_s": 11.886930540960748,
+    "prompt_tokens": 48,
+    "output_tokens": 125,
+    "tokens_per_sec": 10.51575085504765,
+    "cost_usd": 1.4858663176200933e-05,
+    "response": "```python\ndef sieve(n):\n    if n < 2:\n        return []\n    \n    is_prime = [True] * (n + 1)\n    is_prime[0] = is_prime[1] = False\n    \n    for i in range(2, int(n ** 0.5) + 1):\n        if is_prime[i]:\n            for j in range(i * i, n + 1, i):\n                is_prime[j] = False\n                \n    return [i for i in range(n + 1) if is_prime[i]]\n```",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "summarization",
+    "task_name": "Summarization",
+    "ttft_s": null,
+    "total_s": 7.13557020801818,
+    "prompt_tokens": 118,
+    "output_tokens": 58,
+    "tokens_per_sec": 8.128292247033865,
+    "cost_usd": 8.919462760022724e-06,
+    "response": "Artificial intelligence has revolutionized various sectors by empowering machines to handle complex tasks like medical diagnosis and fraud detection through advanced machine learning models. Despite these technological advancements, significant concerns regarding privacy, bias, and ethical usage have prompted experts and policymakers to develop guidelines that balance innovation with societal responsibility.",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "instruction",
+    "task_name": "Instruction Following",
+    "ttft_s": null,
+    "total_s": 1.3559050419717096,
+    "prompt_tokens": 34,
+    "output_tokens": 20,
+    "tokens_per_sec": 14.750295471220243,
+    "cost_usd": 1.694881302464637e-06,
+    "response": "[\"Amsterdam\", \"Bern\", \"Brussels\", \"Canberra\", \"Copenhagen\"]",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "math",
+    "task_name": "Math",
+    "ttft_s": null,
+    "total_s": 14.31863854196854,
+    "prompt_tokens": 62,
+    "output_tokens": 300,
+    "tokens_per_sec": 20.95171263110576,
+    "cost_usd": 1.7898298177460672e-05,
+    "response": "Here is the step-by-step solution to the problem.\n\n### Given Function\n$$f(x) = 3x^2 - 2x + 1$$\n\n---\n\n### Step 1: Find the derivative $f'(x)$\n\nTo find the derivative of a polynomial function, we apply the **Power Rule** of differentiation. The Power Rule states that for any term $ax^n$, the derivative is $n \\cdot ax^{n-1}$. The derivative of a constant is always 0.\n\nApplying this to each term in $f(x)$:\n1.  **Term $3x^2$**:\n    $$ \\frac{d}{dx}(3x^2) = 2 \\cdot 3x^{(2-1)} = 6x $$\n2.  **Term $-2x$**:\n    $$ \\frac{d}{dx}(-2x) = \\frac{d}{dx}(-2x^1) = 1 \\cdot (-2)x^{(1-1)} = -2x^0 = -2 $$\n3.  **Term $+1$**:\n    Since this is a constant, its derivative is:\n    $$ \\frac{d}{dx}(1) = 0 $$\n\nCombining these results:\n$$ f'(x) = 6x - 2 + 0 $$\n$$ f'(x) =",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "multilingual",
+    "task_name": "Multilingual",
+    "ttft_s": null,
+    "total_s": 4.57258770801127,
+    "prompt_tokens": 51,
+    "output_tokens": 71,
+    "tokens_per_sec": 15.527312877040393,
+    "cost_usd": 5.715734635014087e-06,
+    "response": "{\n  \"fr\": \"Le rapide renard brun saute par-dessus le chien paresseux.\",\n  \"de\": \"Der schnelle braune Fuchs springt \u00fcber den faulen Hund.\",\n  \"ja\": \"\u7d20\u65e9\u3044\u8336\u8272\u306e\u30ad\u30c4\u30cd\u304c\u3001\u6020\u3051\u8005\u306e\u72ac\u3092\u98db\u3073\u8d8a\u3048\u308b\u3002\"\n}",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "code_debug",
+    "task_name": "Code Debug",
+    "ttft_s": null,
+    "total_s": 4.9642508330289274,
+    "prompt_tokens": 117,
+    "output_tokens": 94,
+    "tokens_per_sec": 18.935384846910747,
+    "cost_usd": 6.205313541286159e-06,
+    "response": "```python\ndef binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen3.5:9b",
+    "provider": "ollama",
+    "task_id": "context",
+    "task_name": "Context Window",
+    "ttft_s": null,
+    "total_s": 3.609017791983206,
+    "prompt_tokens": 170,
+    "output_tokens": 33,
+    "tokens_per_sec": 9.143762071027652,
+    "cost_usd": 4.5112722399790076e-06,
+    "response": "The youngest cat is Pepper who turned 1 last Tuesday, while the oldest cat, Luna, came from the Paws & Hearts rescue organization based in Austin.",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  }
+]

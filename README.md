@@ -314,6 +314,21 @@ GET /v1/router/cache               # cache stats (entries, max_entries, ttl_seco
 
 ---
 
+## Thinking models on Ollama
+
+`qwen3.5:9b` and `deepseek-r1:8b` reason before answering. Measured on this
+harness, that trace costs 30–130 s per trivial task and one timeout
+(`rankings/local.yaml`, 2026-10-01); with thinking off the same model answers
+in 1–25 s with the same correctness. So:
+
+- the router sends `think: false` to Ollama by default (`OLLAMA_THINK=true`
+  restores it; `model` leaves it to the model). Ollama's `/v1` endpoint ignores
+  that flag, so plain chat requests go through the native `/api/chat` and are
+  mapped back to the OpenAI shape; requests with `tools` / `response_format`
+  stay on `/v1` (thinking on).
+- the benchmark harness has `--no-think`; `Result.extra.think` records the mode,
+  and `rankings/local.yaml` notes say which mode each number came from.
+
 ## Response cache
 
 `best:<category>` requests are cached — identical repeated calls (same category, same

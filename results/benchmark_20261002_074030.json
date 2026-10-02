@@ -1,0 +1,146 @@
+[
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "reasoning",
+    "task_name": "Reasoning",
+    "ttft_s": null,
+    "total_s": 16.00850595801603,
+    "prompt_tokens": 86,
+    "output_tokens": 300,
+    "tokens_per_sec": 18.74003737680338,
+    "cost_usd": 2.0010632447520038e-05,
+    "response": "Sure, let's break down the problem step by step.\n\n1. **Calculate the cost of the apples:**\n   - Maria buys 8 apples.\n   - Each apple costs $0.75.\n   - Cost of apples = \\( 8 \\times 0.75 \\)\n   - \\( 8 \\times 0.75 = 6.00 \\)\n\n2. **Calculate the cost of the oranges:**\n   - Maria buys 5 oranges.\n   - Each orange costs $1.20.\n   - Cost of oranges = \\( 5 \\times 1.20 \\)\n   - \\( 5 \\times 1.20 = 6.00 \\)\n\n3. **Calculate the total cost of the apples and oranges:**\n   - Total cost = Cost of apples + Cost of oranges\n   - Total cost = \\( 6.00 + 6.00 \\)\n   - \\( 6.00 + 6.00 = 12.00 \\)\n\n4. **Calculate the change Maria receives:**\n   - Maria pays with a $20 bill.\n   - Change received = Amount paid - Total cost\n   - Change received = \\( 20.00 - 12.00 \\)\n   - \\( 20.00 - 12.00 = 8.00 \\)\n\nSo, Maria receives $8",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "coding",
+    "task_name": "Coding",
+    "ttft_s": null,
+    "total_s": 4.03403049998451,
+    "prompt_tokens": 65,
+    "output_tokens": 99,
+    "tokens_per_sec": 24.541212566533677,
+    "cost_usd": 5.042538124980637e-06,
+    "response": "```python\ndef sieve(n):\n    primes = [True for _ in range(n+1)]\n    p = 2\n    while (p * p <= n):\n        if (primes[p] == True):\n            for i in range(p * p, n+1, p):\n                primes[i] = False\n        p += 1\n    prime_numbers = [p for p in range(2, n) if primes[p]]\n    return prime_numbers\n```",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "summarization",
+    "task_name": "Summarization",
+    "ttft_s": null,
+    "total_s": 3.072575833008159,
+    "prompt_tokens": 134,
+    "output_tokens": 65,
+    "tokens_per_sec": 21.154888774986794,
+    "cost_usd": 3.840719791260198e-06,
+    "response": "Artificial intelligence has revolutionized various industries by enabling machines to perform tasks that previously required human intelligence, such as diagnosing diseases and translating languages. However, this progress comes with significant concerns about privacy, bias, job displacement, and ethical decision-making, prompting researchers and policymakers to develop guidelines that ensure AI benefits society responsibly.",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "instruction",
+    "task_name": "Instruction Following",
+    "ttft_s": null,
+    "total_s": 0.9723182920133695,
+    "prompt_tokens": 51,
+    "output_tokens": 22,
+    "tokens_per_sec": 22.626335615310524,
+    "cost_usd": 1.2153978650167118e-06,
+    "response": "[\"Aberdeen\", \"Bangkok\", \"Copenhagen\", \"Dublin\", \"Helsinki\"]",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "math",
+    "task_name": "Math",
+    "ttft_s": null,
+    "total_s": 11.722151916997973,
+    "prompt_tokens": 79,
+    "output_tokens": 300,
+    "tokens_per_sec": 25.592570555665482,
+    "cost_usd": 1.4652689896247465e-05,
+    "response": "Sure, let's start by finding the derivative of the function \\(f(x) = 3x^2 - 2x + 1\\). The derivative, denoted as \\(f'(x)\\), can be found using basic differentiation rules.\n\n### Step 1: Find \\(f'(x)\\)\nThe function \\(f(x)\\) is a polynomial, so we can use the power rule for differentiation, which states that if \\(f(x) = ax^n\\), then \\(f'(x) = anx^{n-1}\\).\n\n1. Differentiate the term \\(3x^2\\):\n   \\[\n   \\frac{d}{dx}(3x^2) = 3 \\cdot 2x^{2-1} = 6x\n   \\]\n\n2. Differentiate the term \\(-2x\\):\n   \\[\n   \\frac{d}{dx}(-2x) = -2 \\cdot 1x^{1-1} = -2\n   \\]\n\n3. The derivative of a constant (the term \\(1\\)) is zero:\n   \\[\n   \\frac{d}{dx}(1) = 0\n   \\]\n\nTherefore, the derivative of \\(f(x) = 3x^2 - 2x + 1\\) is:\n\\[\nf'(x) = 6x - 2\n\\]\n\n### Step 2: Find the value of \\(x\\) where \\(",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "multilingual",
+    "task_name": "Multilingual",
+    "ttft_s": null,
+    "total_s": 4.430844665970653,
+    "prompt_tokens": 67,
+    "output_tokens": 110,
+    "tokens_per_sec": 24.825966219220323,
+    "cost_usd": 5.5385558324633165e-06,
+    "response": "{\n  \"fr\": \"Le renard brun rapide saute par-dessus le chien paresseux.\",\n  \"de\": \"Der schnelle braune Fuchs springt \u00fcber den faulen Hund.\",\n  \"ja\": \"\u901f\u3044\u8336\u8272\u306e fox \u304c\u6020\u3051\u8005\u306a dog \u3092\u98db\u3073\u8d8a\u3048\u307e\u3059\u3002(\u6ce8\uff1a\u65e5\u672c\u8a9e\u3067\u306f fox \u3068 dog \u306f\u5358\u8a9e\u3068\u3057\u3066\u51fa\u529b\u305b\u305a\u306b\uff0c\u6587\u8109\u304b\u3089\u9069\u5207\u306a\u548c\u88fd\u30a4\u30ae\u30ea\u30b9\u8a9e\u306b\u7f6e\u304d\u63db\u3048\u3066\u3044\u307e\u3059\u3002)\"\n}",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "code_debug",
+    "task_name": "Code Debug",
+    "ttft_s": null,
+    "total_s": 3.9171395410085097,
+    "prompt_tokens": 127,
+    "output_tokens": 89,
+    "tokens_per_sec": 22.72066110187282,
+    "cost_usd": 4.896424426260638e-06,
+    "response": "```python\ndef binary_search(arr, target):\n    left, right = 0, len(arr) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if arr[mid] == target:\n            return mid\n        elif arr[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1\n```",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  },
+  {
+    "model_id": "qwen2.5:7b",
+    "provider": "ollama",
+    "task_id": "context",
+    "task_name": "Context Window",
+    "ttft_s": null,
+    "total_s": 1.8432390840025619,
+    "prompt_tokens": 177,
+    "output_tokens": 31,
+    "tokens_per_sec": 16.81821976815077,
+    "cost_usd": 2.3040488550032024e-06,
+    "response": "The youngest cat is Pepper, who is 1 year old, and the oldest cat, Luna, came from the Paws & Hearts rescue organization.",
+    "error": null,
+    "extra": {
+      "think": false,
+      "thinking_chars": 0
+    }
+  }
+]

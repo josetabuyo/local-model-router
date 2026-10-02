@@ -1,152 +1,137 @@
-# Local model rankings — own benchmark runs 2026-06-20 (qwen2.5/deepseek), 2026-07-27
-# (qwen2.5-coder) and 2026-10-01 (qwen3.5:9b, Ollama 0.35.0, default thinking ON).
-# Sources: results/benchmark_20260620_101129.json, results/benchmark_20261001_091330.json
+# Local model rankings — own benchmark runs on this Mac (Apple Silicon, 16 GB).
+# 2026-06-20: qwen2.5:7b / deepseek-r1:8b / qwen2.5:14b (results/benchmark_20260620_101129.json)
+# 2026-07-27: qwen2.5-coder:7b
+# 2026-10-01: qwen3.5:9b with thinking ON  (results/benchmark_20261001_091330.json)
+# 2026-10-02: qwen3.5:9b --no-think and qwen2.5:7b re-run, Ollama 0.35.0
+#             (results/benchmark_20261002_073827.json, results/benchmark_20261002_074030.json)
+# `think: false` on an entry means the number was measured with thinking off; the router
+# sends think=false to Ollama by default (OLLAMA_THINK), so that is the number that applies.
+# qwen2.5:14b entries removed 2026-10-02 — uninstalled since 2026-06-21, the cascade kept trying it.
 # Slot 0 = best for that category (used by best:<category>)
 # Models not ranked top in any category can be removed from Ollama to free disk space.
 
 categories:
 
   reasoning:
-    - model: qwen2.5:7b
-      tokens_per_sec: 17.97
-      wall_clock_s: 19.4
-      note: "Correct and fast. deepseek is marginally faster in tok/s but produces 3000+ CoT tokens = 164s wall clock."
-    - model: deepseek-r1:8b
-      tokens_per_sec: 18.85
-      wall_clock_s: 164.6
-      note: "Chain-of-thought inflates total time massively for simple tasks."
-    - model: qwen2.5:14b
-      tokens_per_sec: 4.61
-      wall_clock_s: 60.0
-      note: "Slow, not competitive. Removed from Ollama 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 16.02
-      wall_clock_s: 115.8
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct, but thinking-on output is 1855 tokens — 6x the wall clock of qwen2.5:7b for the same task. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen2.5:7b
+    tokens_per_sec: 18.74
+    wall_clock_s: 16.0
+    note: "Correct and fast. deepseek is marginally faster in tok/s but produces 3000+ CoT tokens = 164s wall clock. Re-measured 2026-10-02 on Ollama 0.35 (300 tok)."
+  - model: qwen3.5:9b
+    tokens_per_sec: 11.79
+    wall_clock_s: 25.4
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 300 tok. With thinking ON (2026-10-01) the same task took 116s/1855 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 1: same correctness as qwen2.5:7b at 1.4-3x the wall clock; better published benchmarks (AA Intelligence Index 11 vs ~8 median for its size)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 18.85
+    wall_clock_s: 164.6
+    note: "Chain-of-thought inflates total time massively for simple tasks."
 
   coding:
-    - model: qwen2.5-coder:7b
-      tokens_per_sec: 15.9
-      wall_clock_s: 10.9
-      note: "Added 2026-07-27. Code-specialized fine-tune of qwen2.5:7b, same 4.7GB footprint — fits the same 16GB M1 Pro headroom with no cost. Tied on speed with plain qwen2.5:7b once warm (both ~9-11s on this harness's task); wins on published HumanEval (high-70s vs plain qwen2.5's mid-70s) for the same resource cost, so it's the better default for coding-shaped prompts."
-    - model: qwen2.5:7b
-      tokens_per_sec: 24.05
-      wall_clock_s: 4.0
-      note: "General-purpose, not code-specialized. Kept as a close second — near-identical speed to qwen2.5-coder:7b, fine for quick non-code-heavy tasks."
-    - model: deepseek-r1:8b
-      tokens_per_sec: 21.68
-      wall_clock_s: 41.8
-      note: "Verbose CoT inflates response time."
-    - model: qwen2.5:14b
-      tokens_per_sec: 8.76
-      wall_clock_s: 12.2
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 18.27
-      wall_clock_s: 68.4
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct sieve. 1249 output tokens with reasoning trace; qwen2.5-coder:7b does it in 11s. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen2.5-coder:7b
+    tokens_per_sec: 15.9
+    wall_clock_s: 10.9
+    note: "Added 2026-07-27. Code-specialized fine-tune of qwen2.5:7b, same 4.7GB footprint — fits the same 16GB M1 Pro headroom with no cost. Tied on speed with plain qwen2.5:7b once warm (both ~9-11s on this harness's task); wins on published HumanEval (high-70s vs plain qwen2.5's mid-70s) for the same resource cost, so it's the better default for coding-shaped prompts."
+  - model: qwen3.5:9b
+    tokens_per_sec: 10.52
+    wall_clock_s: 11.9
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 125 tok. With thinking ON (2026-10-01) the same task took 68s/1249 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 1: same correctness as qwen2.5:7b at 1.4-3x the wall clock; better published benchmarks (AA Intelligence Index 11 vs ~8 median for its size)."
+  - model: qwen2.5:7b
+    tokens_per_sec: 24.54
+    wall_clock_s: 4.0
+    note: "General-purpose, not code-specialized. Kept as a close second — near-identical speed to qwen2.5-coder:7b, fine for quick non-code-heavy tasks. Re-measured 2026-10-02 on Ollama 0.35 (99 tok)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 21.68
+    wall_clock_s: 41.8
+    note: Verbose CoT inflates response time.
 
   summarization:
-    - model: qwen2.5:7b
-      tokens_per_sec: 21.67
-      wall_clock_s: 3.5
-    - model: deepseek-r1:8b
-      tokens_per_sec: 21.25
-      wall_clock_s: 12.5
-    - model: qwen2.5:14b
-      tokens_per_sec: 8.96
-      wall_clock_s: 7.0
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 16.47
-      wall_clock_s: 81.2
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Good summary, but 1337 tokens / 81s — thinking overhead dominates a trivial task. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen2.5:7b
+    tokens_per_sec: 21.15
+    wall_clock_s: 3.1
+    note: "Re-measured 2026-10-02 on Ollama 0.35 (65 tok)."
+  - model: qwen3.5:9b
+    tokens_per_sec: 8.13
+    wall_clock_s: 7.1
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 58 tok. With thinking ON (2026-10-01) the same task took 81s/1337 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 1: same correctness as qwen2.5:7b at 1.4-3x the wall clock; better published benchmarks (AA Intelligence Index 11 vs ~8 median for its size)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 21.25
+    wall_clock_s: 12.5
 
   instruction:
-    - model: qwen2.5:7b
-      tokens_per_sec: 20.42
-      wall_clock_s: 1.3
-      note: "Concise output (27 tokens). deepseek generated 233 tokens for the same trivial task."
-    - model: deepseek-r1:8b
-      tokens_per_sec: 21.94
-      wall_clock_s: 10.6
-      note: "CoT overhead for trivial instruction-following tasks."
-    - model: qwen2.5:14b
-      tokens_per_sec: 8.18
-      wall_clock_s: 2.8
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 16.15
-      wall_clock_s: 129.3
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct answer after 2088 tokens of reasoning (129s) vs 27 tokens / 1.3s for qwen2.5:7b. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen3.5:9b
+    tokens_per_sec: 14.75
+    wall_clock_s: 1.4
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 20 tok. With thinking ON (2026-10-01) the same task took 129s/2088 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 0: qwen2.5:7b listed 'Aberdeen' as a capital in the 2026-10-02 run; qwen3.5 answered correctly for +0.4s."
+  - model: qwen2.5:7b
+    tokens_per_sec: 22.63
+    wall_clock_s: 1.0
+    note: "Concise output (27 tokens). deepseek generated 233 tokens for the same trivial task. Re-measured 2026-10-02 on Ollama 0.35 (22 tok)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 21.94
+    wall_clock_s: 10.6
+    note: "CoT overhead for trivial instruction-following tasks."
 
   math:
-    - model: qwen2.5:7b
-      tokens_per_sec: 25.61
-      wall_clock_s: 26.5
-    - model: deepseek-r1:8b
-      tokens_per_sec: 21.45
-      wall_clock_s: 38.4
-    - model: qwen2.5:14b
-      tokens_per_sec: 7.02
-      wall_clock_s: 85.5
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 17.84
-      wall_clock_s: 97.9
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct derivative. 1746 tokens, 98s. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen2.5:7b
+    tokens_per_sec: 25.59
+    wall_clock_s: 11.7
+    note: "Re-measured 2026-10-02 on Ollama 0.35 (300 tok)."
+  - model: qwen3.5:9b
+    tokens_per_sec: 20.95
+    wall_clock_s: 14.3
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 300 tok. With thinking ON (2026-10-01) the same task took 98s/1746 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 1: same correctness as qwen2.5:7b at 1.4-3x the wall clock; better published benchmarks (AA Intelligence Index 11 vs ~8 median for its size)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 21.45
+    wall_clock_s: 38.4
 
   multilingual:
-    - model: qwen2.5:7b
-      tokens_per_sec: 22.68
-      wall_clock_s: 3.2
-    - model: deepseek-r1:8b
-      tokens_per_sec: 21.88
-      wall_clock_s: 17.9
-    - model: qwen2.5:14b
-      tokens_per_sec: 6.09
-      wall_clock_s: 11.3
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 0.0
-      wall_clock_s: 180.1
-      error: "timed out"
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). TIMED OUT at 180s (0 output tokens) — the only failure of the run. Do not rank for this category until re-run. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen2.5:7b
+    tokens_per_sec: 24.83
+    wall_clock_s: 4.4
+    note: "Re-measured 2026-10-02 on Ollama 0.35 (110 tok)."
+  - model: qwen3.5:9b
+    tokens_per_sec: 15.53
+    wall_clock_s: 4.6
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 71 tok. With thinking ON (2026-10-01) the same task took timed out at 180s. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 1: same correctness as qwen2.5:7b at 1.4-3x the wall clock; better published benchmarks (AA Intelligence Index 11 vs ~8 median for its size)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 21.88
+    wall_clock_s: 17.9
 
   code_debug:
-    - model: qwen2.5-coder:7b
-      tokens_per_sec: 10.8
-      wall_clock_s: 8.2
-      note: "Added 2026-07-27. Code-specialized fine-tune, slightly faster than plain qwen2.5:7b here (8.2s vs 8.4s) at the same 4.7GB footprint — same reasoning as the coding category."
-    - model: qwen2.5:7b
-      tokens_per_sec: 21.77
-      wall_clock_s: 4.1
-    - model: deepseek-r1:8b
-      tokens_per_sec: 21.25
-      wall_clock_s: 15.6
-    - model: qwen2.5:14b
-      tokens_per_sec: 6.95
-      wall_clock_s: 11.8
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 18.03
-      wall_clock_s: 30.6
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct fix, 551 tokens / 31s — its best result relative to the 7B models (8-10s). Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen2.5-coder:7b
+    tokens_per_sec: 10.8
+    wall_clock_s: 8.2
+    note: "Added 2026-07-27. Code-specialized fine-tune, slightly faster than plain qwen2.5:7b here (8.2s vs 8.4s) at the same 4.7GB footprint — same reasoning as the coding category."
+  - model: qwen3.5:9b
+    tokens_per_sec: 18.94
+    wall_clock_s: 5.0
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 94 tok. With thinking ON (2026-10-01) the same task took 31s/551 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 1: same correctness as qwen2.5:7b at 1.4-3x the wall clock; better published benchmarks (AA Intelligence Index 11 vs ~8 median for its size)."
+  - model: qwen2.5:7b
+    tokens_per_sec: 22.72
+    wall_clock_s: 3.9
+    note: "Re-measured 2026-10-02 on Ollama 0.35 (89 tok)."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 21.25
+    wall_clock_s: 15.6
 
   context:
-    - model: deepseek-r1:8b
-      tokens_per_sec: 19.24
-      wall_clock_s: 23.5
-      note: "Correct answer on context retrieval task (identified Pepper as youngest cat). qwen2.5:7b answered Mochi — wrong."
-    - model: qwen2.5:7b
-      tokens_per_sec: 16.08
-      wall_clock_s: 1.9
-      note: "Faster but gave the wrong answer on the context task."
-    - model: qwen2.5:14b
-      tokens_per_sec: 1.35
-      wall_clock_s: 28.1
-      note: "Removed 2026-06-21."
-    - model: qwen3.5:9b
-      tokens_per_sec: 18.16
-      wall_clock_s: 63.8
-      note: "Benchmarked 2026-10-01 (thinking ON by default, 6.6 GB). Correct (Pepper). 64s vs deepseek-r1:8b's 23.5s — slower, same answer. Daily driver for interactive use since 2026-08-12, but NOT a cascade pick on wall clock until re-run with think=false."
+  - model: qwen3.5:9b
+    tokens_per_sec: 9.14
+    wall_clock_s: 3.6
+    think: false
+    note: "2026-10-02, think=false (the router's default since 2026-10-02): correct, 33 tok. With thinking ON (2026-10-01) the same task took 64s/1158 tok. 6.6 GB, 256K context, vision+tools. Daily driver for interactive use since 2026-08-12. Slot 0: correct in both 2026-10 runs at 3.6s, and 256K context vs qwen2.5:7b's 32K / deepseek-r1:8b's 128K — the window is what this category is for. deepseek-r1:8b (June slot 0, 23.5s with thinking) demoted."
+  - model: deepseek-r1:8b
+    tokens_per_sec: 19.24
+    wall_clock_s: 23.5
+    note: "Correct answer on context retrieval task (identified Pepper as youngest cat). qwen2.5:7b answered Mochi — wrong."
+  - model: qwen2.5:7b
+    tokens_per_sec: 16.82
+    wall_clock_s: 1.8
+    note: "Wrong answer (Mochi) on 2026-06-20, correct (Pepper) on 2026-10-02 at 1.8s — inconsistent; 32K context. Re-measured 2026-10-02 on Ollama 0.35."

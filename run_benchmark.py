@@ -9,6 +9,7 @@ Usage:
   uv run run_benchmark.py --models qwen2.5:7b    # specific model(s)
   uv run run_benchmark.py --throttle             # low-impact mode (slower, less CPU)
   uv run run_benchmark.py --threads 2            # limit CPU threads (default: 4)
+  uv run run_benchmark.py --no-think             # disable reasoning traces on thinking models (Ollama)
 """
 from __future__ import annotations
 
@@ -36,7 +37,7 @@ console = Console()
 
 def build_providers(args: argparse.Namespace):
     pairs = []
-    ollama = OllamaProvider()
+    ollama = OllamaProvider(think=False if args.no_think else None)
 
     if args.provider in ("ollama", "local", "all", None):
         local_models = ollama.list_models()
@@ -92,6 +93,10 @@ def main() -> None:
     parser.add_argument("--task", choices=[t.id for t in TASKS], default=None)
     parser.add_argument("--models", default=None, help="Comma-separated Ollama model names")
     parser.add_argument("--all-cloud", action="store_true")
+    parser.add_argument(
+        "--no-think", action="store_true",
+        help="Ollama only: send think=false so thinking models (qwen3.x, deepseek-r1) answer directly",
+    )
     parser.add_argument("--no-save", action="store_true")
     parser.add_argument(
         "--throttle", action="store_true",
