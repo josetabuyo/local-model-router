@@ -127,6 +127,22 @@ documentado en `rankings/cloud.yaml`), Cloudflare lo cubriría sin bajar de
 calidad. ~147K tokens/día de gpt-oss-120b (o menos en GLM-5.3, que cuesta
 más neurons) alcanza para un cascade de fallback, no para bench masivo.
 
+**Revisión 2026-10-03 (model-scout) — ahora también sirve modelos de
+decisión Jev-compatibles:** Cloudflare lanzó Clef (27B) y Clef-flash (9B)
+el 2026-10-01 (blog.cloudflare.com/clef-decision-models), "fully Jev-API
+compatible", Apache 2.0. En Workers AI: `@cf/cloudflare/clef` ($0.24/M in,
+21,818 neurons/M) y `@cf/cloudflare/clef-flash` ($0.09/M in, 8,182
+neurons/M) según la pricing page (verificada 2026-10-03). Con los 10,000
+neurons/día gratis → ~1.2M tokens de entrada/día de clef-flash. Sería el
+primer backend cloud GRATIS para `/v1/systemone` (hoy: TypeSafe sin key,
+Jev en OpenRouter es pago). Suma un segundo motivo a la misma API key:
+fallback de glm-5.3 en el cascade chat + backend cloud de decisión.
+Pendiente al integrar: confirmar la forma exacta del request REST de Clef
+(¿`/ai/run/@cf/cloudflare/clef-flash` con `state`/`questions`, o un
+endpoint `/systemone`?) — el blog no lo detalla. Si se aprueba, sumar en
+`router/systemone.py` un backend `cloudflare` entre `ollama` y `typesafe`.
+Benchmarks sólo del vendor por ahora.
+
 **Pasos de integración si el usuario aprueba** (~1 hora, mismo patrón que
 Gemini):
 1. Usuario: cuenta Cloudflare (Workers Free), crear API token con permiso

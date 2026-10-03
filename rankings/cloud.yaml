@@ -2060,6 +2060,65 @@
 #   ollama/releases, formulae.brew.sh/api/formula/ollama.json,
 #   ollama.com/library/tev1/tags, ollama.com/library/nimble/tags —
 #   2026-10-02.
+# NOTE 2026-10-03: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) held for an 11th day: 200 OK 2.2s, correct ("51").
+#   OpenRouter free quota at start: 0/50 used (~8 spent today).
+#   PROBE CAVEAT: Mac on battery (100%, discharging) — z-ai/glm-5.3-flash
+#   and deepseek-ai/deepseek-v4.1-flash read HTTP 000 at ~940-960s wall vs
+#   curl -m 60, twice each: sleep artifacts despite caffeinate, not
+#   evidence (same as 10-02). Both stay out. gemini-3.5-flash hit the same
+#   artifact on the first pass, then 200 OK 19.6s on re-probe.
+#   moonshotai/kimi-k3 200 OK 3.5s, correct — 3rd consecutive clean day.
+#   Still watch only (relapsed 3 times this month; +10 ELO over GLM-5.3 Max,
+#   within CI overlap). moonshotai/kimi-k2.6 404 (10th day).
+#   nvidia/nemotron-3-super-120b-a12b 200 1.4s; openai/gpt-oss-20b (NIM)
+#   200 1.9s. Groq: gpt-oss-120b, gpt-oss-20b, qwen3.8-27b all 200 ~1.2s.
+#   Gemini: gemini-3.1-flash-lite 200 2.4s.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 19.3s
+#   (slow today), laguna-s-2.1:free 200 6.0s, north-mini-code:free 200
+#   1.8s, nemotron-3-nano-omni-30b-a3b-reasoning:free 200 1.8s — all "51".
+#   google/gemma-4-31b-it:free 429 (10th day) — kept. google/gemma-4-26b-
+#   a4b-it:free 429 "Provider returned error" (day 1 after 200 yesterday) —
+#   kept, rate-limit not EOL.
+#   WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free: 200 "51" 1.4s — day 2
+#   of the new clean streak; still out (Arena #115 vs AA, user decision).
+#   Live catalogs: NIM /v1/models 81 entries (unchanged). OpenRouter :free
+#   17 entries, same set as 10-02 (no new slugs). typesafe/jev-router still
+#   pricing -1 (paid), no :free Jev.
+#   Rankings: arena.ai Text leaderboard refreshed to 2026-10-02 — Kimi K3
+#   #16 1488±5 (was #17), GLM-5.3 Max #27 1478±6 (was #26 1479),
+#   GLM-5.3-Flash #41 1473±5. No ordering change among pinned models.
+#   llm-stats.com: no open-weight release 09-28..10-03 (only closed GPT-6.1
+#   Sol, Claude Sonnet 5.5). No new free chat provider found.
+#   DECISION MODELS (Jev-style) — NEW: Cloudflare released Clef (27B, from
+#   Qwen3.8-27B) and Clef-flash (9B, from Qwen3.5-9B) on 2026-10-01,
+#   Apache 2.0, "fully Jev-API compatible", 64K ctx. Vendor-only numbers
+#   (vs Jev: BFCL 98.5/98.8 vs 95.8, BANKING77 94.2/90.9 vs 79.7; Jev wins
+#   ANLI 74.8 vs 69.8/59.1); no independent eval yet.
+#   - Local: in Ollama library (needs Ollama >= 0.35.1; we run 0.35.0, brew
+#     stable is now 0.35.1). Smallest clef-flash tag is q8_0 = 11 GB, clef
+#     27B larger — neither fits the <= ~5 GB JEV_LOCAL_MODEL budget next to
+#     a 7-9B chat model. NOT adopted; tev1:4b-q4_K_M stays (local
+#     /v1/systemone 200 OK 30.2s, department=technical 0.96). tev1/nimble
+#     tag lists unchanged.
+#   - Cloud: on Workers AI as @cf/cloudflare/clef ($0.24/M in, 21,818
+#     neurons/M) and @cf/cloudflare/clef-flash ($0.09/M, 8,182 neurons/M).
+#     Workers AI free allocation 10,000 neurons/day → ~1.2M input tokens/day
+#     of clef-flash at no charge. First FREE Jev-compatible hosted backend
+#     found — would fill the /v1/systemone cloud gap (no TYPESAFE_API_KEY,
+#     OpenRouter Jev paid). Needs a Cloudflare account + API token → user
+#     decision, documented in plans/new-cloud-providers.md, not wired.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 —
+#   verified 2026-10-03; integrate.api.nvidia.com/v1/models and
+#   openrouter.ai/api/v1/models — 2026-10-03; arena.ai/leaderboard/text
+#   (dated 2026-10-02) — 2026-10-03; llm-stats.com/llm-updates —
+#   2026-10-03; blog.cloudflare.com/clef-decision-models (2026-10-01),
+#   ollama.com/library/clef, ollama.com/library/clef-flash/tags,
+#   developers.cloudflare.com/workers-ai/platform/pricing,
+#   github.com/ollama/ollama/releases (v0.35.1, 2026-09-29),
+#   formulae.brew.sh/api/formula/ollama.json — 2026-10-03.
 categories:
 
   reasoning:
