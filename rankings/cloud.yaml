@@ -2119,6 +2119,56 @@
 #   developers.cloudflare.com/workers-ai/platform/pricing,
 #   github.com/ollama/ollama/releases (v0.35.1, 2026-09-29),
 #   formulae.brew.sh/api/formula/ollama.json — 2026-10-03.
+# NOTE 2026-10-05: Daily audit (no run on 10-04), live chat-completion
+#   probes against every model referenced in this file. NO CASCADE CHANGES
+#   — pinned z-ai/glm-5.3 (NVIDIA NIM) holds a 12th day: 200 OK 2s, "51".
+#   OpenRouter free quota at start: 0/50 used (5 spent today). Mac on AC
+#   power (100%, charged), probes under caffeinate -s -i, curl -m 60.
+#   z-ai/glm-5.3-flash and deepseek-ai/deepseek-v4.1-flash: HTTP 000 at
+#   exactly 60s wall = genuine timeout this time (not the sleep artifact of
+#   10-02/10-03, wall time matches --max-time). Both stay out.
+#   moonshotai/kimi-k3 200 OK 8s, correct — 4th consecutive clean day.
+#   Still watch only. moonshotai/kimi-k2.6 404 (11th day).
+#   nvidia/nemotron-3-super-120b-a12b 200 1s; openai/gpt-oss-20b (NIM) 200
+#   2s. Groq: gpt-oss-120b, gpt-oss-20b, qwen3.8-27b all 200 <1s. Gemini:
+#   gemini-3.1-flash-lite 200 3s, gemini-3.5-flash 200 19s.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 1s,
+#   laguna-s-2.1:free 200 12s, north-mini-code:free 200 1s, nemotron-3-
+#   nano-omni-30b-a3b-reasoning:free 200 2s — all "51".
+#   google/gemma-4-31b-it:free 429 (11th day) and google/gemma-4-26b-a4b-
+#   it:free 429 (day 2) "Provider returned error" — kept, rate-limit not EOL.
+#   WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free: 200 "51" 1s — day 3
+#   of the clean streak; still out (Arena #118 1426±7, user decision).
+#   Live catalogs: NIM /v1/models 81 entries (unchanged). OpenRouter :free
+#   17 entries, same set as 10-03. typesafe/jev-router still pricing -1.
+#   NEW, NOT ADDED: inclusionai/ling-3.1-flash (560B MoE ~25B active,
+#   released ~10-01) listed on OpenRouter at $0/$0 as a 2-week launch
+#   trial, not a :free slug — probe returned 403 "Key limit exceeded"
+#   (our key has 0 credits), weights not released, no independent score.
+#   Rankings: arena.ai Text leaderboard still dated 2026-10-02 (Kimi K3 #16
+#   1488±5, GLM-5.3 Max #27 1478±6, GLM-5.3-Flash #41, Gemma 4 31B #76
+#   1453±7). llm-stats.com: nothing after GPT-6.1 Sol (09-29). Only open-
+#   weight release in window: Bilibili Index-Translate-35B-A3B (preview,
+#   no scores). No new free chat provider found.
+#   DECISION MODELS (Jev-style): TypeSafe still jev-1.13. Local tev1:4b-
+#   q4_K_M /v1/systemone 200 OK 5s, department=technical 0.96. tev1/nimble
+#   tags unchanged; clef-flash smallest tag still 9b-q8_0 11 GB, clef 27B
+#   smallest 18 GB — neither fits. Clef: still no independent eval.
+#   WATCH ITEM: AWS Strands Decider 2B (Apache 2.0, Qwen3.5-2B + pointer
+#   head, released 2026-10-01; vendor-reported 3rd/33 in 2B class on
+#   JevBench, ~153 ms median on M3 MacBook). Not in the Ollama library yet —
+#   support pending in ollama/ollama PR #18748. At 2B it would fit the
+#   JEV_LOCAL_MODEL budget easily; re-evaluate against tev1 once it lands.
+#   Ollama: local 0.35.0, latest 0.35.1 (09-29), no 0.35.2.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 —
+#   verified 2026-10-05; integrate.api.nvidia.com/v1/models and
+#   openrouter.ai/api/v1/models — 2026-10-05; arena.ai/leaderboard/text
+#   (dated 2026-10-02) — 2026-10-05; llm-stats.com/llm-updates —
+#   2026-10-05; strandsagents.com/blog/introducing-strands-decider/
+#   (2026-10-01); siliconangle.com 2026-10-01 Strands Decider article;
+#   github.com/ollama/ollama/pull/18748 (2026-10-02); docs.typesafe.ai/
+#   llms.txt; ollama.com/library/clef-flash/tags — 2026-10-05.
 categories:
 
   reasoning:
