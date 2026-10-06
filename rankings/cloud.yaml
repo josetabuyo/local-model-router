@@ -2169,6 +2169,74 @@
 #   (2026-10-01); siliconangle.com 2026-10-01 Strands Decider article;
 #   github.com/ollama/ollama/pull/18748 (2026-10-02); docs.typesafe.ai/
 #   llms.txt; ollama.com/library/clef-flash/tags — 2026-10-05.
+# NOTE 2026-10-06: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 13th day: 200 OK 1.3s, "51".
+#   OpenRouter free quota at start: 0/50 used; 3/50 after 9 calls (429 and
+#   200-wrapped 5xx answers were not counted).
+#   PROBE CAVEAT: Mac on battery (100%, discharging), headless run under
+#   caffeinate -s -i. pmset log: Maintenance Sleep at 02:27:43 (928s) and
+#   02:43:56 (310s), plus a third one right after 03:00:38 — each landed
+#   mid-pass. z-ai/glm-5.3-flash and deepseek-ai/deepseek-v4.1-flash read
+#   HTTP 000 at 929s / 310s / 938s wall vs curl -m 60 / 60 / 35: three
+#   sleep artifacts, NO valid reading today (on pass 3 neither answered
+#   during >=10s of awake time, while gemini-3.1-flash-lite answered in
+#   4.9s — weak hint, not evidence). Both stay out. z-ai/glm-5.3, gemini-
+#   3.1-flash-lite and nemotron-3-super-120b-a12b:free hit the same artifact
+#   on pass 1 and were clean on re-probe.
+#   moonshotai/kimi-k3 200 OK 1.4s, correct — 5th consecutive clean day.
+#   Still watch only. moonshotai/kimi-k2.6 404 (12th day).
+#   nvidia/nemotron-3-super-120b-a12b 200 1.3s; openai/gpt-oss-20b (NIM) 200
+#   1.4s. Groq: gpt-oss-120b and gpt-oss-20b 200 <1s. Gemini: gemini-3.1-
+#   flash-lite 200 4.9s, gemini-3.5-flash 200 1.6s.
+#   GROQ LIMIT qwen/qwen3.8-27b: 429 at max_tokens 1500 — "Request too
+#   large ... on output tokens per minute (OTPM): Limit 1000, Requested
+#   1460"; 200 OK 0.6s "51" at max_tokens 600. Model alive, kept. The free
+#   tier rejects outright any single call that asks for more than ~1000
+#   output tokens, so `best:instruction` callers with a large max_tokens
+#   fall through to the next entry. Not known whether the cap is new —
+#   earlier audits probed Groq with a smaller max_tokens.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 1.2s,
+#   north-mini-code:free 200 1.1s — both "51". poolside/laguna-s-2.1:free
+#   429 "temporarily rate-limited upstream" at 02:27, 200 OK 2.2s "51" on
+#   re-probe at 03:33 — kept. nemotron-3-nano-omni-30b-a3b-reasoning:free
+#   200-wrapped 502 "Worker local total request limit reached (2605/16)" —
+#   capacity relapse like 10-01, kept. google/gemma-4-31b-it:free 429 (12th
+#   day) and google/gemma-4-26b-a4b-it:free 429 (day 3) — kept.
+#   WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free: 200-wrapped 503
+#   "Service temporarily overloaded" — clean streak broken at 3 days;
+#   restore question moot until it rebuilds.
+#   Live catalogs: NIM /v1/models 80 entries (was 81): nvidia/riva-
+#   translate-4b-instruct-v1.1 gone (translation model, never in cascade).
+#   OpenRouter :free 16 entries (was 17): qwen/qwen3.8-27b:free gone (paid
+#   slug remains; never in cascade, Groq serves the model free). Also
+#   delisted: stealth/space-bunny-alpha ($0 stealth alpha, never probed).
+#   No new slugs. inclusionai/ling-3.1-flash still $0 non-:free (not re-
+#   probed: 403 on 10-05 with this 0-credit key). typesafe/jev-router still
+#   pricing -1.
+#   Rankings: arena.ai Text leaderboard still dated 2026-10-02 (Kimi K3 #16
+#   1488±5, GLM-5.3 Max #27 1478±6, DeepSeek V4.1 Flash Max #38 1474±7,
+#   GLM-5.3-Flash #41 1473±5, Gemma 4 31B #76 1453±7, Qwen3.8 27B #99
+#   1438±5, Nemotron 3 Ultra #118 1426±7). llm-stats.com: nothing after
+#   GPT-6.1 Sol (09-29). No open-weight release and no new free chat
+#   provider found.
+#   DECISION MODELS (Jev-style): TypeSafe still jev-1.13. Local tev1:4b-
+#   q4_K_M /v1/systemone 200 OK 10.1s, department=technical 0.96. tev1,
+#   nimble, clef and clef-flash tag lists unchanged (clef-flash smallest
+#   still 9b-q8_0); ollama.com/search?c=decision lists only those four.
+#   Strands Decider: ollama.com/library/strands-decider 404, ollama/ollama
+#   PR #18748 still open (last update 10-02).
+#   Ollama: local 0.35.0, latest stable 0.35.1 (brew 0.35.1), newest pre-
+#   release v0.40.0-rc5.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 —
+#   verified 2026-10-06; integrate.api.nvidia.com/v1/models, api.groq.com/
+#   openai/v1/models and openrouter.ai/api/v1/models (diffed against the
+#   10-05 snapshots) — 2026-10-06; arena.ai/leaderboard/text (dated
+#   2026-10-02) — 2026-10-06; llm-stats.com/llm-updates — 2026-10-06;
+#   docs.typesafe.ai/llms.txt; ollama.com/library/{tev1,nimble,clef,clef-
+#   flash}/tags; api.github.com/repos/ollama/ollama/{releases,pulls/18748};
+#   formulae.brew.sh/api/formula/ollama.json — 2026-10-06.
 categories:
 
   reasoning:
