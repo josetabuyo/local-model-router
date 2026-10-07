@@ -42,6 +42,15 @@ el futuro, recheck.
   diferencial de modelos: sólo sirve Mistral Medium/Small/Codestral, ninguno
   está en `rankings/cloud.yaml`. Candidato de segunda prioridad detrás de
   Cloudflare Workers AI (abajo); requeriría `MISTRAL_API_KEY` nueva.
+  Actualización 2026-10-07: Mistral anunció Mistral Large 4 el 2026-10-06
+  (mistral.ai/news/mistral-large-4: 1T params MoE, 49B activos, multimodal,
+  razonamiento; "preview API today on Mistral Studio", pesos abiertos "by the
+  end of the month"). Si el plan Free lo sirve, el diferencial de modelos
+  que faltaba aparecería — pero todavía sin Arena ELO ni score AA
+  independiente, y los pesos no están publicados. Está en OpenRouter sólo
+  pago (`mistralai/mistral-large-4-0`, $0.68/$2.09 por Mtok, ctx 524K).
+  Re-evaluar cuando (a) arena.ai lo liste y (b) aparezca gratis en NIM /
+  OpenRouter `:free` o confirmemos que el plan Free de Mistral lo incluye.
 - Together AI, Vercel AI Gateway, Cloudflare AI Gateway, Requesty, Portkey,
   LiteLLM, Kong AI Gateway — son gateways/agregadores, no proveedores de
   modelo directo; no aportan modelos gratis nuevos, solo enrutan a los que ya

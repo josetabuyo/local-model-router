@@ -2237,6 +2237,101 @@
 #   docs.typesafe.ai/llms.txt; ollama.com/library/{tev1,nimble,clef,clef-
 #   flash}/tags; api.github.com/repos/ollama/ollama/{releases,pulls/18748};
 #   formulae.brew.sh/api/formula/ollama.json — 2026-10-06.
+# NOTE 2026-10-07: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 14th day: 200 OK 1.9s, "51".
+#   OpenRouter free quota at start: 0/50 used; 4/50 after 7 calls (the
+#   two 429s and the 200-wrapped upstream error were not counted). Mac on
+#   AC power (100%, charged), probes under caffeinate -s -i, curl -m 60;
+#   pmset log shows no Maintenance Sleep during the run — every HTTP 000
+#   today is a real timeout (wall = --max-time).
+#   WATCH ITEM moonshotai/kimi-k3 (NIM): HTTP 000 at 60.2s wall, twice
+#   (first pass and a separate re-probe ~15 min later) — clean streak
+#   broken at 5 days. The intermittent-hang pattern that got it removed on
+#   2026-09-09/10 is back; it stays out. moonshotai/kimi-k2.6 404 (13th day).
+#   z-ai/glm-5.3-flash (NIM, out since 09-14): first valid 200 OK since its
+#   removal, "51" — but 51.0s wall for a 200-token answer. Unusable inside
+#   the cascade timeouts; stays out, recorded as "slow", not "hangs".
+#   deepseek-ai/deepseek-v4.1-flash: HTTP 000 at 60.2s, genuine, stays out.
+#   nvidia/nemotron-3-super-120b-a12b 200 1.0s; openai/gpt-oss-20b (NIM) 200
+#   1.2s. Groq: gpt-oss-120b 0.8s, gpt-oss-20b 0.6s, qwen3.8-27b 0.5s (max_
+#   tokens 600, per the 10-06 OTPM finding) — all 200 "51". Gemini: gemini-
+#   3.1-flash-lite 200 15.2s; gemini-3.5-flash 503 "currently experiencing
+#   high demand" on pass 1, 200 OK 15.3s "51" on re-probe — kept.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 0.9s,
+#   laguna-s-2.1:free 200 1.4s, north-mini-code:free 200 4.9s — all "51".
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free 200-wrapped "ResourceExhausted:
+#   Worker local total request limit reached (16/16)" — same capacity relapse
+#   as 10-01 and 10-06, kept. google/gemma-4-31b-it:free 429 (13th day) and
+#   google/gemma-4-26b-a4b-it:free 429 (day 4) — kept.
+#   WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free: 200 "51" 3.1s — day 1
+#   of a new clean streak after the 10-06 overload; still out (Arena #118).
+#   Live catalogs: NIM /v1/models 80 entries, identical to 10-06. Groq
+#   /openai/v1/models 11 entries (same set). OpenRouter :free 16 entries,
+#   identical to 10-06. OpenRouter full catalog diff vs 10-06: +mistralai/
+#   mistral-large-4-0 (paid $0.68/$2.09 per Mtok, ctx 524K), +google/gemini-
+#   nano-banana-2.1 (image model, paid), -kwaipilot/kat-coder-pro-v2.5
+#   (paid, never in cascade). typesafe/jev-router still pricing -1.
+#   NEW, NOT ADDED: Mistral Large 4 (announced 2026-10-06; 1T MoE / 49B
+#   active, multimodal + reasoning; "preview API today on Mistral Studio",
+#   open weights promised "by the end of the month"). Not on arena.ai yet,
+#   no independent AA score, not free on any integrated provider. Logged as
+#   a watch item in plans/new-cloud-providers.md (Mistral entry) — it could
+#   finally give the Mistral free plan a differential model; re-evaluate when
+#   it is listed on arena.ai and shows up free somewhere.
+#   Rankings: arena.ai Text leaderboard still dated 2026-10-02 (Kimi K3 #16
+#   1488±5, GLM-5.3 Max #27 1478±6, DeepSeek V4.1 Flash Max #38 1474±7,
+#   GLM-5.3-Flash #41 1473±5, Gemma 4 31B #76 1453±7, Qwen3.8 27B #99
+#   1438±5, Nemotron 3 Ultra #118 1426±7, Mistral Large 3 #141 1414±3).
+#   Artificial Analysis open-weights top 3: MiMo-V2.6-Pro 46, GLM-5.3 (Max)
+#   45, Kimi K3 (Max) 44 — MiMo-V2.6-Pro is paid-only on OpenRouter
+#   ($0.435/$0.87) and absent from NIM/Groq, so no free slot for it.
+#   llm-stats.com: nothing after GPT-6.1 Sol (09-29). No new free chat
+#   provider found (Cerebras/SambaNova/Mistral/Together status unchanged vs
+#   plans/new-cloud-providers.md).
+#   DECISION MODELS (Jev-style): TypeSafe still jev-1.13. Local tev1:4b-
+#   q4_K_M /v1/systemone 200 OK 7.3s, department=technical 0.96.
+#   NEW: ollama.com/search?c=decision now lists a 5th model, `laya` (Convai
+#   Innovations, 421M, ModernBERT-large fine-tune, Apache 2.0, released
+#   2026-09-19, in the Ollama library with 0.40). Tags are MLX-only
+#   (laya:421m-english-mlx-fp16 846 MB ctx 512, laya:322m-multilingual-mlx-
+#   fp16 678 MB ctx 1K, laya:421m-typed-decisions-mlx-fp16 846 MB) and it
+#   "requires Ollama 0.40.0 or later". NOT a JEV_LOCAL_MODEL candidate:
+#   vendor-reported zero-shot accuracy is 0.362 (English) / 0.352
+#   (multilingual) — near random; the 0.766 vs Jev 1.13's 0.727 headline
+#   belongs to the typed-decisions checkpoint fine-tuned on JevBench's own
+#   training split ("a fast base to specialise, not a zero-shot decision
+#   engine"). tev1 stays. Revisit only as a fine-tuning base for a fixed
+#   label set (e.g. the Luganense classifier) — <1 GB, <40 ms on a T4.
+#   tev1, nimble, clef, clef-flash tag lists unchanged (clef-flash smallest
+#   still 9b-q8_0 11 GB). Strands Decider: ollama.com/library/strands-
+#   decider 404, ollama/ollama PR #18748 still open (last update 10-02).
+#   OLLAMA 0.40.0 IS NOW STABLE (GitHub release flipped from pre-release to
+#   stable; Homebrew stable 0.40.0, was 0.35.1 on 10-06). Release notes:
+#   "on Apple Silicon devices, model architectures supported by the MLX
+#   runtime will automatically run on MLX" (qwen3.8, gemma4, qwen3.6,
+#   qwen3.5; decision models nimble/tev1/clef/clef-flash on MLX too;
+#   embeddinggemma-2). No memory floor stated — the "32 GB+ for MLX" claim
+#   online is from the 0.19/0.30 preview era, unverified for 0.40 on this
+#   16 GB Mac. Local client/server still 0.35.0. USER ACTION: `brew upgrade
+#   ollama` to 0.40.0, then re-run `uv run benchmark` on qwen3.5:9b and
+#   tev1:4b-q4_K_M to see whether MLX engages on 16 GB and what it does to
+#   speed/memory; the 10-02 local rankings were measured on the GGUF path.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 —
+#   verified 2026-10-07; integrate.api.nvidia.com/v1/models, api.groq.com/
+#   openai/v1/models and openrouter.ai/api/v1/models (diffed against the
+#   10-06 snapshots) — 2026-10-07; arena.ai/leaderboard/text (dated
+#   2026-10-02) — 2026-10-07; artificialanalysis.ai/models — 2026-10-07;
+#   llm-stats.com/llm-updates — 2026-10-07; mistral.ai/news/mistral-large-4
+#   (2026-10-06); ollama.com/library/laya and /laya/tags, ollama.com/
+#   search?c=decision — 2026-10-07; aiweekly.co "Convai ships Laya" and
+#   dev.to "What is Laya? Laya vs Jev" (vendor numbers, HF convaiinnovations/
+#   laya) — 2026-10-07; api.github.com/repos/ollama/ollama/releases (v0.40.0
+#   prerelease=false) and /releases/tags/v0.40.0 body; formulae.brew.sh/api/
+#   formula/ollama.json (0.40.0); api.github.com/repos/ollama/ollama/pulls/
+#   18748; docs.typesafe.ai/llms.txt; ollama.com/library/{tev1,nimble,clef,
+#   clef-flash}/tags — 2026-10-07.
 categories:
 
   reasoning:
