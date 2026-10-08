@@ -2332,6 +2332,92 @@
 #   formula/ollama.json (0.40.0); api.github.com/repos/ollama/ollama/pulls/
 #   18748; docs.typesafe.ai/llms.txt; ollama.com/library/{tev1,nimble,clef,
 #   clef-flash}/tags — 2026-10-07.
+# NOTE 2026-10-08: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 15th day: 200 OK 2.0s, "51".
+#   OpenRouter free quota at start: 0/50 used; 2/50 after 9 calls (429s and
+#   the 200-wrapped upstream error are not counted). Mac ON BATTERY (90%,
+#   discharging) — caffeinate -s -i was used but does not prevent
+#   Maintenance Sleep on battery (known since 09-27): three probes got
+#   HTTP 000 at ~930-1020s wall (vs --max-time 60) and were discarded as
+#   sleep artifacts, re-probed where possible.
+#   NIM: nvidia/nemotron-3-super-120b-a12b 200 1.2s; openai/gpt-oss-20b
+#   200 1.4s. WATCH ITEM moonshotai/kimi-k3: 200 OK 13.0s "51" — day 1 of
+#   a new clean streak after the 10-07 double timeout; stays out (the
+#   hang pattern recurs every few days). moonshotai/kimi-k2.6 404 (14th
+#   day). z-ai/glm-5.3-flash 200 "51" but 29.8s wall (51s on 10-07) —
+#   still "slow", stays out. deepseek-ai/deepseek-v4.1-flash: HTTP 000 at
+#   1021s and 934s wall, both sleep artifacts — NO VALID READING today;
+#   stays out on the 10-05/10-07 genuine timeouts.
+#   Groq (max_tokens 600): gpt-oss-20b 0.6s, gpt-oss-120b 0.8s, qwen3.8-27b
+#   0.5s — all 200 "51". Gemini: gemini-3.1-flash-lite 200 0.8s, gemini-
+#   3.5-flash 200 2.4s (no 503 today).
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 1.9s;
+#   cohere/north-mini-code:free 000 at 928s (sleep artifact) then 200 1.8s
+#   on re-probe; poolside/laguna-s-2.1:free 429 "Provider returned error"
+#   — first 429 for it (200 on 10-07), kept per the 429 rule; google/
+#   gemma-4-31b-it:free 429 (14th day) and gemma-4-26b-a4b-it:free 429
+#   (day 5) — kept; nemotron-3-nano-omni-30b-a3b-reasoning:free 200-wrapped
+#   "ResourceExhausted: Worker local total request limit reached (16/16)"
+#   (4th relapse) — kept.
+#   WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free: 200 "51" 5.1s — day
+#   2 of the new clean streak; still out (arena.ai #118, below gemma-4-31b).
+#   Live catalogs: NIM /v1/models 80 entries, identical to 10-07. Groq
+#   /openai/v1/models 11, identical. OpenRouter :free 16, identical.
+#   OpenRouter full catalog diff vs 10-07: +anthropic/claude-haiku-5.5 and
+#   +anthropic/claude-haiku-5.5:batch (released 2026-10-07, proprietary,
+#   paid — irrelevant to the free cascade). typesafe/jev-router pricing -1.
+#   Rankings: arena.ai Text leaderboard still dated 2026-10-02, no ordering
+#   change for our models (Kimi K3 #16 1488, GLM-5.3 Max #27 1478, MiMo
+#   V2.6 Pro #26 1480±9 — paid-only, noted 10-07; DeepSeek V4.1 Flash #38,
+#   GLM-5.3-Flash #41, Gemma 4 31B #76, Qwen3.8 27B #99, Nemotron 3 Ultra
+#   #118). Mistral Large 4 not listed yet. Artificial Analysis open-weights
+#   filter: DeepSeek V4.1 Flash (max) 39, Mistral Large 4 Preview 38,
+#   Qwen3.8 27B (xhigh) 34, Nemotron 3 Ultra 23, Gemma 4 31B 15 — AA
+#   already scores Large 4 above everything we can serve free, but it is
+#   preview/API-only and paid on OpenRouter.
+#   Mistral Large 4 WATCH ITEM update: weight release now dated 2026-10-27
+#   under a custom (non-Apache-2.0) license; no checkpoint on Hugging Face
+#   yet (letsdatascience.com, thenewstack.io, 10-06/07). plans/new-cloud-
+#   providers.md Mistral entry updated with the date and the license note.
+#   llm-stats.com 10-01..10-08: only Mistral Large 4 (10-06) and Claude
+#   Haiku 5.5 (10-07). No new free chat provider found (search results were
+#   SEO listicles repeating Gemini/Groq/OpenRouter/Mistral/DeepSeek free
+#   tiers already covered in plans/new-cloud-providers.md).
+#   DECISION MODELS (Jev-style): TypeSafe quickstart still shows jev-1.13.0
+#   ("jev-latest" default). Local tev1:4b-q4_K_M /v1/systemone 200 OK 26.4s
+#   (cold load; 7.3s on 10-07), department=technical 0.96. OpenRouter: no
+#   typesafe/jev :free variant. ollama.com/search?c=decision still 5 models
+#   (clef-flash, clef, tev1, nimble, laya) — no new entrant. tev1 tags
+#   refreshed "6 days ago" (≈10-02): new quant variants 0.8b-mxfp8 797 MB,
+#   0.8b-mlx-bf16 1.5 GB, 4b-mxfp8 4.4 GB, 4b-nvfp4 3.1 GB, 4b-mlx-bf16
+#   8.4 GB — MLX-path builds for Ollama 0.40; q4_K_M (2.7 GB) and q8_0
+#   unchanged ("1 week ago"). No new accuracy numbers (4B 73.3% / 0.8B
+#   63.5% on Bespoke's 13 public sets). JEV_LOCAL_MODEL stays tev1:4b-
+#   q4_K_M; after the 0.40 upgrade, tev1:4b-nvfp4 (3.1 GB) is the MLX
+#   candidate to benchmark against it. laya tags unchanged (4, all need
+#   0.40). Strands Decider: ollama.com/library/strands-decider still 404,
+#   PR #18748 still open (last update 10-02).
+#   LOCAL: Ollama v0.40.1 released 2026-10-07 (stable; Windows file/symlink
+#   fixes only, nothing for Apple Silicon beyond 0.40.0's MLX default).
+#   Local client/server still 0.35.0 — the `brew upgrade ollama` + re-
+#   benchmark user action from 10-07 stands. Installed: qwen3.5:{2b,4b,9b},
+#   qwen2.5:7b, qwen2.5-coder:7b, deepseek-r1:8b, tev1:{0.8b,4b-q4_K_M},
+#   all-minilm.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 —
+#   verified 2026-10-08; integrate.api.nvidia.com/v1/models, api.groq.com/
+#   openai/v1/models and openrouter.ai/api/v1/models (diffed against the
+#   10-07 snapshots) — 2026-10-08; openrouter.ai/api/v1/auth/key — 2026-
+#   10-08; arena.ai/leaderboard/text (dated 2026-10-02) — 2026-10-08;
+#   artificialanalysis.ai/leaderboards/models?open_weights=true — 2026-10-
+#   08; llm-stats.com/llm-updates — 2026-10-08; letsdatascience.com
+#   "Mistral Opens Public Preview of Large 4" and thenewstack.io (weights
+#   2026-10-27, custom license) — 2026-10-08; github.com/ollama/ollama/
+#   releases (v0.40.1 2026-10-07); ollama.com/search?c=decision, ollama.com/
+#   library/tev1 and /tev1/tags, /laya/tags, /strands-decider (404), github.
+#   com/ollama/ollama/pull/18748 (open), docs.typesafe.ai/introduction/
+#   quickstart (jev-1.13.0) — 2026-10-08.
 categories:
 
   reasoning:

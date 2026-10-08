@@ -51,6 +51,12 @@ el futuro, recheck.
   pago (`mistralai/mistral-large-4-0`, $0.68/$2.09 por Mtok, ctx 524K).
   Re-evaluar cuando (a) arena.ai lo liste y (b) aparezca gratis en NIM /
   OpenRouter `:free` o confirmemos que el plan Free de Mistral lo incluye.
+  Actualización 2026-10-08: la publicación de pesos tiene fecha, 2026-10-27,
+  bajo licencia custom (no Apache 2.0 como Large 3); todavía sin checkpoint
+  en Hugging Face (letsdatascience.com, thenewstack.io). Artificial Analysis
+  ya puntúa "Mistral Large 4 Preview" 38 (sobre Qwen3.8 27B 34, debajo de
+  DeepSeek V4.1 Flash max 39); arena.ai aún no lo lista. Fecha concreta para
+  re-chequear NIM/OpenRouter `:free`: semana del 2026-10-27.
 - Together AI, Vercel AI Gateway, Cloudflare AI Gateway, Requesty, Portkey,
   LiteLLM, Kong AI Gateway — son gateways/agregadores, no proveedores de
   modelo directo; no aportan modelos gratis nuevos, solo enrutan a los que ya
