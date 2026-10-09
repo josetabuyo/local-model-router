@@ -57,6 +57,33 @@ el futuro, recheck.
   ya puntúa "Mistral Large 4 Preview" 38 (sobre Qwen3.8 27B 34, debajo de
   DeepSeek V4.1 Flash max 39); arena.ai aún no lo lista. Fecha concreta para
   re-chequear NIM/OpenRouter `:free`: semana del 2026-10-27.
+  Actualización 2026-10-09: arena.ai (leaderboard fechado 2026-10-08) ya
+  lista "Mistral Large 4" #115 1429±9 — por DEBAJO de gemma-4-31b (#75,
+  1452) y de todo lo que ya servimos gratis; AA mantiene 38. Sigue sin
+  checkpoint en huggingface.co/mistralai (API de HF, último modelo
+  Shieldstral-1.0-3B 2026-07-16). Con ese ELO no entraría a slot 0 de
+  ninguna categoría aunque apareciera gratis; queda como watch de baja
+  prioridad hasta ver pesos + score de la versión final.
+- Otros pesos abiertos ANUNCIADOS pero aún no publicados / no servidos gratis
+  (watch, 2026-10-09; ninguno aparece en NIM ni en OpenRouter `:free`):
+  - StepFun Step 5 Preview (600B MoE, ~27B activos, 1M ctx, multimodal;
+    API-only, pesos BF16 prometidos 2026-10-15). OpenRouter sólo pago
+    (`stepfun/step-5-preview`, $1/Mtok in, alta 2026-10-08). arena.ai #83
+    1447±9 (debajo de gemma-4-31b #75); AA Intelligence 44 (sobre GLM-5.3
+    45 no, pero sobre DeepSeek V4.1 Flash 39). Fuente: datalearner.com/en/
+    ai-models/pretrained-models/step-5-preview, benchlm.ai/models/step-5-
+    preview (2026-10-09). Re-chequear NIM/OpenRouter `:free` desde 10-15.
+  - Reflection AI Beam (501B MoE, 23B activos; coding/agentic; pesos Apache
+    2.0 "later in October 2026"; anunciado 2026-10-05). Vendor claim: iguala
+    GLM 5.2 en razonamiento con 3-4x menos cómputo — sin score independiente
+    todavía. Fuente: letsdatascience.com/news/reflection-introduces-beam-
+    open-weight-reasoning-model-b6a0e32f, devx.com (2026-10-09). Demasiado
+    grande para local; sólo interesa si algún proveedor lo sirve gratis.
+  - Aleph Alpha Kolibri-1 (78B MoE, 3.46B activos, 1M ctx, Apache 2.0,
+    EN/DE; pesos en Hugging Face desde 2026-10-03). ~78 GB en FP8 → no corre
+    en 16 GB; sin Arena ELO ni AA; no está en NIM ni OpenRouter. Fuente:
+    datacamp.com/blog/aleph-alpha-kolibri-1, llmreference.com/model-family/
+    kolibri (2026-10-09). Sin acción.
 - Together AI, Vercel AI Gateway, Cloudflare AI Gateway, Requesty, Portkey,
   LiteLLM, Kong AI Gateway — son gateways/agregadores, no proveedores de
   modelo directo; no aportan modelos gratis nuevos, solo enrutan a los que ya
