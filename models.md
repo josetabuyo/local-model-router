@@ -3,7 +3,7 @@
 <!-- GENERADO por scripts/render_models.py desde rankings/*.yaml — no editar a mano.
      Regenerar: uv run scripts/render_models.py -->
 
-Actualizado: 2026-10-09 · Máquina: Apple Silicon, 16 GB RAM.
+Actualizado: 2026-10-10 · Máquina: Apple Silicon, 16 GB RAM.
 Fuente de verdad: `rankings/cloud.yaml` (cloud, con el log diario de auditorías
 de `/model-scout` en sus `NOTE`) y `rankings/local.yaml` (benchmarks propios de Ollama).
 
