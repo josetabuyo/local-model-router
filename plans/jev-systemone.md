@@ -101,3 +101,93 @@ Pasos propuestos (decide José):
   crédito inicial en early access) y el catálogo público aún no lista
   TypeSafe — misma categoría que OpenRouter (pago), sin ventaja sobre el
   backend local. No integrado.
+
+## 2026-10-11 — Liquid AI d1: primer modelo de decisión abierto que compite con Jev (hallado por model-scout)
+
+Liquid AI lanzó **d1** el 2026-09-29 ("our first decision model. It's the
+first model to outperform Jev on Hugging Face's Decision Index", x.com/
+liquidai), agregó visión el 2026-10-05 (liquid.ai/blog/d1-decision-model) y
+el 2026-10-07 publicó pesos abiertos (liquid.ai/blog/d1-open):
+
+| Modelo | Base | Tamaño | GGUF | Licencia | Decision Index v0.2.1 |
+|---|---|---|---|---|---|
+| `LiquidAI/d1-3B` | LFM2.5-VL-3B (texto+imagen), 3.12B | Q4_K_M **1.67 GB**, Q8_0 2.87 GB, BF16 5.4 GB | `LiquidAI/d1-3B-GGUF` (arch `lfm2`) | LFM Open License v1.0 | **48.57** ("best under 10B"; Decider 35B-A3B 47.11, Winnow-12B 50.02) |
+| `LiquidAI/d1-omni-600M` | LFM2.5-Encoder-350M + visión + audio, experimental | ~600M | `LiquidAI/d1-omni-600M-GGUF` | LFM Open License v1.0 | 15.95 |
+
+Media de 7 datasets de texto (tabla 1 del blog): d1-3B 82.9, Decider 4B
+81.1, d1-omni-600M 78.4, Decider 2B 77.1. Latencia publicada: 8 ms/decisión
+en RTX 4090. **No hay score publicado de tev1 ni nimble en el Decision Index**
+(el leaderboard huggingface.co/spaces/multimodalart/jev-decision-index es
+JS-rendered y no se pudo leer sin browser; la ficha de nimble reporta 75.7%
+en 13 datasets públicos — otro conjunto, no comparable directo).
+
+Licencia (huggingface.co/LiquidAI/d1-3B/blob/main/LICENSE, liquid.ai/
+lfm-license): Apache 2.0 modificada — uso comercial libre **sólo por debajo
+de USD 10M de facturación anual**, sin copyleft, redistribución y fine-tune
+permitidos, terminación automática por incumplimiento. Para este proyecto
+(uso propio) no es restricción.
+
+Dónde corre:
+- **llama.cpp**: soporte día uno (`llama-server -hf LiquidAI/d1-3B-GGUF:Q8_0`,
+  `/v1/systemone`). El post de ggml-org "Decision Models in llama.cpp"
+  (2026-10-02) lista Julia-1, Laya, Kev-4B, lev, OpenJev, Clef — d1 se sumó
+  después.
+- **Ollama**: la ficha HF da `ollama run hf.co/LiquidAI/d1-3B-GGUF:Q4_K_M`.
+  NO está en ollama.com/library (`/library/d1` 404; `search?c=decision`
+  sigue con clef, clef-flash, laya, nimble, tev1). Sin versión mínima
+  publicada — hay que verificar que 0.35.0 sirva `lfm2` en `/v1/systemone`.
+- **API cloud**: `api.liquid.ai/decisions/v1/systemone` (`d1` pago USD 0.04/
+  Mtok in; `d1:free` listado pero 402 sin key), OpenRouter `liquid/d1` y
+  Vercel AI Gateway (pagos). Ver `plans/new-cloud-providers.md`.
+
+Criterio del skill: un modelo de decisión local nuevo entra como candidato a
+`JEV_LOCAL_MODEL` si cabe en 16 GB junto a un chat model de 7-9B (**sí:
+1.67 GB vs 2.7 GB de tev1:4b-q4_K_M**) o mejora claramente la calidad
+publicada de tev1/nimble (**sin dato comparable**; el único número común con
+nuestro cascade es "outperforms Jev", afirmación del vendor sin tabla). Por
+eso d1-3B es **candidato, no reemplazo**: hay que correr `plans/
+jev-example.json` contra ambos y comparar probabilidades.
+
+Prueba local 2026-10-11 (Ollama 0.35.0, Mac en batería 13 %):
+- `ollama pull hf.co/LiquidAI/d1-3B-GGUF:Q4_K_M` OK (2.26 GB en disco: el
+  GGUF de 1.67 GB más el proyector de visión; Ollama lo cataloga como
+  `lfm2`, "2.7B", capabilities `tools, thinking, completion, vision` — es
+  decir, lo trata como modelo de CHAT, no de decisión).
+- `POST /v1/systemone` con `model: hf.co/LiquidAI/d1-3B-GGUF:Q4_K_M` →
+  **HTTP 400** `model ... is not supported by System One; use a local Nimble
+  or Tev GGUF model`. Ollama 0.35.0 sólo acepta las familias que conoce
+  (tev1, nimble, clef desde 0.35.1); las notas de release hasta v0.40.3-rc0
+  no mencionan d1/LFM2. Modelo borrado tras la prueba (`ollama rm`) para
+  devolver los 2.3 GB; re-bajar es un comando.
+- Upstream: llama.cpp ya lo soporta (PRs ggml-org/llama.cpp #30110 d1-3B y
+  #30114 d1-omni-600M, mergeados 2026-10-09); en Ollama hay pedido abierto
+  (ollama/ollama#18890 "Request to add d1-3B and d1-omni-600M", 2026-10-09)
+  y un PR abierto que actualiza llama.cpp a b11521 "for decision models"
+  (ollama/ollama#18917, 2026-10-11) — probablemente el vehículo. Re-chequear
+  cada auditoría; cuando una release estable lo incluya, repetir la prueba.
+
+**Comparación independiente — Decision Index 0.3.1** (huggingface.co/spaces/
+multimodalart/jev-decision-index, `data/v03.json` generado 2026-10-10, 117
+modelos, columna "pub" = suite pública; la nota del vendor "outperforms Jev"
+NO se sostiene en este board):
+
+| Modelo | Pub | Rank | Tamaño local |
+|---|---|---|---|
+| Jev (jev-1.13.0, TypeSafe, cerrado) | 57.96 | #11 | — |
+| Bespoke Nimble 9B v3 | 57.19 | #13 | `nimble:9b-q4_K_M` ~9.5 GB (la página de ollama.com menciona v2 y V3; verificar cuál sirve el tag) |
+| **LiquidAI d1-3B** | **48.99** | #34 | 1.67 GB GGUF (no corre en Ollama 0.35 — ver arriba) |
+| Decider 4B | 41.19 | #49 | — |
+| Together Tev1 4B (= `tev1:4b-q4_K_M`, nuestro default) | 29.51 | #75 | 2.7 GB |
+| Strands Decider 2B | 25.41 | #84 | PR ollama#18748 abierto |
+| d1-omni-600M | 17.9 | #95 | — |
+| Together Tev1 0.8B | 13.1 | #101 | 812 MB |
+| Laya | 6.19 | #111 | — |
+
+Conclusión: d1-3B es **+19.5 puntos sobre tev1:4b** con 1 GB menos de disco
+— el mejor candidato a `JEV_LOCAL_MODEL` hasta hoy, pero **bloqueado por
+Ollama** (no por el modelo). Alternativas hoy mismo: (a) `nimble:9b-q4_K_M`
+(≈ Jev en el índice, 9.5 GB, apretado en 16 GB con qwen3.5:9b cargado — ya
+documentado el 2026-10-01); (b) servir d1-3B con `llama-server -hf
+LiquidAI/d1-3B-GGUF:Q4_K_M` en otro puerto y apuntar `router/systemone.py`
+a él como proveedor `llamacpp` (mismo esquema System One; sin integrar —
+decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.

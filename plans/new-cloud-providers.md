@@ -84,6 +84,32 @@ el futuro, recheck.
     en 16 GB; sin Arena ELO ni AA; no está en NIM ni OpenRouter. Fuente:
     datacamp.com/blog/aleph-alpha-kolibri-1, llmreference.com/model-family/
     kolibri (2026-10-09). Sin acción.
+    Actualización 2026-10-11: Step 5 sigue sin checkpoint (HF stepfun-ai:
+    último Step-3.7-Flash-GGUF 2026-05-28); Beam sin org en HF ni noticia
+    de pesos; Mistral Large 4 sin pesos (HF mistralai: último LIDstral-Arabic
+    2026-10-08). llm-stats.com: "No open source releases this week".
+- Liquid AI — API de DECISIÓN (no chat), evaluada 2026-10-11. Sirve `d1`
+  (modelo de decisión Jev-style) en `POST https://api.liquid.ai/decisions/
+  v1/systemone`, mismo esquema System One que TypeSafe/Ollama (`state` +
+  `questions` choice/noul/score, cero tokens de salida). Verificado en vivo:
+  `GET /decisions/v1/models` responde sin key `{"models":[{"name":"d1:free",
+  "release_date":"2026-09-22","input_modalities":["text"]}]}`; el POST sin
+  key devuelve 402 `insufficient_quota` "Billing for this organization is
+  still being set up" — hace falta key de console.liquid.ai (prefijo
+  `liquid_`) y no está documentado en docs.liquid.ai/lfm/models/d1 si
+  `d1:free` tiene cuota diaria sin tarjeta (sólo dice "d1:free is text-only";
+  el `d1` pago agrega visión, USD 0.04/Mtok de entrada, sin cargo de
+  salida). También en OpenRouter (`liquid/d1`, USD 0.04/Mtok in) y Vercel AI
+  Gateway, ambos pagos — no aparece en `/api/v1/models` de OpenRouter porque
+  es un modelo de decisión, no de chat. Relevancia: es la primera alternativa
+  a Jev con pesos abiertos (d1-3B, ver `plans/jev-systemone.md` 2026-10-11),
+  así que la vía local gratis es más interesante que esta API. Si José quiere
+  probar `d1:free` en cloud: crear key en console.liquid.ai y agregar un
+  proveedor `liquid` al cascade de `router/systemone.py` (mismo cliente que
+  `typesafe`, otra base URL). Decisión del usuario — no se integra a ciegas.
+  Fuentes: api.liquid.ai/decisions/v1/models y /systemone (probe propio
+  2026-10-11), docs.liquid.ai/lfm/models/d1, liquid.ai/blog/d1-decision-model
+  (2026-10-05), liquid.ai/blog/d1-open (2026-10-07) — leídas 2026-10-11.
 - Together AI, Vercel AI Gateway, Cloudflare AI Gateway, Requesty, Portkey,
   LiteLLM, Kong AI Gateway — son gateways/agregadores, no proveedores de
   modelo directo; no aportan modelos gratis nuevos, solo enrutan a los que ya
