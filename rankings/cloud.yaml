@@ -2782,6 +2782,132 @@
 #   decision, ollama.com/library/{tev1,nimble,laya}/tags, /d1 (404),
 #   docs.typesafe.ai/introduction/quickstart (jev-1.13.0) — 2026-10-11.
 
+# NOTE 2026-10-12: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 19th day: 200 OK 9.0s (slow but answered), "51".
+#   OpenRouter key: usage 0; /auth/key free_model_daily_requests is BACK
+#   today ({"used":0,"limit":50} at start, 3/50 after the audit) — the
+#   10-11 "deprecated" payload was not permanent; keep recording used/limit
+#   when the field is present. Mac ON AC POWER (100%, charged), caffeinate
+#   -s -i used — NO sleep artifacts today, every reading is valid.
+#   NIM: nvidia/nemotron-3-super-120b-a12b 200 2.3s; openai/gpt-oss-20b 200
+#   4.8s. WATCH ITEM moonshotai/kimi-k3 200 "51" 5.8s — first valid reading
+#   since 10-10, CLEAN DAY 4 (restore bar reached per the 09-29 rule, but
+#   the two Sept hangs + the 10-07 timeout pair keep it out one more cycle;
+#   re-evaluate if day 5-6 stay clean — it would be a reasoning slot-1
+#   candidate: arena.ai #16 1488, AA 44, both above the glm-5.3 pin's #27
+#   1478 / 45-tie). moonshotai/kimi-k2.6 404 (18th day). z-ai/glm-5.3-flash
+#   200 "51" 3.1s — fast day 4; stays out (only ever slot-1 behind glm-5.3).
+#   deepseek-ai/deepseek-v4.1-flash: HTTP 000 at 60.2s wall THREE TIMES
+#   (initial + 2 re-probes, all exactly --max-time 60, on AC under
+#   caffeinate) — GENUINE TIMEOUTS, same signature as 10-05/10-07; the
+#   10-11 clean day 1 is broken, streak reset to 0, stays out.
+#   Groq (max_tokens 600 for qwen): gpt-oss-120b 0.5s, gpt-oss-20b 0.7s,
+#   qwen3.8-27b 1.0s — all 200 "51".
+#   Gemini: gemini-3.1-flash-lite 200 12.6s (1.7s yesterday, 28.0s 10-10 —
+#   the variance continues); gemini-3.5-flash 200 1.5s.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 2.2s;
+#   poolside/laguna-s-2.1:free 429 0.4s — a NEW 429 streak, day 1 (the
+#   previous one ran 10-08..10-10 and cleared 10-11); kept per the 429
+#   rule. cohere/north-mini-code:free 200 1.0s. nemotron-3-nano-omni-30b-
+#   a3b-reasoning:free: first call HTTP 200 whose content was an upstream
+#   error string "ResourceExhausted: Worker local total request limit
+#   reached (16/16)" (0.4s) — transient NIM-side capacity, NOT a model
+#   fault; re-probe 200 "51" 1.4s. Counts as a real answer (4th straight).
+#   google/gemma-4-31b-it:free 429 (18th day) and gemma-4-26b-a4b-it:free
+#   429 (day 9) — kept per the 429 rule. WATCH ITEM nvidia/nemotron-3-
+#   ultra-550b-a55b:free 200 "51" 3.3s — clean day 6; still out because
+#   arena.ai #120 1426 sits below gemma-4-31b #75 1452 — user decision
+#   pending, unchanged.
+#   Live catalogs: NIM /v1/models 80, identical to 10-11. Groq 11,
+#   identical. OpenRouter :free 15, identical. OpenRouter full 458,
+#   identical (typesafe/jev-router pricing -1; liquid/lfm-2.5-2.6b:free is
+#   the only liquid slug, a chat model). Gemini /v1beta/models 62,
+#   identical. Fifth straight day with all catalogs unchanged.
+#   Rankings: arena.ai Text leaderboard still dated 2026-10-08, every
+#   tracked rank/score identical to the 10-11 note (MiMo-V2.6-Pro #26 1480,
+#   GLM-5.3 #27 1478, GLM-5.3-Flash #38 1475, DeepSeek V4.1 Flash #39 1475,
+#   Gemma 4 31B #75 1452, Step 5 Preview #83 1447, Qwen3.8 27B #99 1438,
+#   Gemma 4 26B #100 1438, Mistral Large 4 #115 1429, Nemotron 3 Ultra
+#   #120 1426; Kolibri-1 / Laguna not listed). Artificial Analysis
+#   identical to 10-11 (MiMo-V2.6-Pro 46 paid-only … gpt-oss-20b 9;
+#   Kolibri-1 and Mellum 2.1 not listed). Pin ordering stands.
+#   Open-weight releases 10-05..10-12: NONE for chat (llm-stats.com banner
+#   "No open source releases this week" still up; only Claude Haiku 5.5
+#   10-07 and Mistral Large 4 10-06, both proprietary). HF author sweep
+#   (18 orgs, createdAt > 10-05): mistralai LIDstral-Arabic + Voxtral-Mini-
+#   4B-Realtime-Arabic (10-08, speech/Arabic), Qwen/Qwen-Image-2.1-Turbo
+#   (10-09, image), nvidia agile_one_* robotics checkpoints, LiquidAI
+#   d1-3B-w8a8 (10-07, new quant of the decision model), JetBrains Mellum
+#   2.1 GGUF (10-07, already a local coding candidate) — nothing for the
+#   chat cascade. Watch items: Step 5 weights NOT on HF (the 10-15 date is
+#   still unverified); Reflection Beam NOT released (an 08-06 futuresearch
+#   forecast already put most probability on 2027); Mistral Large 4
+#   weights NOT on HF; Kolibri-1 unchanged (78B-A3.46B Apache-2.0 on HF
+#   since 10-02; a community inferencerlabs/Kolibri-MLX-Q9 appeared 10-11,
+#   irrelevant at 16 GB — FP8 alone is 79 GB; not on any free provider).
+#   No new free CHAT provider (search results again a single SEO farm).
+#   Groq changelog: still no 2026 entries after Apr 18. OpenRouter
+#   announcements: unchanged (10-07 ElevenLabs, 10-02 Router Benchmarks).
+#   Liquid decisions API /models still lists only d1:free (no change).
+#   DECISION MODELS (Jev-style): local tev1:4b-q4_K_M /v1/systemone 200 OK
+#   6.2s warm, department=technical 0.96 (identical probabilities to
+#   10-11). TypeSafe quickstart still jev-1.13.0. OpenRouter: no typesafe/
+#   jev :free variant. ollama.com/search?c=decision still 5 (clef, clef-
+#   flash, laya, nimble, tev1; /library/d1 404); tev1 13 tags, nimble 8,
+#   laya 4 unchanged. Decision Index 0.3.1 space unchanged (lastModified
+#   2026-10-10T07:54Z, same v03.json as yesterday). NEW NAME CHECKED:
+#   "SemIf" (semantic-if decision model, Qwen3.5-4B base, Apache-2.0,
+#   community MLX 4-bit quants vinci00 09-22 / novelaide 10-05, no GGUF,
+#   no Ollama tag) — a LinkedIn claim of "0.7 behind Jev" surfaced in
+#   search; the public board says otherwise: SemIf Qwen3.5-4B Base pub
+#   26.5 #81, BELOW tev1-4b 29.51 #75. Discarded as a JEV_LOCAL_MODEL
+#   candidate. Also worth recording from the same board (pub column): the
+#   top is Perplexity Decider v1.1 27B 62.25 #2 and several 26-31B Gemma-4-
+#   based deciders at 55-60 — all too big for 16 GB alongside a chat
+#   model, so the d1-3B path (10-11) remains the only realistic upgrade.
+#   d1 BLOCKER STATUS: Ollama v0.40.3 went STABLE 2026-10-11T01:39Z (the
+#   rc0 of yesterday; launch-warning fixes + paused background model
+#   upgrades). It does NOT include PR #18917 (llama.cpp bump "for decision
+#   models and EmbeddingGemma 2"): still open, mergeable_state clean, 8
+#   commits, last commit 2026-10-12T04:04Z ("mlx: read candidate logits
+#   in float32 for quantized heads"), main is 0 commits ahead of v0.40.3.
+#   Issue #18890 (d1 request) open, updated 10-11; #18748 (Strands Decider)
+#   open, last 10-02. d1-3B stays untestable in Ollama; no change to
+#   DEFAULT_LOCAL_MODEL.
+#   LOCAL: local server still 0.35.0 — `brew upgrade ollama` (0.40.3 now
+#   stable with the MLX default runner) + re-benchmark stands as the user
+#   action from 10-07. Nothing new on Apple Silicon quantization this week
+#   (search: only evergreen MLX-vs-llama.cpp guides; a "gmlx" PyPI project
+#   claims GGUF-on-MLX with self-reported M5 Max speedups — unverified,
+#   not actionable). Mellum2.1 pull/benchmark still deferred to after the
+#   upgrade.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai,
+#   api.liquid.ai/decisions/v1/models, localhost:11434 (/v1/systemone,
+#   /api/version) — verified 2026-10-12; integrate.api.nvidia.com/v1/
+#   models, api.groq.com/openai/v1/models, openrouter.ai/api/v1/models,
+#   generativelanguage.googleapis.com/v1beta/models (diffed against the
+#   10-11 snapshots in /tmp/model-scout) — 2026-10-12; openrouter.ai/api/
+#   v1/auth/key — 2026-10-12; arena.ai/leaderboard/text (dated 2026-10-08)
+#   — 2026-10-12; artificialanalysis.ai/leaderboards/models — 2026-10-12;
+#   llm-stats.com/llm-updates — 2026-10-12; huggingface.co/api/models?
+#   author={stepfun-ai,mistralai,zai-org,moonshotai,deepseek-ai,Qwen,
+#   XiaomiMiMo,google,nvidia,microsoft,inclusionAI,MiniMaxAI,openai,
+#   allenai,LiquidAI,ibm-granite,JetBrains,meta-llama,reflection-ai} and
+#   ?search={Kolibri,Step-5,Beam,Mistral-Large-4,semif} — 2026-10-12;
+#   huggingface.co/api/models/novelaide/SemIf-Qwen3.5-4B-MLX-4bit, /api/
+#   spaces/multimodalart/jev-decision-index (lastModified) + the cached
+#   data/v03.json — 2026-10-12; api.github.com ollama/ollama releases
+#   (v0.40.3 stable 2026-10-11), pulls/18917 (+commits), issues #18890/
+#   #18748, compare/v0.40.3...main — 2026-10-12; console.groq.com/docs/
+#   changelog, openrouter.ai/announcements, ollama.com/search?c=decision,
+#   ollama.com/library/{tev1,nimble,laya}/tags, /d1 (404), docs.typesafe.
+#   ai/introduction/quickstart (jev-1.13.0) — 2026-10-12; web search
+#   (Kolibri-1: datacamp.com, llmreference.com, llmconfigurator.com;
+#   Reflection: futuresearch.ai 2026-08-06, ai-tldr.dev 10-07; SemIf: a
+#   LinkedIn post via search snippet, secondary) — 2026-10-12.
+
 categories:
 
   reasoning:

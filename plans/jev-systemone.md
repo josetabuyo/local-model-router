@@ -191,3 +191,9 @@ documentado el 2026-10-01); (b) servir d1-3B con `llama-server -hf
 LiquidAI/d1-3B-GGUF:Q4_K_M` en otro puerto y apuntar `router/systemone.py`
 a él como proveedor `llamacpp` (mismo esquema System One; sin integrar —
 decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.
+
+### 2026-10-12 — seguimiento del bloqueo
+
+- Ollama **v0.40.3 ya es stable** (2026-10-11T01:39Z) pero **no incluye el PR #18917** (bump de llama.cpp "for decision models"): sigue abierto, mergeable, último commit 2026-10-12T04:04Z; `main` está 0 commits por delante de v0.40.3. d1-3B sigue sin poder probarse en Ollama. Sin cambio en `DEFAULT_LOCAL_MODEL`.
+- Nuevo nombre revisado y descartado: **SemIf** (Qwen3.5-4B base, Apache-2.0, sólo quants MLX comunitarios, sin GGUF ni tag en Ollama). Un post de LinkedIn lo ponía "0.7 detrás de Jev"; el Decision Index 0.3.1 público lo tiene en **26.5 #81, por debajo de tev1-4b (29.51 #75)**. No es candidato.
+- El mismo board (columna pub) tiene arriba a Perplexity Decider v1.1 27B (62.25 #2) y varios deciders de 26-31B sobre Gemma 4 en 55-60: todos demasiado grandes para 16 GB junto a un chat model. La vía d1-3B sigue siendo la única mejora realista.
