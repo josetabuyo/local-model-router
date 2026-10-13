@@ -197,3 +197,22 @@ decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.
 - Ollama **v0.40.3 ya es stable** (2026-10-11T01:39Z) pero **no incluye el PR #18917** (bump de llama.cpp "for decision models"): sigue abierto, mergeable, último commit 2026-10-12T04:04Z; `main` está 0 commits por delante de v0.40.3. d1-3B sigue sin poder probarse en Ollama. Sin cambio en `DEFAULT_LOCAL_MODEL`.
 - Nuevo nombre revisado y descartado: **SemIf** (Qwen3.5-4B base, Apache-2.0, sólo quants MLX comunitarios, sin GGUF ni tag en Ollama). Un post de LinkedIn lo ponía "0.7 detrás de Jev"; el Decision Index 0.3.1 público lo tiene en **26.5 #81, por debajo de tev1-4b (29.51 #75)**. No es candidato.
 - El mismo board (columna pub) tiene arriba a Perplexity Decider v1.1 27B (62.25 #2) y varios deciders de 26-31B sobre Gemma 4 en 55-60: todos demasiado grandes para 16 GB junto a un chat model. La vía d1-3B sigue siendo la única mejora realista.
+
+### 2026-10-13 — bloqueo levantado upstream + 3 modelos nuevos en Ollama
+
+- **PR ollama#18917 MERGEADO** (2026-10-12T06:25Z) y ya sale en **v0.40.4-rc1** (prerelease, 2026-10-12T19:00Z), junto con "Add Kev decision scoring to MLX" (#18976). La última estable sigue siendo v0.40.3. Con el upgrade local (hoy 0.35.0) d1-3B debería poder probarse en `/v1/systemone`: repetir la prueba del 2026-10-11 (`ollama pull hf.co/LiquidAI/d1-3B-GGUF:Q4_K_M` + `plans/jev-example.json`) y comparar contra tev1. Decide José: rc1 ya, o esperar la 0.40.4 estable.
+- `ollama.com/search?c=decision` pasó de 5 a 8 modelos: **nimble-v3** (Bespoke Labs 9B; `9b-q4_K_M` 5.6 GB, `9b-nvfp4` MLX 6.9 GB), **kev** (Jared Palmer; 0.8/4/9/27B, sólo MLX, mínimo Ollama 0.40.4) y **strands-decider** (2B, sólo MLX, mínimo 0.40.0, `2b-nvfp4` 1.3 GB).
+- **Decision Index 0.3.2** (`data/v03.json` generado 2026-10-12T13:25Z, 149 modelos, columna pub):
+
+| Modelo | Pub | Rank | Tamaño local |
+|---|---|---|---|
+| Jev (TypeSafe, cerrado) | 57.96 | #20 | — |
+| Bespoke Nimble 9B v3 (`nimble-v3`) | 57.19 | #27 | 5.6 GB q4_K_M |
+| Kev 27B | 56.69 | #29 | 19 GB nvfp4 — no entra |
+| **LiquidAI d1-3B** | **48.99** | #52 | 1.67 GB GGUF |
+| Kev 9B v2 | 41.54 | #69 | 6.7 GB nvfp4 |
+| Kev 4B r10 | 37.95 | #83 | 8.4 GB bf16 (sin quant) |
+| Together Tev1 4B (default) | 29.51 | #102 | 2.7 GB |
+| Strands Decider 2B | 25.41 | #114 | 1.3 GB nvfp4 |
+
+- Conclusión: dos caminos de mejora. **d1-3B** (+19.5 sobre tev1, 1.67 GB) cumple el criterio de tamaño y queda desbloqueado con 0.40.4. **nimble-v3:9b-q4_K_M** (+27.7, a 0.8 de Jev) es la mejor calidad local, pero 5.6 GB queda apenas por encima del límite de ~5 GB junto a un chat model de 7-9B. Kev 4B (sin quant chica) y Strands 2B (debajo de tev1) descartados. Sin cambio en `DEFAULT_LOCAL_MODEL` hasta medir.

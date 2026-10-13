@@ -2908,6 +2908,102 @@
 #   Reflection: futuresearch.ai 2026-08-06, ai-tldr.dev 10-07; SemIf: a
 #   LinkedIn post via search snippet, secondary) — 2026-10-12.
 
+# NOTE 2026-10-13: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 20th day: 200 OK 2.9s, "51".
+#   OpenRouter /auth/key free_model_daily_requests 0/50 at start, 5/50
+#   after the audit. Mac ON BATTERY (100%, discharging, 03:00 local run)
+#   under caffeinate -s -i — -s does not hold on battery, and FOUR sleep
+#   artifacts showed up: a probe batch stalled >10 min, deepseek-v4.1-
+#   flash HTTP 000 at 926.9s and cohere/north-mini-code:free HTTP 000 at
+#   927.4s (both with --max-time 60), and the tev1 /v1/systemone probe at
+#   15m32s with --max-time 90. All four DISCARDED and re-probed under
+#   caffeinate -i -d (see below) — none recorded as hangs.
+#   NIM: nvidia/nemotron-3-super-120b-a12b 200 3.4s; openai/gpt-oss-20b
+#   200 3.3s. WATCH ITEM moonshotai/kimi-k3 200 "51" 8.9s — CLEAN DAY 5
+#   (restore bar passed on 10-12, held for one more cycle; today is that
+#   cycle). Still not swapped in by the audit: it would be a reasoning
+#   slot-1 add, not a pin change, and the Sept hangs make it the user's
+#   call — flagged in the report. moonshotai/kimi-k2.6 404 (19th day).
+#   z-ai/glm-5.3-flash 200 3.7s — fast day 5; stays out. deepseek-ai/
+#   deepseek-v4.1-flash re-probe on caffeinate -i: HTTP 000 at 60.1s —
+#   a GENUINE timeout (second day running after 10-12's three), streak
+#   0, stays out.
+#   Groq: gpt-oss-120b 0.7s; gpt-oss-20b 200 but 37.5s (outlier, re-probe
+#   0.6s — battery-throttled reading, not a Groq issue); qwen3.8-27b 1.3s.
+#   All "51".
+#   Gemini: gemini-3.1-flash-lite 200 3.7s. gemini-3.5-flash 503 THREE
+#   times ("This model is currently experiencing high demand ... try again
+#   later", status UNAVAILABLE, 0.5-3.1s) — capacity, not EOL (still in
+#   the catalog); kept, treat like a 429.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200
+#   1.9s; poolside/laguna-s-2.1:free 429 (streak day 2, kept);
+#   cohere/north-mini-code:free re-probe 200 1.5s; nemotron-3-nano-omni-
+#   30b-a3b-reasoning:free 200 1.7s; gemma-4-31b-it:free 429 (19th day) and
+#   gemma-4-26b-a4b-it:free 429 (day 10) — kept per the 429 rule. WATCH
+#   ITEM nvidia/nemotron-3-ultra-550b-a55b:free 200 0.9s — clean day 7;
+#   user decision still pending (AA 23 vs gemma-4-31b 15, arena.ai had it
+#   below gemma-4-31b on 10-08 — sources disagree, see 10-12 note).
+#   Live catalogs: NIM 80, Groq 11, OpenRouter :free 15, Gemini 62 — all
+#   identical to 10-12. OpenRouter full 459 (+1): meta/muse-wonder (Meta
+#   "frontier reasoning model", proprietary, $4/$20 per Mtok, 1M ctx,
+#   listed 10-12) — PAID, not a cascade candidate. AA Intelligence Index
+#   lists Muse Wonder (max) 52 and Muse Wonder Full 56 — new #1 overall
+#   but closed; a HF repo meta-01/muse-wonder is an empty squatter (only
+#   .gitattributes, 0 downloads), NOT weights.
+#   Rankings: arena.ai/leaderboard/text returned HTTP 403 to the fetcher
+#   today (lmarena.ai 301 → arena.ai) — no fresh read; last good read is
+#   the 10-08 board in the 10-12 note. Artificial Analysis: MiMo-V2.6-Pro
+#   46 (paid), GLM-5.3 45, Kimi K3 44, GLM-5.3-Flash 42, DeepSeek V4.1
+#   Flash 39, Nemotron 3 Ultra 23, Gemma 4 31B 15, gpt-oss-120b 12 —
+#   identical to 10-12 apart from the Muse entries. Pin ordering stands.
+#   Open-weight releases 10-06..10-13: NONE for chat (llm-stats.com
+#   banner "No open source releases this week"; only Mistral Large 4,
+#   Claude Haiku 5.5, Muse Wonder / Wonder Full — all proprietary). HF
+#   author sweep (22 orgs, createdAt >= 10-12): only LiquidAI d1-3B-MLX-
+#   {fp16,8bit,4bit} and d1-omni-600M-MLX-{fp16,8bit} (10-12). Watch
+#   items unchanged: Step 5 / Reflection Beam / Mistral Large 4 weights
+#   not on HF; Kolibri-1 only gained more community MLX quants (3-bit
+#   tomekcp, 10-12) — still far above 16 GB.
+#   DECISION MODELS (Jev-style) — MAIN FINDING: the d1 blocker is lifted
+#   upstream. ollama/ollama PR #18917 (llama.cpp b11521 "for decision
+#   models and EmbeddingGemma 2") MERGED 2026-10-12T06:25Z and ships in
+#   v0.40.4-rc1 (PRERELEASE, 2026-10-12T19:00Z; also "Add Kev decision
+#   scoring to MLX" #18976). Latest stable is still v0.40.3. Local server
+#   still 0.35.0 — d1-3B testable once the user upgrades (rc1 now, or
+#   the stable 0.40.4 when it lands).
+#   ollama.com/search?c=decision grew 5 → 8: NEW nimble-v3 (Bespoke Labs
+#   9B, q4_K_M 5.6 GB, MLX nvfp4 6.9 GB), kev (Jared Palmer, 0.8/4/9/27B,
+#   MLX-only, min Ollama 0.40.4), strands-decider (Strands Agents 2B,
+#   MLX-only, min 0.40.0, nvfp4 1.3 GB). Decision Index 0.3.2 (space
+#   updated 10-12T13:29Z, data/v03.json generated 10-12T13:25Z, 149
+#   models, pub column): Jev 57.96 #20, Bespoke Nimble 9B v3 57.19 #27,
+#   Kev 27B 56.69 #29, LiquidAI d1-3B 48.99 #52, Kev 9B v2 41.54 #69, Kev
+#   4B r10 37.95 #83, Together Tev1 4B (our default) 29.51 #102, Strands
+#   Decider 2B 25.41 #114. Against the skill criterion (≤ ~5 GB next to a
+#   7-9B chat model, or clearly better than tev1/nimble): d1-3B (1.67 GB,
+#   +19.5) is still the best fit; nimble-v3:9b-q4_K_M (5.6 GB, +27.7,
+#   0.8 behind Jev) is the quality pick but slightly over the size bar;
+#   Kev 4B (bf16 8.4 GB only) and Strands 2B (below tev1) DISCARDED.
+#   Local tev1:4b-q4_K_M /v1/systemone re-probe under caffeinate 200 OK
+#   23.9s cold, department=technical 0.96 (same as 10-12). TypeSafe
+#   quickstart / OpenRouter typesafe/jev-router unchanged (paid, no :free).
+#   No change to DEFAULT_LOCAL_MODEL — plans/jev-systemone.md updated.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.
+#   com, openrouter.ai, generativelanguage.googleapis.com/v1beta/openai,
+#   localhost:11434 (/v1/systemone, /api/version) — verified 2026-10-13;
+#   catalog endpoints (NIM, Groq, OpenRouter, Gemini /v1beta/models)
+#   diffed against the 10-12 snapshots — 2026-10-13; openrouter.ai/api/
+#   v1/auth/key — 2026-10-13; artificialanalysis.ai/leaderboards/models —
+#   2026-10-13; arena.ai/leaderboard/text (403) — 2026-10-13; llm-stats.
+#   com/llm-updates — 2026-10-13; huggingface.co/api/models?author=…
+#   and ?search={Kolibri,Step-5,Beam,d1-3B,Muse-Wonder} — 2026-10-13;
+#   huggingface.co/api/spaces/multimodalart/jev-decision-index + data/
+#   v03.json (0.3.2) — 2026-10-13; api.github.com ollama/ollama pulls/
+#   18917, releases, compare/v0.40.3...v0.40.4-rc1 — 2026-10-13;
+#   ollama.com/search?c=decision, /library/{nimble-v3/tags,kev,strands-
+#   decider} — 2026-10-13.
+
 categories:
 
   reasoning:
