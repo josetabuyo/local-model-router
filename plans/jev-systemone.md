@@ -216,3 +216,8 @@ decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.
 | Strands Decider 2B | 25.41 | #114 | 1.3 GB nvfp4 |
 
 - Conclusión: dos caminos de mejora. **d1-3B** (+19.5 sobre tev1, 1.67 GB) cumple el criterio de tamaño y queda desbloqueado con 0.40.4. **nimble-v3:9b-q4_K_M** (+27.7, a 0.8 de Jev) es la mejor calidad local, pero 5.6 GB queda apenas por encima del límite de ~5 GB junto a un chat model de 7-9B. Kev 4B (sin quant chica) y Strands 2B (debajo de tev1) descartados. Sin cambio en `DEFAULT_LOCAL_MODEL` hasta medir.
+
+### 2026-10-14 — v0.40.4 ya es estable
+
+- **Ollama v0.40.4 es release ESTABLE** (GitHub `prerelease=false`, tag 2026-10-12T19:00Z) e incluye el PR #18917. Ya no hace falta un rc: alcanza con actualizar el servidor local (sigue en 0.35.0) para probar d1-3B en `/v1/systemone`. La decisión de actualizar sigue siendo de José.
+- `ollama.com/search?c=decision` sin cambios (8 modelos). TypeSafe: sin versión nueva de Jev ni free tier. Probe local de tev1 sin lectura válida hoy (Mac a batería, artefactos de sleep). Sin cambio en `DEFAULT_LOCAL_MODEL`.

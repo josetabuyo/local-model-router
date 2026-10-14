@@ -3003,6 +3003,90 @@
 #   18917, releases, compare/v0.40.3...v0.40.4-rc1 — 2026-10-13;
 #   ollama.com/search?c=decision, /library/{nimble-v3/tags,kev,strands-
 #   decider} — 2026-10-13.
+# NOTE 2026-10-14: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 21st day: 200 OK 2.3s, "51".
+#   OpenRouter /auth/key free_model_daily_requests 0/50 at start, 4/50
+#   after the audit. Mac ON BATTERY (90%, discharging, 02:54-04:47 local)
+#   — even caffeinate -i -d (and -u on the re-probes) did not hold: SIX
+#   sleep artifacts, all HTTP 000 with wall time far above --max-time:
+#   glm-5.3-flash 330.6s and 935.7s, deepseek-v4.1-flash 977.6s / 978.0s /
+#   937.0s (all --max-time 60), local tev1 /v1/systemone 919.6s and 938s
+#   (--max-time 180/150). All DISCARDED, none recorded as hangs. Plug the
+#   Mac in for the 03:00 cron — battery runs keep producing this.
+#   NIM: nemotron-3-super-120b-a12b 200 1.7s; openai/gpt-oss-20b 200 6.7s.
+#   WATCH ITEM moonshotai/kimi-k3 200 "51" 2.2s — CLEAN DAY 6; reasoning
+#   slot-1 add still flagged to the user (not done by the audit, see
+#   10-13). moonshotai/kimi-k2.6 404 (20th day). z-ai/glm-5.3-flash
+#   re-probe 200 but 25.1s — slow, not the 1-4s "fast" readings of the
+#   last 5 days; streak reset, stays out. deepseek-ai/deepseek-v4.1-flash
+#   NO VALID READING (3 sleep artifacts, re-probe budget spent); stays out.
+#   Groq: gpt-oss-120b 1.1s, gpt-oss-20b 0.4s, qwen3.8-27b 4.4s. All "51".
+#   Gemini: gemini-3.1-flash-lite 200 2.5s. gemini-3.5-flash HTTP 000 at
+#   60.3s (genuine timeout) then 503 0.9s on re-probe — capacity, day 2 of
+#   503s, still in the catalog; kept, treat like a 429. NEW in the Gemini
+#   catalog (62 → 63): models/gemini-4-argon — probed: 429 with
+#   generate_content_free_tier_requests "limit: 0" and free_tier_input_
+#   token_count "limit: 0" for gemini-4-argon — PAID-ONLY on our key, not
+#   a cascade candidate (announced 2026-09-30, $2/$10 per Mtok intro
+#   pricing; AA Intelligence Index 53 high, #9 overall, closed).
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200
+#   2.0s; poolside/laguna-s-2.1:free 429 (day 3, kept); cohere/north-mini-
+#   code:free 200 1.4s; nemotron-3-nano-omni-30b-a3b-reasoning:free 200-
+#   wrapped upstream "ResourceExhausted: Worker local total request limit
+#   reached (16/16)" then 200 "51" 2.0s on re-probe (same as 10-11);
+#   gemma-4-31b-it:free 429 (20th day), gemma-4-26b-a4b-it:free 429 (day
+#   11) — kept per the 429 rule. WATCH ITEM nvidia/nemotron-3-ultra-550b-
+#   a55b:free 200 4.3s — clean day 8; user decision still pending.
+#   Live catalogs: NIM 80, Groq 11 — identical to 10-13. OpenRouter :free
+#   15 → 14: -apodex/apodex-1.1-mini:free (evaluated and not added
+#   2026-10-02; not in cascade). OpenRouter full 459 → 462: +google/
+#   gemini-4-argon (+:batch) ($2/$10, paid), +liquid/lfm-2.5-24b-a2b
+#   ($0.05/$0.70, paid), +scaledown/{extract,summarize}, unbiased/pareto
+#   renamed pareto-26.9 (+~pareto-latest); -inclusionai/ling-3.0-flash-
+#   {fin,sante}. None free; typesafe/jev-router still pricing -1, no :free.
+#   Rankings: arena.ai/leaderboard/text HTTP 403 again (2nd day) — last
+#   good read stays 10-08. Artificial Analysis: Gemini 4 Argon (high) 53
+#   NEW, Muse Wonder 52 / Full 56, MiMo-V2.6-Pro 46, GLM-5.3 45, Kimi K3 44,
+#   GLM-5.3-Flash 42, DeepSeek V4.1 Flash 39, Nemotron 3 Ultra 23, Gemma 4
+#   31B 15, Nemotron 3 Super 13, gpt-oss-120b 12 — free-cascade ordering
+#   unchanged. Pin ordering stands.
+#   Open-weight releases: llm-stats.com still "No open source releases this
+#   week" (only Muse Wonder/Full, proprietary) — but it MISSES one: Liquid
+#   AI LFM2.5-24B-A2B (24B MoE, 2.45B active, always-reasoning, 131K ctx,
+#   lfm1.0 license, agentic/tool-use focus; card claims LiveClaw 48.09 vs
+#   Qwen3.6-35B-A3B 38.19, 184 tok/s on M5 Max) — HF weights + GGUF + MLX
+#   published 10-09..10-12. LOCAL FIT on 16 GB: official Q4_K_M 14.5 GB,
+#   QAD-Q4_0 13.6 GB, MLX-4bit 13.6 GB — DISCARDED at Q4 (no room for the OS
+#   + anything else). unsloth UD-Q2_K_XL 8.0 GB / UD-IQ3_XXS 9.0 GB would
+#   fit alone, but 2-3 bit quants of a 2B-active MoE are an unknown quality
+#   hit, and Ollama 0.35 has no lfm2 support anyway (needs the PR #18917
+#   llama.cpp bump, see below). Noted as a watch item, not pulled. Not on
+#   AA yet; no free cloud endpoint (OpenRouter is paid). HF author sweep
+#   (23 orgs, createdAt >= 10-13): nothing else but an nvidia GR00T robot
+#   checkpoint. Watch items unchanged: Step 5 / Reflection Beam / Mistral
+#   Large 4 weights, Kolibri-1.
+#   DECISION MODELS (Jev-style): Ollama v0.40.4 is now a STABLE release
+#   (GitHub prerelease=false, tagged 2026-10-12T19:00Z) — it carries PR
+#   #18917, so d1-3B no longer needs an rc: a plain upgrade of the local
+#   server (still 0.35.0) unblocks it. Upgrade is still the user's call.
+#   ollama.com/search?c=decision unchanged at 8 (nimble-v3, kev, tev1,
+#   nimble, clef-flash, clef, laya, strands-decider). Local tev1:4b-q4_K_M
+#   /v1/systemone: NO VALID READING today (two sleep artifacts, above).
+#   TypeSafe blog: no Jev version or free tier news. No change to
+#   DEFAULT_LOCAL_MODEL.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.
+#   com, openrouter.ai, generativelanguage.googleapis.com/v1beta/openai,
+#   localhost:11434 (/v1/systemone, /api/version) — verified 2026-10-14;
+#   catalog endpoints (NIM, Groq, OpenRouter, Gemini /v1beta/models)
+#   diffed against the 10-13 snapshots — 2026-10-14; openrouter.ai/api/
+#   v1/auth/key — 2026-10-14; artificialanalysis.ai/leaderboards/models —
+#   2026-10-14; arena.ai/leaderboard/text (403) — 2026-10-14; llm-stats.
+#   com/llm-updates — 2026-10-14; huggingface.co/LiquidAI/LFM2.5-24B-A2B
+#   (README), /api/models/{LiquidAI/LFM2.5-24B-A2B-GGUF,unsloth/LFM2.5-
+#   24B-A2B-GGUF,LiquidAI/LFM2.5-24B-A2B-MLX-4bit} — 2026-10-14;
+#   api.github.com ollama/ollama releases — 2026-10-14; ollama.com/search?
+#   c=decision — 2026-10-14; typesafe.ai/blog — 2026-10-14.
 
 categories:
 
