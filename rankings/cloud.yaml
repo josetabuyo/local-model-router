@@ -3087,6 +3087,80 @@
 #   24B-A2B-GGUF,LiquidAI/LFM2.5-24B-A2B-MLX-4bit} — 2026-10-14;
 #   api.github.com ollama/ollama releases — 2026-10-14; ollama.com/search?
 #   c=decision — 2026-10-14; typesafe.ai/blog — 2026-10-14.
+# NOTE 2026-10-15: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 22nd day: 200 OK 3.7s and 4.2s, "51".
+#   OpenRouter /auth/key free_model_daily_requests 0/50 at start, 4/50
+#   after the audit. Mac ON BATTERY again (100%, discharging, 02:08-04:05
+#   local) under caffeinate -i -d -u. Sleep artifacts (HTTP 000, wall time
+#   far above --max-time): kimi-k3 946.4s / 950.3s / 956.8s (--max-time
+#   60/60/45), deepseek-v4.1-flash 940.1s, gemini-3.1-flash-lite 171.4s and
+#   772.4s, kimi-k2.6 000 at 10.2s (connect timeout). Re-probed; the
+#   artifacts were discarded and none was recorded as a hang. OBSERVATION: on battery the
+#   artifacts land almost only on models that are slow or hanging (kimi-k3,
+#   deepseek-v4.1-flash) — fast models in between answer fine. A probe
+#   that blocks past the idle-sleep threshold lets the Mac sleep mid-
+#   request, so a ~950s artifact likely HIDES A GENUINE HANG rather than
+#   being pure noise. Not proven; recorded as "no valid reading".
+#   NIM: nemotron-3-super-120b-a12b 200 2.8s / 1.6s; openai/gpt-oss-20b
+#   200 1.4s. WATCH ITEM moonshotai/kimi-k3: NO VALID READING (3/3
+#   artifacts, see above — probable hang); clean streak stops at day 6,
+#   NOT extended. The 10-13 slot-1 suggestion should wait for a clean
+#   reading on AC. moonshotai/kimi-k2.6 404 (21st day). z-ai/glm-5.3-flash
+#   200 but 22.1s — slow 2nd day, stays out. deepseek-ai/deepseek-v4.1-
+#   flash: one artifact + one genuine 60s timeout (61.2s) — stays out.
+#   Groq: gpt-oss-120b 0.9s, gpt-oss-20b 1.0s, qwen3.8-27b 0.9s. All "51".
+#   Gemini: gemini-3.1-flash-lite 200 2.0s on 3rd try (2 artifacts first).
+#   gemini-3.5-flash 503 0.7s — capacity, day 3 of 503s, still in the
+#   catalog; kept, treat like a 429. gemini-4-argon not re-probed (paid-
+#   only per 10-14).
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200
+#   4.0s; poolside/laguna-s-2.1:free 429 (day 4, kept); cohere/north-mini-
+#   code:free 200 1.2s; nemotron-3-nano-omni-30b-a3b-reasoning:free 200-
+#   wrapped "ResourceExhausted (16/16)" again, then 200 "51" 1.9s on re-
+#   probe; gemma-4-31b-it:free 429 (21st day), gemma-4-26b-a4b-it:free 429
+#   (day 12) — kept per the 429 rule. WATCH ITEM nvidia/nemotron-3-ultra-
+#   550b-a55b:free: 200-wrapped "Service temporarily overloaded" then 200
+#   "51" 1.2s — clean day 9; user decision still pending.
+#   Live catalogs: NIM 80, Groq 11, OpenRouter :free 14, OpenRouter full
+#   462, Gemini 63 — all identical to 10-14. typesafe/jev-router still
+#   pricing -1, no :free.
+#   Rankings: arena.ai/leaderboard/text HTTP 403 (3rd day) — last good read
+#   stays 10-08. Artificial Analysis unchanged for the cascade: MiMo-V2.6-
+#   Pro 46, GLM-5.3 45, Kimi K3 44, GLM-5.3-Flash 42, DeepSeek V4.1 Flash 39,
+#   Nemotron 3 Ultra 23, Gemma 4 31B 15, gpt-oss-120b 12; LFM2.5-24B-A2B
+#   still not listed. Pin ordering stands.
+#   Open-weight releases: llm-stats.com still "No open source releases this
+#   week". HF author sweep (24 orgs, createdAt >= 10-14): stepfun-ai/Step-
+#   5-Preview-NVFP4 (10-14), plus microsoft/UserRepGen-4B (Qwen3.5-4B user-
+#   simulator fine-tune, not a chat/cascade model). CORRECTION to the "Step 5
+#   weights still not on HF" watch item: stepfun-ai/Step-5-Preview (FP8)
+#   and -BF16 are public (repos created 2026-09-20, probably private until
+#   recently; FP8 has only 85 downloads), StepFun Model License 1.0.
+#   600B MoE / 27B active, 1M ctx, text+image — irrelevant at 16 GB. On
+#   OpenRouter only as paid stepfun/step-5-preview ($1/Mtok in, listed
+#   10-08); not on NIM or Groq. Not a cascade candidate. Watch items left:
+#   Reflection Beam / Mistral Large 4 weights, Kolibri-1, LFM2.5-24B-A2B.
+#   New free providers: none found (roundups only repeat known ones;
+#   GitHub Models retired 07-30 per secondary sources, not in use here).
+#   DECISION MODELS (Jev-style): local tev1:4b-q4_K_M /v1/systemone 200
+#   25.6s, department=technical p=0.963 — first valid reading since 10-13.
+#   Ollama: v0.40.4 stable (has PR #18917 → d1-3B); v0.40.5-rc0 prerelease
+#   (10-14, MLX/CUDA + Responses fixes, nothing decision-related). Local
+#   server still 0.35.0 — upgrade still the user's call. ollama.com/
+#   search?c=decision unchanged at 8. typesafe.ai/blog fetch timed out
+#   (300s) — no reading today. No change to DEFAULT_LOCAL_MODEL.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.
+#   com, openrouter.ai, generativelanguage.googleapis.com/v1beta/openai,
+#   localhost:11434 (/v1/systemone, /api/version) — verified 2026-10-15;
+#   catalog endpoints (NIM, Groq, OpenRouter, Gemini /v1beta/models)
+#   diffed against the 10-14 snapshots — 2026-10-15; openrouter.ai/api/
+#   v1/auth/key — 2026-10-15; artificialanalysis.ai/leaderboards/models —
+#   2026-10-15; arena.ai/leaderboard/text (403) — 2026-10-15; llm-stats.
+#   com/llm-updates — 2026-10-15; huggingface.co/api/models (author sweep),
+#   huggingface.co/stepfun-ai/Step-5-Preview-NVFP4 (README) — 2026-10-15;
+#   api.github.com ollama/ollama releases — 2026-10-15; ollama.com/search?
+#   c=decision — 2026-10-15.
 
 categories:
 
