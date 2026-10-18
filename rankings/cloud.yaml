@@ -3237,6 +3237,80 @@
 #   card mirror, vendor benchmarks) — 2026-10-17; api.github.com ollama/
 #   ollama releases — 2026-10-17.
 
+# NOTE 2026-10-18: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 24th day: 200 OK 3.5s, "51". OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start, 7/50 after the audit. Run at
+#   02:12 local ON BATTERY (70% → 69%, "discharging") under caffeinate -i -d
+#   -u. Sleep artifacts (HTTP 000, wall time far above --max-time 45):
+#   z-ai/glm-5.3-flash 953s, then 933s on re-probe (--max-time 35);
+#   deepseek-ai/deepseek-v4.1-flash 953s. Discarded, not recorded as hangs.
+#   NIM: nemotron-3-super-120b-a12b 200 3.9s; openai/gpt-oss-20b 200 3.9s;
+#   nemotron-3.5-super-vl-120b-a12b 200 3.5s (watch day 2, clean).
+#   moonshotai/kimi-k2.6 404 (23rd day). glm-5.3-flash: no valid reading,
+#   stays out. deepseek-v4.1-flash: re-probe was a genuine 35s timeout
+#   (36s wall), stays out.
+#   Groq: gpt-oss-120b 2.7s, gpt-oss-20b 2.8s, both "51". qwen3.8-27b 429
+#   "Request too large" at max_tokens 1500 (the known TPM limit, see the
+#   GROQ LIMIT note); 200 "51" at max_tokens 300. Kept.
+#   Gemini: gemini-3.1-flash-lite 200 10.4s; gemini-3.5-flash 200 4.4s.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 2.6s;
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free 200 3.0s (clean this time);
+#   cohere/north-mini-code:free 200 2.5s; poolside/laguna-s-2.1:free 200
+#   5.0s (the 429 streak ended after 5 days); gemma-4-31b-it:free 429 (23rd
+#   day); gemma-4-26b-a4b-it:free 429 (day 14). Kept per the 429 rule.
+#   nvidia/nemotron-3.5-super-vl:free 200 2.4s (watch day 2).
+#   xingchen-agi/xing4.0-29b-a4b:free 200 18.7s (watch day 2, still no
+#   independent score). WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free:
+#   200 2.6s, clean. Clean streak day 10. User decision still pending.
+#   NEW — deepseek-ai/DeepSeek-V4.1-Flash-1017 (HF, created 2026-10-17, MIT,
+#   ~763 GB FP8 weights, 1M ctx). The vendor calls it a "minor update" to
+#   V4.1-Flash. Vendor table vs GLM-5.3: Terminal-Bench 4.0 42.3 vs 37.9,
+#   DeepSWE v1.1 77.0 vs 66.9, HLE text 44.0 vs 42.0. Vendor-reported only.
+#   Not on Artificial Analysis yet. NOT FREE ANYWHERE: OpenRouter has only
+#   paid deepseek/deepseek-v4.1-flash-1017 ($0.15/M in, created 10-17). The
+#   NIM catalog still lists only deepseek-v4.1-flash, the id that keeps
+#   hanging. Watch item. If NIM ships a -1017 id that answers, it is a
+#   real slot-0 challenger for reasoning/coding. Too big locally.
+#   NEW (local) — nvidia/NVIDIA-Nemotron-Labs-Dory1.0-4B (HF, created
+#   2026-10-16, OpenMDW-1.1). A 4B looped (latent-recurrent) nGPT, 256K ctx,
+#   with 1-4 loops chosen at inference. Official Q5_K_M GGUF is 3.67 GB, so
+#   it fits in 16 GB next to a 7-9B chat model. Vendor table (BF16, 4 loops
+#   vs Qwen3.5-9B): SWE-bench Verified 61.8 vs 61.0, IFBench 79 vs 59, GPQA
+#   72.2 vs 80.9, AA-LCR 73 vs 68.4. Not runnable here yet: it needs the
+#   llama.cpp fork from PR ggml-org/llama.cpp#30306 (not merged), and it is
+#   not in the Ollama library (ollama.com/library/dory 404). Watch item.
+#   Recheck when the PR lands in a llama.cpp/Ollama release.
+#   Live catalogs: NIM 81, Groq 11, Gemini 63, all unchanged. OpenRouter
+#   :free 16, same set as 10-17. OpenRouter full 469 → 471 (+deepseek/
+#   deepseek-v4.1-flash-1017, +elorian/glimpse, both paid). typesafe/jev-
+#   router still pricing -1, no :free. Snapshots saved to /tmp/scout-1018/
+#   for tomorrow's diff.
+#   Rankings: arena.ai/leaderboard/text HTTP 403 (5th day). Last good read
+#   stays 10-08. Artificial Analysis: MiMo-V2.6-Pro 46, GLM-5.3 45, GLM-
+#   5.3-Flash 42, DeepSeek V4.1 Flash 39, Nemotron 3.5 Super VL 26, Inkling
+#   25, Nemotron 3 Ultra 23, Gemma 4 31B 15, gpt-oss-120b 12. Unchanged. Pin
+#   ordering stands.
+#   Open-weight releases: llm-stats.com lists only Meta Muse Wonder (closed,
+#   10-12). It misses DeepSeek-1017 and Dory, both found on the HF API. New
+#   free providers: none found.
+#   DECISION MODELS (Jev-style): local Ollama server NOT RUNNING, 2nd day
+#   (localhost:11434 connection refused; `ollama` not on the cron PATH). No
+#   /v1/systemone reading today. Not restarted unattended. Ollama v0.40.6
+#   now STABLE (10-16), v0.40.7-rc0 prerelease (10-18). Local is still
+#   0.35.0. Upgrade is still the user's call. No change to
+#   DEFAULT_LOCAL_MODEL.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai,
+#   localhost:11434 — verified 2026-10-18; catalog endpoints (NIM, Groq,
+#   OpenRouter, Gemini /v1beta/models) — 2026-10-18; openrouter.ai/api/v1/
+#   auth/key — 2026-10-18; artificialanalysis.ai/leaderboards/models —
+#   2026-10-18; arena.ai/leaderboard/text (403) — 2026-10-18; llm-stats.com/
+#   llm-updates — 2026-10-18; huggingface.co/deepseek-ai/DeepSeek-V4.1-
+#   Flash-1017 (model card) — 2026-10-18; huggingface.co/nvidia/NVIDIA-
+#   Nemotron-Labs-Dory1.0-4B-GGUF (model card) — 2026-10-18; api.github.com
+#   ollama/ollama releases — 2026-10-18.
+
 categories:
 
   reasoning:
