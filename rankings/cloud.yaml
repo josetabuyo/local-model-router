@@ -3382,6 +3382,87 @@
 #   reflection-ai-beam-501b-weights-live-apache-download — 2026-10-19;
 #   api.github.com ollama/ollama releases and ggml-org/llama.cpp pull 30306
 #   — 2026-10-19.
+# NOTE 2026-10-20: Daily audit, live chat-completion probes against every
+#   model referenced in this file. NO CASCADE CHANGES — pinned z-ai/glm-5.3
+#   (NVIDIA NIM) holds a 26th day: 200 OK 2.0s, "51". OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start, 6/50 after the audit. Run at
+#   03:00-03:55 local ON BATTERY (68% → 67%, "discharging") under caffeinate
+#   -i -d -u (-s added on the second pass). Sleep artifacts (HTTP 000, wall
+#   time far above --max-time 45): z-ai/glm-5.3-flash 946s, nvidia/
+#   nemotron-3-super-120b-a12b 919s, deepseek-ai/deepseek-v4.1-flash 941s
+#   (2nd probe). Discarded. Re-ran everything else as parallel probes,
+#   which finished in ~60s with no artifacts.
+#   GENUINE readings: z-ai/glm-5.3-flash 000 at 46.3s (max-time 45), a real
+#   timeout. deepseek-ai/deepseek-v4.1-flash 000 at 45.3s, also a real
+#   timeout. Both stay out.
+#   NIM: nemotron-3-super-120b-a12b 200 3.4s; openai/gpt-oss-20b 200 2.4s;
+#   nemotron-3.5-super-vl-120b-a12b 200 2.5s (watch day 4, clean).
+#   moonshotai/kimi-k2.6 404 (25th day).
+#   Groq: gpt-oss-120b 2.0s, gpt-oss-20b 2.7s, qwen3.8-27b 2.3s (max_tokens
+#   300), all "51".
+#   Gemini: gemini-3.1-flash-lite 200 3.3s; gemini-3.5-flash 200 4.4s.
+#   OpenRouter (max_tokens 1500): nemotron-3-super-120b-a12b:free 200 2.5s;
+#   cohere/north-mini-code:free 200 3.8s; poolside/laguna-s-2.1:free 200
+#   10.5s. nemotron-3-nano-omni-30b-a3b-reasoning:free gave HTTP 200, but the
+#   body was "Upstream error from Nvidia: ResourceExhausted". That is a quota
+#   error, so it counts as a 429: kept.
+#   gemma-4-31b-it:free 429 (25th day) and gemma-4-26b-a4b-it:free 429 (day
+#   16), kept per the 429 rule. nvidia/nemotron-3.5-super-vl:free 200 2.9s
+#   (watch day 4). xingchen-agi/xing4.0-29b-a4b:free 200 9.9s but the body
+#   said "temporarily rate-limited upstream". No valid reading (watch day
+#   4). WATCH ITEM nvidia/nemotron-3-ultra-550b-a55b:free 200 2.8s, clean
+#   streak day 12. User decision pending.
+#   NEW minimax/minimax-m3.1-flash:free (OpenRouter, created 2026-10-19, 1M
+#   ctx, multimodal). 200 2.8s, "51". MiniMax released M3.1 Flash on
+#   2026-10-19: 428B MoE, paid list price $0.15/M in and $0.60/M out.
+#   Artificial Analysis Intelligence Index is 43 on the live leaderboard
+#   today; press coverage citing AA says 42. Either way it ties GLM-5.3-
+#   Flash (42) and sits below the slot-0 pin GLM-5.3 (45) and DeepSeek V4.1
+#   Flash 1017 (45). AA also reports a 93% hallucination rate: it answers
+#   nearly everything instead of declining. Vendor numbers: Automation-
+#   Bench 62.2 (vs DeepSeek 1017 at 60.5), DeepSWE v1.1 73.7 (vs DeepSeek
+#   77.0). Weights are not public yet (release announced for 10-23); at
+#   428B they would not fit locally anyway.
+#   It does NOT beat slot 0, so no promotion. But it is by far the strongest
+#   :free model on OpenRouter (Nemotron 3 Ultra 23, Nemotron 3.5 Super VL
+#   26, Gemma 4 31B 15). It is the obvious candidate to lead the OR free
+#   tier in reasoning/coding once it has a few clean days. The hallucination
+#   rate argues against it for summarization/context. Held as a watch
+#   item, day 1. Not on NIM.
+#   Catalog diffs vs 10-19: NIM 81, Groq 11, Gemini 63 — all identical.
+#   OpenRouter :free 17 (+minimax-m3.1-flash:free). OpenRouter full 470:
+#   gained inception/mercury-3 (diffusion LM, paid $0.10/M, not free, not
+#   on AA yet); lost deepseek/deepseek-r1, microsoft/wizardlm-2-8x22b and
+#   sao10k/l3.3-euryale-70b (all paid, none referenced here).
+#   typesafe/jev-router still pricing -1, no :free. Snapshots in
+#   /tmp/scout-1020/.
+#   Rankings: arena.ai/leaderboard/text HTTP 403 (7th day). Last good read
+#   stays 10-08. AA: MiMo-V2.6-Pro 46, GLM-5.3 45, DeepSeek V4.1 Flash 1017
+#   45, MiniMax-M3.1-Flash 43 (new), GLM-5.3-Flash 42, Nemotron 3.5 Super VL
+#   26, Nemotron 3 Ultra 23, Gemma 4 31B 15, gpt-oss-120b 12. The pin
+#   stands.
+#   New free providers: none found. Trackers confirm GitHub Models was
+#   retired 2026-07-30 and that Cerebras now asks for a card before its
+#   credit unlocks.
+#   Local: llama.cpp PR #30306 (Dory support) still OPEN, updated 10-20.
+#   Dory watch item unchanged.
+#   DECISION MODELS (Jev-style): local Ollama server NOT RUNNING, 4th day
+#   (localhost:11434 no answer). No /v1/systemone reading today. Not
+#   restarted unattended. Local is still 0.35.0. DEFAULT_LOCAL_MODEL
+#   unchanged.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai,
+#   localhost:11434 — verified 2026-10-20; catalog endpoints — 2026-10-20;
+#   openrouter.ai/api/v1/auth/key — 2026-10-20; artificialanalysis.ai/
+#   leaderboards/models — 2026-10-20; marktechpost.com/2026/10/19/minimax-
+#   m3-1-flash-release, venturebeat.com/technology/minimaxs-new-m3-1-flash-
+#   beats-deepseek-and-opus-5-on-a-key-business-benchmark-at-lower-cost-
+#   but-with-a-high-hallucination-rate, the-decoder.com/minimax-m3-1-flash-
+#   shows-chinas-ai-price-race-has-no-floor-in-sight — 2026-10-20;
+#   gravity.fast/blog/free-llm-api-tiers,
+#   capitalandcompute.net/blog/how-to-test-llm-apps-without-paying-for-
+#   tokens — 2026-10-20; api.github.com ggml-org/llama.cpp pull 30306 —
+#   2026-10-20.
 
 categories:
 
