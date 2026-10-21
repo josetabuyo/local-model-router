@@ -3,7 +3,7 @@
 <!-- GENERADO por scripts/render_models.py desde rankings/*.yaml — no editar a mano.
      Regenerar: uv run scripts/render_models.py -->
 
-Actualizado: 2026-10-20 · Máquina: Apple Silicon, 16 GB RAM.
+Actualizado: 2026-10-21 · Máquina: Apple Silicon, 16 GB RAM.
 Fuente de verdad: `rankings/cloud.yaml` (cloud, con el log diario de auditorías
 de `/model-scout` en sus `NOTE`) y `rankings/local.yaml` (benchmarks propios de Ollama).
 
@@ -15,14 +15,14 @@ pagos al final.
 
 | Categoría | Slot 0 | Resto del cascade (en orden) |
 |---|---|---|
-| `reasoning` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/google/gemma-4-26b-a4b-it:free`, `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`, `openrouter/nvidia/nemotron-3-super-120b-a12b:free` |
-| `coding` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3-super-120b-a12b:free` |
-| `math` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3-super-120b-a12b:free` |
-| `summarization` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3-super-120b-a12b:free` |
+| `reasoning` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/google/gemma-4-26b-a4b-it:free`, `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `coding` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `math` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `summarization` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
 | `instruction` | `groq/qwen/qwen3.8-27b` | `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.1-flash-lite` |
 | `multilingual` | `groq/openai/gpt-oss-20b` | `nvidia/z-ai/glm-5.3`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.1-flash-lite` |
-| `code_debug` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3-super-120b-a12b:free` |
-| `context` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/nvidia/nemotron-3-super-120b-a12b:free`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.5-flash` |
+| `code_debug` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `context` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/nvidia/nemotron-3.5-super-vl:free`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.5-flash` |
 
 ## 2. Modelos cloud gratis — dónde rankean
 
@@ -38,7 +38,7 @@ pagos al final.
 | `openrouter/google/gemma-4-26b-a4b-it:free` | openrouter | reasoning#4 | 262,144 | 1438 |
 | `openrouter/google/gemma-4-31b-it:free` | openrouter | reasoning#3, coding#5, math#3, summarization#3, instruction#1, multilingual#2, code_debug#5, context#4 | 262,144 | 1451 |
 | `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | openrouter | reasoning#5 | 256,000 | — |
-| `openrouter/nvidia/nemotron-3-super-120b-a12b:free` | openrouter | reasoning#6, coding#6, math#4, summarization#4, code_debug#6, context#3 | 1,000,000 | 1343 |
+| `openrouter/nvidia/nemotron-3.5-super-vl:free` | openrouter | reasoning#6, coding#6, math#4, summarization#4, code_debug#6, context#3 | 1,000,000 | — |
 | `openrouter/poolside/laguna-s-2.1:free` | openrouter | coding#3, code_debug#3 | 1,000,000 | — |
 
 ## 3. Modelos cloud pagos (sólo vía `cheapest:<categoría>`)

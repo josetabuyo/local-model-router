@@ -3463,6 +3463,72 @@
 #   capitalandcompute.net/blog/how-to-test-llm-apps-without-paying-for-
 #   tokens — 2026-10-20; api.github.com ggml-org/llama.cpp pull 30306 —
 #   2026-10-20.
+# NOTE 2026-10-21: Daily audit, live parallel chat-completion probes against
+#   every model referenced here. Run 02:00-02:20 local ON BATTERY (100%,
+#   "discharging") under caffeinate -i -d -u -s, all probes in parallel.
+#   OpenRouter /auth/key free_model_daily_requests 0/50 at start, 4/50
+#   after the first pass (~8/50 at the end). Pinned z-ai/glm-5.3 (NIM)
+#   holds slot 0 a 27th day: 200 OK 3s, "51".
+#   CASCADE CHANGE — nvidia/nemotron-3-super-120b-a12b REMOVED. NIM returns
+#   404 "Function 'ac74040f-…': Not found for account" 2/2, and
+#   nvidia/nemotron-3-super-120b-a12b:free on OpenRouter returns the SAME
+#   404 from its Nvidia upstream 2/2 (same function id). Both ids are still
+#   listed in the NIM and OR catalogs. This is the "listed, not served"
+#   pattern kimi-k2.6 has shown since late September. No deprecation notice
+#   found on docs.api.nvidia.com or in NGC version history. Replaced in all
+#   six OpenRouter slots (reasoning, coding, math, summarization,
+#   instruction, context) by nvidia/nemotron-3.5-super-vl:free, and in NIM
+#   FREE_MODELS by nvidia/nemotron-3.5-super-vl-120b-a12b. That is the drop-in
+#   successor watched since 10-17 (120B/12B active, 1M ctx on OR). AA
+#   Intelligence Index 26; Nemotron 3 Super is no longer listed (13 at last
+#   read). Today's first parallel probe gave NIM 500 / OR 502, then a re-probe
+#   gave 200 "51" in ~1s on both. It is day 5 of watch with one transient
+#   blip. If 3 Super comes back (kimi-k3 returned once from a 404 on
+#   09-29/10-01), do NOT revert: 3.5 Super VL scores higher.
+#   Other readings: NIM openai/gpt-oss-20b 200 3s; moonshotai/kimi-k2.6 404
+#   (26th day). z-ai/glm-5.3-flash and deepseek-ai/deepseek-v4.1-flash:
+#   first pass 000 at 133s (sleep artifact, discarded), re-probe 000 at 45s
+#   = genuine timeouts, both stay out. Groq: gpt-oss-120b, gpt-oss-20b,
+#   qwen3.8-27b all 200 ~3s "51". Gemini: gemini-3.1-flash-lite 200 4s;
+#   gemini-3.5-flash 200 5s.
+#   OpenRouter (max_tokens 1500): cohere/north-mini-code:free 200 4s;
+#   poolside/laguna-s-2.1:free 200 10s; gemma-4-31b-it:free 429 (26th day)
+#   and gemma-4-26b-a4b-it:free 429 (day 17), both kept per the 429 rule.
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free 200 wrapping "ResourceExhausted
+#   16/16" = quota, kept. WATCH ITEMS: nvidia/nemotron-3-ultra-550b-a55b:free
+#   200 2s, clean day 13 (user decision pending). minimax/minimax-m3.1-flash:free
+#   200 2s "51", clean day 2 (AA 43, still below slot-0 45; weights due 10-23).
+#   xingchen-agi/xing4.0-29b-a4b:free 200 but body "temporarily rate-limited
+#   upstream", so no valid reading (day 5).
+#   Catalog diffs vs 10-20: NIM 83 (+nvidia/nemotron-3.5-embed-1b, -8b,
+#   embeddings, irrelevant). Groq 11, Gemini 63, OR :free 17 all identical.
+#   OR full 468 (-google/gemini-2.5-flash:batch, -gemini-2.5-pro:batch, paid,
+#   unreferenced). typesafe/jev-router still pricing -1, no :free.
+#   Snapshots in /tmp/scout-1021/.
+#   Rankings: AA unchanged for our models (GLM-5.3 45, DeepSeek V4.1 Flash
+#   1017 45, MiniMax-M3.1-Flash 43, GLM-5.3-Flash 42, Nemotron 3.5 Super VL
+#   26, Nemotron 3 Ultra 23, Gemma 4 31B 15, gpt-oss-120b 12). arena.ai not
+#   re-tried (403 for 7 days).
+#   New open weights since 10-19 (HF API, sorted by createdAt): KRAFTON
+#   Raon-1-mini-preview (28.8B, Apache 2.0, 10-21, too big for 16 GB, no
+#   independent score). LiquidAI LFM2.5-DSpark speculative-decoding drafters
+#   (10-19/20; 24B-A2B drafter 328M, F16 GGUF 664 MB; family also covers
+#   LFM2.5-1.2B/2.6B/VL-3B). They need llama.cpp --spec-type draft-dspark and
+#   are not in Ollama. Local speed-up idea only, no cascade impact. No new
+#   free providers.
+#   Local: Ollama v0.40.7 stable (10-18); local still 0.35.0 and the server
+#   is NOT RUNNING (5th day), so no /v1/systemone reading.
+#   DEFAULT_LOCAL_MODEL unchanged. llama.cpp PR #30306 (Dory) still open
+#   (updated 10-20).
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai — verified
+#   2026-10-21; catalog endpoints + openrouter.ai/api/v1/auth/key —
+#   2026-10-21; artificialanalysis.ai/leaderboards/models — 2026-10-21;
+#   docs.api.nvidia.com/nim/reference/models-1, catalog.ngc.nvidia.com
+#   nemotron-3-super-120b-a12b version history — 2026-10-21;
+#   huggingface.co/api/models (LiquidAI/LFM2.5-24B-A2B-DSpark[-GGUF],
+#   KRAFTON/Raon-1-mini-preview) — 2026-10-21; api.github.com ollama
+#   releases + ggml-org/llama.cpp pull 30306 — 2026-10-21.
 
 categories:
 
@@ -3554,10 +3620,10 @@ categories:
     #   remain in this category (lightning, gemma-4-31b, gemma-4-26b,
     #   nemotron-3-nano-omni-30b-a3b-reasoning above).
     - provider: openrouter
-      model: nvidia/nemotron-3-super-120b-a12b:free
+      model: nvidia/nemotron-3.5-super-vl:free
       context_window: 1000000
-      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      note: "Replaces nvidia/nemotron-3-super-120b-a12b:free (404 'Function not found' on NIM and OR 2026-10-21). Successor, AA Intelligence 26 vs 13."
+      source: "own live probe openrouter.ai + artificialanalysis.ai/leaderboards/models — verified 2026-10-21"
 
   coding:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -3613,10 +3679,10 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: nvidia/nemotron-3-super-120b-a12b:free
+      model: nvidia/nemotron-3.5-super-vl:free
       context_window: 1000000
-      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      note: "Replaces nvidia/nemotron-3-super-120b-a12b:free (404 'Function not found' on NIM and OR 2026-10-21). Successor, AA Intelligence 26 vs 13."
+      source: "own live probe openrouter.ai + artificialanalysis.ai/leaderboards/models — verified 2026-10-21"
 
   math:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -3661,10 +3727,10 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: nvidia/nemotron-3-super-120b-a12b:free
+      model: nvidia/nemotron-3.5-super-vl:free
       context_window: 1000000
-      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      note: "Replaces nvidia/nemotron-3-super-120b-a12b:free (404 'Function not found' on NIM and OR 2026-10-21). Successor, AA Intelligence 26 vs 13."
+      source: "own live probe openrouter.ai + artificialanalysis.ai/leaderboards/models — verified 2026-10-21"
 
   summarization:
     # NOTE: z-ai/glm-5.1 reached EOL 2026-07-02, removed.
@@ -3712,10 +3778,10 @@ categories:
     #   "unavailable for free" (paid-only now). No replacement needed, two
     #   other live free entries remain (one above, one below).
     - provider: openrouter
-      model: nvidia/nemotron-3-super-120b-a12b:free
+      model: nvidia/nemotron-3.5-super-vl:free
       context_window: 1000000
-      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      note: "Replaces nvidia/nemotron-3-super-120b-a12b:free (404 'Function not found' on NIM and OR 2026-10-21). Successor, AA Intelligence 26 vs 13."
+      source: "own live probe openrouter.ai + artificialanalysis.ai/leaderboards/models — verified 2026-10-21"
 
   instruction:
     # Reasoning models (qwen3.6-27b, kimi-k2.6, gpt-oss-120b) excluded:
@@ -3871,10 +3937,10 @@ categories:
       context_window: 262144
       source: "lmmarketcap.com/benchmarks/arena_elo — 2026-06"
     - provider: openrouter
-      model: nvidia/nemotron-3-super-120b-a12b:free
+      model: nvidia/nemotron-3.5-super-vl:free
       context_window: 1000000
-      note: "Replaces meta-llama/llama-3.3-70b-instruct:free, which went paid-only."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+      note: "Replaces nvidia/nemotron-3-super-120b-a12b:free (404 'Function not found' on NIM and OR 2026-10-21). Successor, AA Intelligence 26 vs 13."
+      source: "own live probe openrouter.ai + artificialanalysis.ai/leaderboards/models — verified 2026-10-21"
 
   context:
     # ── NVIDIA NIM ─────────────────────────────────────────────────────────
@@ -3919,11 +3985,10 @@ categories:
     #   --max-time 25s). No replacement needed, nemotron-3-super-120b-a12b
     #   below and gemini-3.5-flash further down already cover 1M+ context.
     - provider: openrouter
-      model: nvidia/nemotron-3-super-120b-a12b:free
-      arena_elo: 1343
+      model: nvidia/nemotron-3.5-super-vl:free
       context_window: 1000000
-      note: "1M token context on OpenRouter free tier."
-      source: "openrouter.ai/models — 2026-06"
+      note: "1M token context on OpenRouter free tier. Replaces nvidia/nemotron-3-super-120b-a12b:free (404 on NIM and OR 2026-10-21)."
+      source: "own live probe openrouter.ai + openrouter.ai/api/v1/models — verified 2026-10-21"
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451

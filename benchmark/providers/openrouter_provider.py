@@ -13,7 +13,7 @@ OPENROUTER_BASE = "https://openrouter.ai/api/v1"
 FREE_MODELS = [
     "google/gemma-4-31b-it:free",
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
+    "nvidia/nemotron-3.5-super-vl:free",
 ]
 
 

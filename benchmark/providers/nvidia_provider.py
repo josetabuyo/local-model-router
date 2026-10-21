@@ -11,7 +11,7 @@ NVIDIA_API_BASE = "https://integrate.api.nvidia.com/v1"
 FREE_MODELS = [
     # Mirrors the NIM entries pinned in rankings/cloud.yaml (model-scout keeps both in sync).
     "z-ai/glm-5.3",
-    "nvidia/nemotron-3-super-120b-a12b",
+    "nvidia/nemotron-3.5-super-vl-120b-a12b",
     "openai/gpt-oss-20b",
 ]
 
