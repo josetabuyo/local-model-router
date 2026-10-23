@@ -221,3 +221,13 @@ decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.
 
 - **Ollama v0.40.4 es release ESTABLE** (GitHub `prerelease=false`, tag 2026-10-12T19:00Z) e incluye el PR #18917. Ya no hace falta un rc: alcanza con actualizar el servidor local (sigue en 0.35.0) para probar d1-3B en `/v1/systemone`. La decisión de actualizar sigue siendo de José.
 - `ollama.com/search?c=decision` sin cambios (8 modelos). TypeSafe: sin versión nueva de Jev ni free tier. Probe local de tev1 sin lectura válida hoy (Mac a batería, artefactos de sleep). Sin cambio en `DEFAULT_LOCAL_MODEL`.
+
+### 2026-10-23 — Ollama v0.40.9: familia d3 (vLLM Semantic Router)
+
+- **Ollama v0.40.9 estable** (2026-10-22) trae **d3** (`ollama.com/library/d3`, Apache 2.0, requiere Ollama ≥ 0.40.9). Tamaños 2B/4B/9B/27B, default MXFP8 en Apple Silicon, contexto 4096. Memoria cargada publicada: `d3:2b` 3.62 GB, `d3` (4B) 5.63 GB, `d3:9b` 10.09 GB, `d3:27b` 28.61 GB.
+- Scores del publisher (Jev Decision Index 0.3.2, checkpoints originales, **no** los quants de Ollama; HF `vllm-sr/d3` README). Text index: 2B 38.9, 4B 52.6, 9B 55.8, 27B 66.3. Vision index: 54.7 / 63.2 / 66.9 / 71.3. Ojo: es el "Text index" del publisher, no se verificó que sea la misma columna "pub" del board de 10-13. Hay que contrastarlo con `data/v03.json` antes de compararlo 1:1.
+- Contra el criterio (≤ ~5 GB junto a un chat model de 7-9B):
+  - **d3:2b** (3.62 GB) entra, y 38.9 supera a tev1-4b (29.51), pero queda debajo de d1-3B (48.99, 1.67 GB).
+  - **d3 4B** (52.6) sería la mejor calidad que entra cerca del límite. Con 5.63 GB queda en la misma situación que nimble-v3, apenas por encima.
+- Si José actualiza el Ollama local (sigue en 0.35.0 y el server lleva 7 días caído), la tanda de prueba en `/v1/systemone` con `plans/jev-example.json` es: d1-3B, d3:2b, d3 4B vs tev1. Sin cambio en `DEFAULT_LOCAL_MODEL` hasta medir.
+- TypeSafe: `typesafe/jev-router` en OR sigue sin `:free` (pricing -1).

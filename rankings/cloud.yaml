@@ -3581,6 +3581,64 @@
 #   huggingface.co/RecursiveSI/flint model card + huggingface.co/api/models —
 #   2026-10-22; api.github.com ollama releases + ggml-org/llama.cpp pull
 #   30306 — 2026-10-22.
+# NOTE 2026-10-23: Daily audit, live parallel chat-completion probes against
+#   every model referenced here. Run on BATTERY (53%, discharging) with
+#   caffeinate; probes in parallel, --max-time 45. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start (~9 used). No cascade changes.
+#   Pinned z-ai/glm-5.3 (NIM) holds slot 0 a 29th day: 200 3.8s "51".
+#   NIM: nemotron-3.5-super-vl-120b-a12b 200 2.1s; openai/gpt-oss-20b 200;
+#   moonshotai/kimi-k2.6 404 (28th day); nemotron-3-super-120b-a12b still
+#   404 (day 3 after removal). z-ai/glm-5.3-flash and deepseek-ai/
+#   deepseek-v4.1-flash 000 at 952.9s wall: a battery sleep artifact, which
+#   per the 10-15 insight hides their known genuine hang. Both stay out.
+#   Groq: gpt-oss-120b, gpt-oss-20b, qwen3.8-27b all 200 ~1s "51". Gemini:
+#   gemini-3.1-flash-lite and gemini-3.5-flash 200 2.2s.
+#   OpenRouter (max_tokens 1500): nemotron-3.5-super-vl:free 200 1.8s;
+#   cohere/north-mini-code:free 200 1.9s; poolside/laguna-s-2.1:free 200
+#   9.5s; nemotron-3-nano-omni-30b-a3b-reasoning:free 200 with an upstream
+#   "ResourceExhausted" body (treated as a 429, kept). gemma-4-31b-it:free
+#   429 (28th day) and gemma-4-26b-a4b-it:free 429 (day 19), both kept.
+#   MAIN FINDING: MiniMax-M3.1-Flash moved from OR :free to NIM free.
+#   - NIM catalog +minimaxai/minimax-m3.1-flash (new today). Live probe 200
+#     2.5s "51".
+#   - OpenRouter dropped minimax/minimax-m3.1-flash:free. Only the paid id
+#     remains (prompt $0.15/M). The OR watch item is closed.
+#   - Weights are public: HF MiniMaxAI/MiniMax-M3.1-Flash (ungated, license
+#     "other", ~220B safetensors params, lastModified 2026-10-23T03:37Z),
+#     as announced for 10-23. Too big locally.
+#   - AA 43 (10-22 reading, not re-checked today) is still below the slot-0
+#     pin GLM-5.3 at 45, so it does not take slot 0. Not slotted elsewhere
+#     on day 1 either: MiniMax ids on NIM have a flaky history (minimax-m3
+#     hung and was removed 2026-08-30). It is now a NIM watch item, day 1.
+#     Promote it to a lower NIM slot only after a few clean days on AC.
+#   WATCH ITEMS: nemotron-3-ultra-550b-a55b:free 200 3.8s, clean day 15
+#   (user decision pending). recursive/flint-v1.0:free 200 2.6s "51" (day 2,
+#   still no independent score). xingchen-agi/xing4.0-29b-a4b:free 200 with
+#   an upstream rate-limit body (day 7, still no valid reading).
+#   Catalog diffs vs 10-22: NIM 83→84 (+minimaxai/minimax-m3.1-flash). Groq
+#   11, identical. Gemini 63→60 (-veo-3.1-{fast,lite,}-generate-preview,
+#   video models we never referenced). OR :free 18→17 (-minimax-m3.1-flash
+#   :free). OR full 468 (the free id was replaced by the paid id).
+#   typesafe/jev-router still pricing -1, no :free. Snapshots in
+#   /tmp/scout-1023/.
+#   New open weights since 10-22 (HF API, sorted by createdAt): MiniMax-M3.1-
+#   Flash (above). Otherwise Flint quants/abliterations, a DeepSeek-V4.1-Flash
+#   IQ2_XS GGUF, and Qwen fine-tunes; nothing local-relevant. No new free
+#   providers.
+#   Local: Ollama v0.40.9 stable (10-22) adds Phonon speech and the d3
+#   decision family (vLLM Semantic Router, Apache 2.0). See plans/jev-
+#   systemone.md for d3. The local install is still 0.35.0 and the server
+#   is NOT RUNNING (7th day): localhost:11434 refused, so there is no
+#   /v1/systemone reading. DEFAULT_LOCAL_MODEL unchanged. llama.cpp PR
+#   #30306 (Dory) still open.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai — verified
+#   2026-10-23; catalog endpoints + openrouter.ai/api/v1/auth/key —
+#   2026-10-23; huggingface.co/api/models/MiniMaxAI/MiniMax-M3.1-Flash —
+#   2026-10-23; marktechpost.com/2026/10/19/minimax-m3-1-flash-release
+#   (weights promised for 10-23); github.com/ollama/ollama/releases/tag/
+#   v0.40.9 + ollama.com/library/d3 — 2026-10-23; ggml-org/llama.cpp pull
+#   30306 — 2026-10-23.
 
 categories:
 
