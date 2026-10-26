@@ -3705,6 +3705,31 @@
 #   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai — verified
 #   2026-10-25; catalog endpoints + openrouter.ai/api/v1/auth/key —
 #   2026-10-25; huggingface.co/nvidia/nemotron-3.5-bolt-e4b — 2026-10-25.
+#
+# NOTE 2026-10-26: Daily audit, live parallel chat-completion probes against
+#   every model referenced here. On battery (53%, discharging), probes under
+#   caffeinate -i. OpenRouter /auth/key free_model_daily_requests 0/50 at
+#   start. No cascade changes. Pinned z-ai/glm-5.3 (NIM) holds slot 0 a 32nd
+#   day but is SLOW today: first probe 000 at the 45s cap (wall 45.1s, a real
+#   timeout), second probe 000 with wall 929s (Maintenance Sleep artifact,
+#   discarded), third 200 29.5s "48". Alive, latency elevated (usual 2-9s);
+#   recheck tomorrow before treating as the NIM hang pattern.
+#   NIM: nemotron-3.5-super-vl-120b-a12b 200 1.2s; openai/gpt-oss-20b 200
+#   1.4s; minimaxai/minimax-m3.1-flash 200 0.9s (NIM watch day 4, clean).
+#   Groq: gpt-oss-120b, gpt-oss-20b, qwen3.8-27b all 200 <1s. Gemini:
+#   gemini-3.1-flash-lite 200 1.1s, gemini-3.5-flash 200 2.6s.
+#   OpenRouter: nemotron-3.5-super-vl:free 200 1.0s; cohere/north-mini-code:
+#   free 200 0.9s; poolside/laguna-s-2.1:free 429 (quota, kept);
+#   gemma-4-31b-it:free 429 (31st day, kept as quota). WATCH: nemotron-3-ultra-
+#   550b-a55b:free 200 2.1s, clean day 18 (user decision pending);
+#   recursive/flint-v1.0:free 200 5.3s (day 5, still no independent score).
+#   Catalog diffs vs 10-25: NIM (85), OR :free (17), Groq (11), Gemini (60)
+#   identical. No open-web search run this audit (only catalog + probes).
+#   Local: Ollama server NOT RUNNING (10th day), no /v1/systemone reading.
+#   DEFAULT_LOCAL_MODEL unchanged. Snapshots in /tmp/scout-1026/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai — verified
+#   2026-10-26; catalog endpoints + openrouter.ai/api/v1/auth/key — 2026-10-26.
 
 categories:
 
