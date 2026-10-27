@@ -3731,6 +3731,33 @@
 #   openrouter.ai, generativelanguage.googleapis.com/v1beta/openai — verified
 #   2026-10-26; catalog endpoints + openrouter.ai/api/v1/auth/key — 2026-10-26.
 
+# NOTE 2026-10-27: Daily audit, live parallel chat-completion probes against
+#   every model referenced here. On battery (39%, discharging), no caffeinate
+#   in this session. OpenRouter /auth/key free_model_daily_requests 0/50 at
+#   start (~6 :free probes spent). No cascade changes. Pinned z-ai/glm-5.3
+#   (NIM) holds slot 0 a 33rd day but is still SLOW/flaky: parallel probe
+#   produced no result inside the 45s cap (not recorded as a hang, battery
+#   run), solo re-probe 200 in 12.7s. Alive; latency elevated two days
+#   running (usual 2-9s) -- recheck tomorrow, escalate if a 3rd day.
+#   NIM: nemotron-3.5-super-vl-120b-a12b 200 1.0s; openai/gpt-oss-20b 200
+#   1.3s; minimaxai/minimax-m3.1-flash 200 2.2s (NIM watch day 5, clean).
+#   Groq: gpt-oss-120b 200 0.5s, gpt-oss-20b 200 0.6s, qwen/qwen3.8-27b 200
+#   0.5s (an initial 404 was my typo: id lacks the qwen/ prefix in the probe;
+#   catalog lists qwen/qwen3.8-27b). Gemini: 3.1-flash-lite 200 2.3s,
+#   3.5-flash 200 6.2s.
+#   OpenRouter: nemotron-3.5-super-vl:free 200 0.8s; cohere/north-mini-code:
+#   free 200 1.6s; poolside/laguna-s-2.1:free 200 5.8s; gemma-4-31b-it:free
+#   429 (32nd day, quota, kept). WATCH: nemotron-3-ultra-550b-a55b:free 200
+#   6.2s, clean day 19 (user decision pending); recursive/flint-v1.0:free
+#   429 (quota, day 6, still no independent score).
+#   Catalog counts vs 10-26: NIM 85, OR :free 17 (unchanged; no snapshot of
+#   10-26 survived in /tmp, so only counts compared). Groq catalog 11 ids.
+#   No open-web search run this audit (only catalog + probes).
+#   Local: Ollama server NOT RUNNING (11th day), no /v1/systemone reading.
+#   DEFAULT_LOCAL_MODEL unchanged. Snapshots in /tmp/scout-1027/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-10-27.
+
 categories:
 
   reasoning:
