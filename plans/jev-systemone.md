@@ -231,3 +231,11 @@ decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.
   - **d3 4B** (52.6) sería la mejor calidad que entra cerca del límite. Con 5.63 GB queda en la misma situación que nimble-v3, apenas por encima.
 - Si José actualiza el Ollama local (sigue en 0.35.0 y el server lleva 7 días caído), la tanda de prueba en `/v1/systemone` con `plans/jev-example.json` es: d1-3B, d3:2b, d3 4B vs tev1. Sin cambio en `DEFAULT_LOCAL_MODEL` hasta medir.
 - TypeSafe: `typesafe/jev-router` en OR sigue sin `:free` (pricing -1).
+
+### 2026-10-28 — Ollama v0.40.12: d1 2B sobre LFM3
+
+- **Ollama v0.40.12 estable** (GitHub `prerelease=false`, 2026-10-27) agrega **LFM3** (Liquid AI, 1.7B, 256K de contexto, pensado para agentes locales/tool calling; `lfm3:1.7b` 1.7 GB) y **`d1:2b`**, un d1 nuevo construido sobre LFM3. Por ahora lfm3 y d1 2b sólo corren en hardware Apple (Linux/Windows "coming soon"), lo que no es problema acá.
+- Tags (`ollama.com/library/d1/tags`, 2026-10-28): `d1:2b` 3.9 GB (125K ctx, texto+imagen), `d1:2b-mxfp8` 2.4 GB, `d1:3b`/`latest` 3.7 GB (32K ctx). Como `d1-omni` agrega audio, queda fuera del caso de uso.
+- La página de la librería no publica un score separado para `d1:2b`. El Decision Index 0.2.1 (48.57) que muestra es de "d1" sin tag, o sea del 3B sobre LFM2.5-VL. No se compara 1:1 hasta que haya un número propio.
+- Hay que agregar `d1:2b-mxfp8` (2.4 GB) a la tanda de prueba de `/v1/systemone`: d1-3B, d1:2b, d3:2b, d3 4B vs tev1. Requiere Ollama ≥ 0.40.12 (el local sigue en 0.35.0 y el server lleva 12 días caído). Sin cambio en `DEFAULT_LOCAL_MODEL` hasta medir.
+- TypeSafe: `typesafe/jev-router` en OR sigue sin `:free` (pricing -1).

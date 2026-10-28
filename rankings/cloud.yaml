@@ -3758,6 +3758,43 @@
 #   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-10-27.
 
+# NOTE 2026-10-28: Daily audit, live parallel chat-completion probes against
+#   every model referenced here. On battery (100%, discharging), probes under
+#   caffeinate -i. OpenRouter /auth/key free_model_daily_requests 0/50 at
+#   start (~10 :free probes spent). No cascade changes. Pinned z-ai/glm-5.3
+#   (NIM) holds slot 0 a 34th day: parallel probe never returned bytes, solo
+#   re-probe 000 with wall 944.9s (Maintenance Sleep artifact, discarded),
+#   third probe under caffeinate 200 8.3s "48" -- back inside its usual 2-9s
+#   after two slow days; no escalation.
+#   NIM: nemotron-3.5-super-vl-120b-a12b 200 1.0s; openai/gpt-oss-20b 200
+#   "48"; minimaxai/minimax-m3.1-flash 200 "48" (NIM watch day 6, clean).
+#   Groq: gpt-oss-120b 200 1.0s, gpt-oss-20b 200 "48", qwen/qwen3.8-27b 200
+#   0.9s. Gemini: 3.1-flash-lite 200 "48", 3.5-flash 200 "48".
+#   OpenRouter: nemotron-3.5-super-vl:free 200 1.3s; cohere/north-mini-code:
+#   free 200 "48"; poolside/laguna-s-2.1:free 200 "48"; gemma-4-31b-it:free
+#   429 (33rd day, quota, kept); gemma-4-26b-a4b-it:free 429 (quota, kept);
+#   nemotron-3-nano-omni-30b-a3b-reasoning:free 502 "Upstream error from
+#   Nvidia: ResourceExhausted ... (16/16)" = capacity, treated like a 429,
+#   kept. WATCH: nemotron-3-ultra-550b-a55b:free 200 1.5s, clean day 20 (user
+#   decision pending); recursive/flint-v1.0:free 429 (quota, day 7, still no
+#   independent score).
+#   Catalog diff vs 10-27: NIM 85 ids identical; Groq 11 identical; OR :free
+#   17 -> 16, only drop is nvidia/nemotron-3-super-120b-a12b:free (already
+#   404 since 10-21 and replaced, nothing to change). OR paid adds
+#   openai/gpt-6.1-terra(-pro) (closed, paid, irrelevant to the free cascade).
+#   typesafe/jev-router still pricing -1, no :free.
+#   Local: Ollama v0.40.10 (10-23, nemotron-3.5-bolt:e4b in library), v0.40.11
+#   (10-24, speech) and v0.40.12 (10-27, LFM3 1.7B + d1:2b decision model on
+#   LFM3, 2b-mxfp8 2.4 GB) are stable; the last two audits ran no web/release
+#   check and missed them. d1:2b is now in the systemone test batch in
+#   plans/jev-systemone.md. Local server still 0.35.0 and NOT RUNNING (12th
+#   day), no /v1/systemone reading. DEFAULT_LOCAL_MODEL unchanged. llama.cpp
+#   PR #30306 (Dory) still open. Snapshots in /tmp/scout-1028/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-10-28;
+#   api.github.com/repos/ollama/ollama/releases, ollama.com/library/d1/tags,
+#   ollama.com/library/lfm3/tags -- 2026-10-28.
+
 categories:
 
   reasoning:
