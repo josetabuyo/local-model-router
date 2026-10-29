@@ -106,7 +106,7 @@ class Registry:
                 raise ValueError(
                     f"'{model_str}' is a local model. "
                     "The /cloud endpoint only accepts '<best|cheapest|fastest>:<category>' or a cloud provider prefix "
-                    "(e.g. 'nvidia/z-ai/glm-5.3', 'groq/qwen/qwen3.8-27b')."
+                    "(e.g. 'nvidia/minimaxai/minimax-m3.1-flash', 'groq/qwen/qwen3.8-27b')."
                 )
             return [(provider, model_id)]
         raise ValueError(self._format_error(model_str))
@@ -221,5 +221,5 @@ class Registry:
         return (
             f"Unknown model format '{model_str}'. "
             "Use 'best:<category>' or '<provider>/<model_id>' "
-            "(e.g. 'best:coding', 'ollama/qwen2.5:7b', 'nvidia/z-ai/glm-5.3')"
+            "(e.g. 'best:coding', 'ollama/qwen2.5:7b', 'nvidia/minimaxai/minimax-m3.1-flash')"
         )

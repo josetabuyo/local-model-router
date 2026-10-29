@@ -65,7 +65,7 @@ Cascade order per category is whatever the yaml lists; the slot-0 picks as of
 
 | Category | Slot 0 (cloud) | Slot 0 (local, Ollama) |
 |---|---|---|
-| reasoning, coding, math, summarization, code_debug, context | `nvidia/z-ai/glm-5.3` | `qwen2.5:7b` / `qwen2.5-coder:7b` / `deepseek-r1:8b` |
+| reasoning, coding, math, summarization, code_debug, context | `nvidia/minimaxai/minimax-m3.1-flash` | `qwen2.5:7b` / `qwen2.5-coder:7b` / `deepseek-r1:8b` |
 | instruction | `groq/qwen/qwen3.8-27b` | `qwen2.5:7b` |
 | multilingual | `groq/openai/gpt-oss-20b` | `qwen2.5:7b` |
 | decisions (`/v1/systemone`) | `typesafe/jev-latest` (needs key) | `tev1:4b-q4_K_M` |

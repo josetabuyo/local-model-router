@@ -3,7 +3,7 @@
 <!-- GENERADO por scripts/render_models.py desde rankings/*.yaml — no editar a mano.
      Regenerar: uv run scripts/render_models.py -->
 
-Actualizado: 2026-10-28 · Máquina: Apple Silicon, 16 GB RAM.
+Actualizado: 2026-10-29 · Máquina: Apple Silicon, 16 GB RAM.
 Fuente de verdad: `rankings/cloud.yaml` (cloud, con el log diario de auditorías
 de `/model-scout` en sus `NOTE`) y `rankings/local.yaml` (benchmarks propios de Ollama).
 
@@ -15,14 +15,14 @@ pagos al final.
 
 | Categoría | Slot 0 | Resto del cascade (en orden) |
 |---|---|---|
-| `reasoning` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/google/gemma-4-26b-a4b-it:free`, `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
-| `coding` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
-| `math` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
-| `summarization` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `reasoning` | `nvidia/minimaxai/minimax-m3.1-flash` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/google/gemma-4-26b-a4b-it:free`, `openrouter/nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `coding` | `nvidia/minimaxai/minimax-m3.1-flash` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `math` | `nvidia/minimaxai/minimax-m3.1-flash` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `summarization` | `nvidia/minimaxai/minimax-m3.1-flash` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
 | `instruction` | `groq/qwen/qwen3.8-27b` | `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.1-flash-lite` |
-| `multilingual` | `groq/openai/gpt-oss-20b` | `nvidia/z-ai/glm-5.3`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.1-flash-lite` |
-| `code_debug` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
-| `context` | `nvidia/z-ai/glm-5.3` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/nvidia/nemotron-3.5-super-vl:free`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.5-flash` |
+| `multilingual` | `groq/openai/gpt-oss-20b` | `nvidia/minimaxai/minimax-m3.1-flash`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.1-flash-lite` |
+| `code_debug` | `nvidia/minimaxai/minimax-m3.1-flash` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/poolside/laguna-s-2.1:free`, `openrouter/cohere/north-mini-code:free`, `openrouter/google/gemma-4-31b-it:free`, `openrouter/nvidia/nemotron-3.5-super-vl:free` |
+| `context` | `nvidia/minimaxai/minimax-m3.1-flash` | `groq/openai/gpt-oss-120b`, `groq/openai/gpt-oss-20b`, `openrouter/nvidia/nemotron-3.5-super-vl:free`, `openrouter/google/gemma-4-31b-it:free`, `gemini/gemini-3.5-flash` |
 
 ## 2. Modelos cloud gratis — dónde rankean
 
@@ -33,7 +33,7 @@ pagos al final.
 | `groq/openai/gpt-oss-120b` | groq | reasoning#1, coding#1, math#1, summarization#1, code_debug#1, context#1 | — | — |
 | `groq/openai/gpt-oss-20b` | groq | reasoning#2, coding#2, math#2, summarization#2, multilingual#0, code_debug#2, context#2 | — | — |
 | `groq/qwen/qwen3.8-27b` | groq | instruction#0 | — | — |
-| `nvidia/z-ai/glm-5.3` | nvidia | reasoning#0, coding#0, math#0, summarization#0, multilingual#1, code_debug#0, context#0 | 1,048,576 | — |
+| `nvidia/minimaxai/minimax-m3.1-flash` | nvidia | reasoning#0, coding#0, math#0, summarization#0, multilingual#1, code_debug#0, context#0 | 1,048,576 | — |
 | `openrouter/cohere/north-mini-code:free` | openrouter | coding#4, code_debug#4 | 256,000 | — |
 | `openrouter/google/gemma-4-26b-a4b-it:free` | openrouter | reasoning#4 | 262,144 | 1438 |
 | `openrouter/google/gemma-4-31b-it:free` | openrouter | reasoning#3, coding#5, math#3, summarization#3, instruction#1, multilingual#2, code_debug#5, context#4 | 262,144 | 1451 |
