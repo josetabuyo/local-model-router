@@ -3883,6 +3883,42 @@
 #   tomshardware.com (Mistral Large 4 independent tests) -- 2026-10-30;
 #   huggingface.co/api/models?author=mistralai -- 2026-10-30;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-10-30.
+# NOTE 2026-10-31: Daily audit -- no cascade changes. Live parallel
+#   chat-completion probes against every model referenced here, on AC power
+#   (80%) under caffeinate -i -s. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start (~10 :free probes spent).
+#   minimaxai/minimax-m3.1-flash (slot 0) 200 "48" 2.0s, day 3 of the pin.
+#   Every other referenced model 200 "48": NIM nemotron-3.5-super-vl-120b-
+#   a12b 1.2s, gpt-oss-20b 3.0s; Groq gpt-oss-120b 0.7s, gpt-oss-20b 0.6s,
+#   qwen/qwen3.8-27b 0.6s; Gemini 3.5-flash 11.3s (slow); OpenRouter
+#   nemotron-3.5-super-vl:free 1.2s, nano-omni:free 1.5s, laguna-s-2.1:free
+#   1.2s, north-mini-code:free 11.7s (slow). gemini-3.1-flash-lite 503
+#   "high demand" 2/2 (capacity, kept). gemma-4-31b-it:free 429 (36th day,
+#   kept), gemma-4-26b-a4b-it:free 429 (kept).
+#   WATCH: stepfun-ai/step-5-preview 200 16.0s (watch day 3, slower);
+#   mistralai/mistral-large-4-1t-a52b 200 3.0s (watch day 2, 3/3 clean so
+#   far); nemotron-3-ultra-550b-a55b:free 200 1.2s, clean day 23 (user
+#   decision pending); recursive/flint-v1.0:free 503 2/2 (provider capacity,
+#   first miss; still no independent score).
+#   Catalog diff vs 10-30: NIM 85 identical; Groq identical; OR :free 16
+#   identical; OR full catalog identical. typesafe/jev-router still pricing
+#   -1, no :free.
+#   Web: no verifiable open-weight release or new free provider in the last
+#   day (search results were SEO roundups; Meta Muse Spark Open dates
+#   conflict between blogs, not on any integrated provider). Nothing added.
+#   Local: Ollama latest stable still v0.40.13 (10-28). ollama.com/library/d3
+#   added MLX tags yesterday (10-30): d3:2b-mxfp8 3.1 GB, d3:4b-mxfp8 5.6 GB,
+#   d3:4b-nvfp4 4.0 GB, d3:9b-nvfp4 7.7 GB, d3:27b-nvfp4 17 GB (q8_0 tags
+#   unchanged). d3:4b-nvfp4 is the first d3 4B under the ~5 GB decision-model
+#   budget -> added to the /v1/systemone test batch in plans/jev-systemone.md.
+#   No quality number published per quant. Local server still NOT RUNNING
+#   (localhost:11434 refused, 15th day), no /v1/systemone reading.
+#   DEFAULT_LOCAL_MODEL unchanged. Snapshots in /tmp/scout-1031/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-10-31;
+#   ollama.com/library/d3/tags + ollama.com/library/d3 -- 2026-10-31;
+#   ollama.com/search?c=decision -- 2026-10-31;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-10-31.
 
 categories:
 

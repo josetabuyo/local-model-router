@@ -239,3 +239,8 @@ decide José). Sin cambios en `DEFAULT_LOCAL_MODEL`.
 - La página de la librería no publica un score separado para `d1:2b`. El Decision Index 0.2.1 (48.57) que muestra es de "d1" sin tag, o sea del 3B sobre LFM2.5-VL. No se compara 1:1 hasta que haya un número propio.
 - Hay que agregar `d1:2b-mxfp8` (2.4 GB) a la tanda de prueba de `/v1/systemone`: d1-3B, d1:2b, d3:2b, d3 4B vs tev1. Requiere Ollama ≥ 0.40.12 (el local sigue en 0.35.0 y el server lleva 12 días caído). Sin cambio en `DEFAULT_LOCAL_MODEL` hasta medir.
 - TypeSafe: `typesafe/jev-router` en OR sigue sin `:free` (pricing -1).
+
+### 2026-10-31 — d3 suma tags MLX NVFP4
+
+- `ollama.com/library/d3/tags` (actualizado 2026-10-30) agrega tags MLX: `d3:2b-mxfp8` 3.1 GB, `d3:4b-mxfp8` 5.6 GB, `d3:4b-nvfp4` **4.0 GB**, `d3:9b-nvfp4` 7.7 GB, `d3:27b-nvfp4` 17 GB. Los `q8_0` no cambiaron. Sigue requiriendo Ollama ≥ 0.40.9.
+- `d3:4b-nvfp4` es el primer d3 4B que entra en el presupuesto de ~5 GB junto a un chat model de 7-9B (el 4B default MXFP8 pesa 5.6 GB). Se suma a la tanda de prueba: d1-3B, d1:2b-mxfp8, d3:2b, **d3:4b-nvfp4** vs tev1. No hay score publicado por cuantización, así que hay que medirlo nosotros. `DEFAULT_LOCAL_MODEL` no cambia.
