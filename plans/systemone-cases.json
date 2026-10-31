@@ -1,0 +1,49 @@
+{
+  "_note": "Casos etiquetados a mano (2026-10-31) para comparar backends de /v1/systemone con scripts/jev_compare.py --cases. Sintéticos con forma de soporte real; reemplazar/sumar casos reales de Pulpo y Luganense. expected: choice = clave, score = índice de nivel, noul = true/false.",
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Which team should handle this",
+      "criteria": {
+        "billing": "Payment, charges, invoices, refunds or subscription issues",
+        "technical": "Bugs, errors, outages or integration problems",
+        "sales": "Pricing, plans, quotes or new-account questions"
+      }
+    },
+    "frustration": {
+      "type": "score",
+      "instructions": "How frustrated the customer appears",
+      "criteria": ["Calm, just stating facts", "Frustrated but civil", "Very angry, strong language"]
+    },
+    "is_urgent": {
+      "type": "noul",
+      "instructions": "The message conveys urgency or time-sensitivity"
+    }
+  },
+  "cases": [
+    {"state": "Hi, I've been trying to connect my Stripe account for 3 days and the integration keeps failing. I'm losing sales. Please help ASAP.",
+     "expected": {"department": "technical", "frustration": 1, "is_urgent": true}},
+    {"state": "I was charged twice for my October subscription. Could you refund the duplicate when you get a chance? Thanks.",
+     "expected": {"department": "billing", "frustration": 0, "is_urgent": false}},
+    {"state": "What's the difference between the Pro and Business plans? We're a team of 12 and want a quote for annual billing.",
+     "expected": {"department": "sales", "frustration": 0, "is_urgent": false}},
+    {"state": "THIS IS RIDICULOUS. Your app has been DOWN all morning, my whole store is offline and nobody answers. Fix it NOW.",
+     "expected": {"department": "technical", "frustration": 2, "is_urgent": true}},
+    {"state": "My card was declined renewing the plan and the account gets suspended tomorrow. Can someone look at it today?",
+     "expected": {"department": "billing", "frustration": 1, "is_urgent": true}},
+    {"state": "The export to CSV button does nothing on Safari. Not a big deal, Chrome works, just letting you know.",
+     "expected": {"department": "technical", "frustration": 0, "is_urgent": false}},
+    {"state": "Hola, hace tres días que intento conectar Mercado Pago y la integración sigue fallando con error 500. Estoy perdiendo ventas, necesito ayuda ya.",
+     "expected": {"department": "technical", "frustration": 1, "is_urgent": true}},
+    {"state": "Buenas, me cobraron dos veces la factura de septiembre. ¿Me pueden devolver uno de los cargos? Gracias.",
+     "expected": {"department": "billing", "frustration": 0, "is_urgent": false}},
+    {"state": "Quisiera saber cuánto sale el plan anual para 20 usuarios y si hay descuento para ONGs.",
+     "expected": {"department": "sales", "frustration": 0, "is_urgent": false}},
+    {"state": "¡Es una vergüenza! Tres veces les escribí, el sistema no me deja facturar y hoy cierro el mes. Son unos inútiles.",
+     "expected": {"department": "technical", "frustration": 2, "is_urgent": true}},
+    {"state": "Me debitaron la suscripción aunque la cancelé el mes pasado. Ya es la segunda vez que pasa, estoy cansado.",
+     "expected": {"department": "billing", "frustration": 1, "is_urgent": false}},
+    {"state": "Mañana tenemos la demo con el directorio y necesitamos el presupuesto del plan Enterprise antes de las 10.",
+     "expected": {"department": "sales", "frustration": 0, "is_urgent": true}}
+  ]
+}

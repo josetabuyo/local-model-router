@@ -190,14 +190,14 @@ def test_parse_emulation_rejects_score_out_of_range():
 
 
 def test_provider_chain_default_order_and_env_gating():
-    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "or"}, clear=False):
+    with patch.dict(os.environ, {"TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "or", "LAYA_URL": ""}, clear=False):
         os.environ.pop("JEV_LOCAL_MODEL", None)
         os.environ.pop("JEV_PROVIDER_ORDER", None)
         assert systemone.provider_chain() == [("ollama", "tev1:4b-q4_K_M"), ("openrouter", "jev-1.13")]
     with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "nimble", "TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "",
                                  "JEV_PROVIDER_ORDER": "typesafe,ollama"}):
         assert systemone.provider_chain() == [("typesafe", "jev-latest"), ("ollama", "nimble")]
-    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "", "TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": ""}):
+    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "", "TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "", "LAYA_URL": ""}):
         assert systemone.provider_chain() == []
 
 
@@ -207,6 +207,8 @@ def test_provider_chain_default_order_and_env_gating():
     ("ollama", "tev1:4b-q4_K_M", "nimble", "nimble"),                # local tag override
     ("typesafe", "jev-latest", "jev-1.13", "jev-1.13"),              # Jev id forwarded
     ("openrouter", "jev-1.13", "nimble", "jev-1.13"),                # local tag ignored by cloud
+    ("laya", "auto", "jev-latest", "auto"),                          # Jev id never sent to Laya
+    ("laya", "auto", "multilingual", "multilingual"),                # Laya checkpoint override
 ])
 def test_model_for(provider, default, requested, expected):
     assert systemone.model_for(provider, default, requested) == expected
@@ -237,3 +239,67 @@ def test_ollama_down_falls_through_to_cloud_jev():
     assert body["x_router"]["resolved"] == "typesafe/jev-latest"
     assert body["x_router"]["local"] is False and body["x_router"]["fallback_used"] is True
     assert body["x_router"]["errors"] == ["ollama/tev1:4b-q4_K_M: Connection refused"]
+
+
+# ── self-hosted Laya (laya-serve, Jev-compatible /v1/systemone) ───────────────
+
+
+def test_laya_is_first_when_url_set():
+    with patch.dict(os.environ, {"LAYA_URL": "http://127.0.0.1:9022", "JEV_LOCAL_MODEL": "tev1:4b-q4_K_M",
+                                 "TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": ""}):
+        os.environ.pop("JEV_PROVIDER_ORDER", None)
+        assert systemone.provider_chain() == [("laya", "auto"), ("ollama", "tev1:4b-q4_K_M"), ("typesafe", "jev-latest")]
+
+
+def test_laya_answer_tagged_local():
+    laya_resp = {"model": "laya-rl-agent", "answers": JEV_RESPONSE["answers"], "usage": {"input_tokens": 205, "output_tokens": 0},
+                 "routing": {"model": "english"}}
+    with patch.dict(os.environ, {"LAYA_URL": "http://127.0.0.1:9022", "TYPESAFE_API_KEY": "ts"}), \
+         patch("router.systemone.call_jev", new=AsyncMock(return_value=dict(laya_resp))) as call:
+        resp = client.post("/v1/systemone", json=BODY)
+    body = resp.json()
+    assert resp.status_code == 200
+    assert call.await_args.args[:2] == ("laya", "auto")
+    assert body["x_router"]["resolved"] == "laya/auto"
+    assert body["x_router"]["local"] is True and body["x_router"]["fallback_used"] is False
+    assert body["routing"] == {"model": "english"}   # Laya's own routing info passes through
+
+
+def test_laya_down_falls_through_to_ollama():
+    async def fake(provider, model, state, questions, timeout=None):
+        if provider == "laya":
+            raise httpx.ConnectError("Connection refused")
+        return dict(JEV_RESPONSE)
+    with patch.dict(os.environ, {"LAYA_URL": "http://127.0.0.1:9022", "JEV_LOCAL_MODEL": "tev1:4b-q4_K_M"}), \
+         patch("router.systemone.call_jev", new=fake):
+        os.environ.pop("JEV_PROVIDER_ORDER", None)
+        resp = client.post("/v1/systemone", json=BODY)
+    body = resp.json()
+    assert body["x_router"]["resolved"] == "ollama/tev1:4b-q4_K_M"
+    assert body["x_router"]["errors"] == ["laya/auto: Connection refused"]
+
+
+@pytest.mark.asyncio
+async def test_call_jev_laya_url_and_bearer():
+    captured = {}
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        captured["url"] = str(request.url)
+        captured["auth"] = request.headers.get("authorization")
+        captured["body"] = json.loads(request.content)
+        return httpx.Response(200, json=JEV_RESPONSE)
+
+    real_client = httpx.AsyncClient
+    with patch.dict(os.environ, {"LAYA_URL": "http://127.0.0.1:9022/", "LAYA_API_KEY": "secret"}), \
+         patch("router.systemone.httpx.AsyncClient", lambda: real_client(transport=httpx.MockTransport(handler))):
+        await systemone.call_jev("laya", "auto", "state", QUESTIONS)
+    assert captured["url"] == "http://127.0.0.1:9022/v1/systemone"
+    assert captured["auth"] == "Bearer secret"
+    assert captured["body"]["model"] == "auto"
+
+
+@pytest.mark.asyncio
+async def test_call_jev_laya_without_url_raises():
+    with patch.dict(os.environ, {"LAYA_URL": ""}):
+        with pytest.raises(ValueError, match="LAYA_URL"):
+            await systemone.call_jev("laya", "auto", "state", QUESTIONS)

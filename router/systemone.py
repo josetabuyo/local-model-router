@@ -21,7 +21,14 @@ Request body::
     }
 
 Real providers, tried in ``JEV_PROVIDER_ORDER`` order (default
-``ollama,typesafe,openrouter``), each only if it is configured:
+``laya,ollama,typesafe,openrouter``), each only if it is configured:
+  0. ``laya``       — self-hosted ``laya-serve`` (github.com/NandhaKishorM/laya,
+                       Apache-2.0, 421M, ~1 GB, same ``/v1/systemone`` schema as Jev).
+                       Enabled by ``LAYA_URL`` (e.g. ``http://127.0.0.1:9022``);
+                       optional bearer ``LAYA_API_KEY``. Laya routes to its own
+                       checkpoint (english / multilingual) by language, so the
+                       default model is ``auto``. Free, no network. Zero-shot
+                       quality is mixed (plans/instagram-saved-2026-10-31.md).
   1. ``ollama``     — local decision model on Ollama >= 0.35 (``/v1/systemone``,
                        "based on TypeSafe's Jev API"). Model from ``JEV_LOCAL_MODEL``
                        (default ``tev1:4b-q4_K_M``; ``nimble`` is the 9B option).
@@ -32,7 +39,7 @@ Real providers, tried in ``JEV_PROVIDER_ORDER`` order (default
 
 An explicit ``model`` in the request is forwarded to the cloud providers only
 when it looks like a Jev id (``jev*``); otherwise it is treated as a local
-Ollama tag. Each provider keeps its default for the other case.
+model (Ollama tag or Laya checkpoint). Each provider keeps its default for the other case.
 
 Emulation (``X-Router-Strategy: emulate`` or when no Jev provider answers and
 ``JEV_EMULATE_FALLBACK`` is not "false"): the same questions are answered by
@@ -59,9 +66,11 @@ DEFAULT_MODELS: dict[str, str] = {
     "openrouter": "jev-1.13",
 }
 DEFAULT_LOCAL_MODEL = "tev1:4b-q4_K_M"   # 2.7 GB, fits 16 GB alongside a 7-9B chat model
-DEFAULT_PROVIDER_ORDER = "ollama,typesafe,openrouter"
+DEFAULT_LAYA_MODEL = "auto"              # laya-serve picks english / multilingual per request
+DEFAULT_PROVIDER_ORDER = "laya,ollama,typesafe,openrouter"
+LOCAL_PROVIDERS = ("laya", "ollama")
 # Local first-call latency includes loading the model; cloud Jev answers in <1s.
-TIMEOUTS: dict[str, float] = {"ollama": 90.0, "typesafe": 30.0, "openrouter": 30.0}
+TIMEOUTS: dict[str, float] = {"laya": 30.0, "ollama": 90.0, "typesafe": 30.0, "openrouter": 30.0}
 
 VALID_TYPES = ("noul", "boolean", "choice", "score")
 
@@ -100,6 +109,7 @@ def provider_chain() -> list[tuple[str, str]]:
     """(provider, default model) pairs for every configured Jev provider, in JEV_PROVIDER_ORDER."""
     local_model = os.getenv("JEV_LOCAL_MODEL", DEFAULT_LOCAL_MODEL).strip()
     available = {
+        "laya": DEFAULT_LAYA_MODEL if os.getenv("LAYA_URL", "").strip() else None,
         "ollama": local_model or None,
         "typesafe": DEFAULT_MODELS["typesafe"] if os.getenv("TYPESAFE_API_KEY") else None,
         "openrouter": DEFAULT_MODELS["openrouter"] if os.getenv("OPENROUTER_API_KEY") else None,
@@ -113,7 +123,7 @@ def model_for(provider: str, default: str, requested: str | None) -> str:
     if not requested:
         return default
     is_jev_id = requested.lower().startswith("jev")
-    if provider == "ollama":
+    if provider in LOCAL_PROVIDERS:
         return default if is_jev_id else requested
     return requested if is_jev_id else default
 
@@ -121,7 +131,14 @@ def model_for(provider: str, default: str, requested: str | None) -> str:
 async def call_jev(provider: str, model: str, state: str, questions: dict, timeout: float | None = None) -> dict:
     """POST one System One request to a real provider; raises on HTTP/network error."""
     headers = {"User-Agent": "local-model-router/1.0"}
-    if provider == "ollama":
+    if provider == "laya":
+        base = os.getenv("LAYA_URL", "").strip().rstrip("/")
+        if not base:
+            raise ValueError("LAYA_URL is not set")
+        base += "/v1"
+        if os.getenv("LAYA_API_KEY"):
+            headers["Authorization"] = f"Bearer {os.environ['LAYA_API_KEY']}"
+    elif provider == "ollama":
         base = f"{OLLAMA_BASE}/v1"
     elif provider == "typesafe":
         base, key = TYPESAFE_BASE, os.getenv("TYPESAFE_API_KEY", "")
@@ -129,7 +146,7 @@ async def call_jev(provider: str, model: str, state: str, questions: dict, timeo
         base, key = OPENROUTER_BASE, os.getenv("OPENROUTER_API_KEY", "")
     else:
         raise ValueError(f"Unknown System One provider '{provider}'")
-    if provider != "ollama":
+    if provider not in LOCAL_PROVIDERS:
         if not key:
             raise ValueError(f"{provider.upper()}_API_KEY is not set")
         headers["Authorization"] = f"Bearer {key}"

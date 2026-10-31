@@ -386,7 +386,7 @@ async def systemone_decide(request: Request):
     """TypeSafe Jev-compatible decision endpoint (see router/systemone.py).
 
     X-Router-Strategy header:
-      jev       (default) — real decision models first (ollama → typesafe → openrouter,
+      jev       (default) — real decision models first (laya → ollama → typesafe → openrouter,
                             see JEV_PROVIDER_ORDER); if every one fails, emulate with a
                             chat model unless JEV_EMULATE_FALLBACK=false
       emulate             — skip Jev, answer with the chat cascade (no key needed)
@@ -409,7 +409,7 @@ async def systemone_decide(request: Request):
     if strategy != "emulate":
         chain = systemone.provider_chain()
         if not chain:
-            errors.append("no System One provider configured (JEV_LOCAL_MODEL / TYPESAFE_API_KEY / OPENROUTER_API_KEY)")
+            errors.append("no System One provider configured (LAYA_URL / JEV_LOCAL_MODEL / TYPESAFE_API_KEY / OPENROUTER_API_KEY)")
         for i, (provider, default_model) in enumerate(chain):
             model = systemone.model_for(provider, default_model, raw.get("model"))
             try:
@@ -425,7 +425,7 @@ async def systemone_decide(request: Request):
                 "resolved": f"{provider}/{model}",
                 "strategy": strategy,
                 "emulated": False,
-                "local": provider == "ollama",
+                "local": provider in systemone.LOCAL_PROVIDERS,
                 "fallback_used": i > 0,
                 **({"errors": errors} if errors else {}),
             }
