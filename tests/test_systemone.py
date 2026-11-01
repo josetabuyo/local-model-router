@@ -193,7 +193,7 @@ def test_provider_chain_default_order_and_env_gating():
     with patch.dict(os.environ, {"TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "or", "LAYA_URL": ""}, clear=False):
         os.environ.pop("JEV_LOCAL_MODEL", None)
         os.environ.pop("JEV_PROVIDER_ORDER", None)
-        assert systemone.provider_chain() == [("ollama", "tev1:4b-q4_K_M"), ("openrouter", "jev-1.13")]
+        assert systemone.provider_chain() == [("ollama", "d3:4b-nvfp4"), ("openrouter", "jev-1.13")]
     with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "nimble", "TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "",
                                  "JEV_PROVIDER_ORDER": "typesafe,ollama"}):
         assert systemone.provider_chain() == [("typesafe", "jev-latest"), ("ollama", "nimble")]

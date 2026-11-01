@@ -31,7 +31,8 @@ Real providers, tried in ``JEV_PROVIDER_ORDER`` order (default
                        quality is mixed (plans/instagram-saved-2026-10-31.md).
   1. ``ollama``     — local decision model on Ollama >= 0.35 (``/v1/systemone``,
                        "based on TypeSafe's Jev API"). Model from ``JEV_LOCAL_MODEL``
-                       (default ``tev1:4b-q4_K_M``; ``nimble`` is the 9B option).
+                       (default ``d3:4b-nvfp4``: 97% on plans/systemone-cases.json,
+                       2026-10-31; ``tev1`` tags pulled before 0.40 no longer load).
                        Free, no network. Skipped if ``JEV_LOCAL_MODEL`` is empty.
   2. ``typesafe``   — direct, ``TYPESAFE_API_KEY``, POST api.typesafe.ai/v1/systemone
   3. ``openrouter`` — ``OPENROUTER_API_KEY``, POST openrouter.ai/api/v1/systemone
@@ -65,7 +66,7 @@ DEFAULT_MODELS: dict[str, str] = {
     "typesafe": "jev-latest",
     "openrouter": "jev-1.13",
 }
-DEFAULT_LOCAL_MODEL = "tev1:4b-q4_K_M"   # 2.7 GB, fits 16 GB alongside a 7-9B chat model
+DEFAULT_LOCAL_MODEL = "d3:4b-nvfp4"      # 4.0 GB on Ollama >= 0.40 (MLX); don't co-load with a 7-9B chat model on 16 GB
 DEFAULT_LAYA_MODEL = "auto"              # laya-serve picks english / multilingual per request
 DEFAULT_PROVIDER_ORDER = "laya,ollama,typesafe,openrouter"
 LOCAL_PROVIDERS = ("laya", "ollama")

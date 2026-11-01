@@ -6,7 +6,7 @@ chat-model emulation.
 Usage:
   uv run scripts/jev_compare.py                       # plans/jev-example.json
   uv run scripts/jev_compare.py path/to/body.json
-  uv run scripts/jev_compare.py --models tev1:4b-q4_K_M,nimble   # local models to try
+  uv run scripts/jev_compare.py --models d3:4b-nvfp4,laya   # local models to try
   uv run scripts/jev_compare.py --cases plans/systemone-cases.json  # labelled accuracy
 
 Needs the router running for the 'emulate' column (uv run router, port 9002);
@@ -124,7 +124,7 @@ def run_cases(path: str, models: list[str]) -> None:
 def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("body", nargs="?", default=str(ROOT / "plans" / "jev-example.json"))
-    ap.add_argument("--models", default=os.getenv("JEV_LOCAL_MODEL", "tev1:4b-q4_K_M"),
+    ap.add_argument("--models", default=os.getenv("JEV_LOCAL_MODEL", "d3:4b-nvfp4"),
                     help="comma-separated local Ollama decision models")
     ap.add_argument("--cases", help="labelled cases file (plans/systemone-cases.json) → accuracy table")
     args = ap.parse_args()

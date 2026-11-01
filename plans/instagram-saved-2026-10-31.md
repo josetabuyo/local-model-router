@@ -55,6 +55,23 @@ Lectura: Laya es ~9× más rápido, gratis y offline, pero sin fine-tune falla
 mucho en `score` (frustración) y algo en urgencia. Las etiquetas las puse yo,
 así que favorecen el criterio de un LLM; faltan casos reales.
 
+### Con Ollama 0.40.13 (2026-10-31, noche)
+
+Ollama no estaba caído: el servicio de brew nunca se rearrancó tras el upgrade
+a 0.35. Ahora `brew upgrade ollama` (→ 0.40.13) + `brew services start ollama`.
+La primera corrida comparó varios modelos seguidos sin descargarlos y la Mac
+se congeló (reset forzado 19:52, `btn_rst force_off`). Se repitió de a un
+modelo por vez con `ollama stop` entre cada uno:
+
+| backend | department | frustration | is_urgent | total | p50 |
+|---|---|---|---|---|---|
+| ollama/d3:4b-nvfp4 | 11/12 | 12/12 | 12/12 | **97%** | 1.41 s |
+| ollama/laya | 8/12 | 5/12 | 11/12 | 67% | 0.13 s |
+| ollama/tev1 (0.8b y 4b) | — | — | — | 400: formato viejo, hay que volver a hacer pull | — |
+
+→ `JEV_LOCAL_MODEL` por defecto pasa a `d3:4b-nvfp4` (iguala a la emulación
+con LLM en la nube, local y gratis).
+
 Idea siguiente: destilar — usar las respuestas de la emulación (o de Jev
 real) como etiquetas para el fine-tune de Laya con su script MPS
 (`notebooks/laya_finetune_typed_decisions_mps.py`), y volver a medir.

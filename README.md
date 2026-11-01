@@ -68,7 +68,7 @@ Cascade order per category is whatever the yaml lists; the slot-0 picks as of
 | reasoning, coding, math, summarization, code_debug, context | `nvidia/minimaxai/minimax-m3.1-flash` | `qwen2.5:7b` / `qwen2.5-coder:7b` / `deepseek-r1:8b` |
 | instruction | `groq/qwen/qwen3.8-27b` | `qwen2.5:7b` |
 | multilingual | `groq/openai/gpt-oss-20b` | `qwen2.5:7b` |
-| decisions (`/v1/systemone`) | `typesafe/jev-latest` (needs key) | `tev1:4b-q4_K_M` |
+| decisions (`/v1/systemone`) | `typesafe/jev-latest` (needs key) | `d3:4b-nvfp4` |
 
 NVIDIA NIM's frontier models hang on a rotating basis (see the dated `NOTE`s in
 `rankings/cloud.yaml`); Groq, OpenRouter `:free` and Gemini are the stable backbone.
@@ -283,11 +283,12 @@ curl http://localhost:9002/v1/systemone \
   -d @plans/jev-example.json
 ```
 
-Provider cascade (`JEV_PROVIDER_ORDER`, default `ollama,typesafe,openrouter`):
+Provider cascade (`JEV_PROVIDER_ORDER`, default `laya,ollama,typesafe,openrouter`; `laya` only when `LAYA_URL` is set):
 
 | Provider | What | Needs |
 |---|---|---|
-| `ollama` | local decision model (`JEV_LOCAL_MODEL`, default `tev1:4b-q4_K_M`; `nimble` 9B is stronger) | Ollama ≥ 0.35, `ollama pull tev1:4b-q4_K_M` — free, ~0.2 s warm on an M-series 16 GB |
+| `laya` | self-hosted `laya-serve` (`LAYA_URL`, optional `LAYA_API_KEY`) — Jev-compatible, 421M, ~0.1 s, 67–69% zero-shot on `plans/systemone-cases.json` | `uv pip install "laya[serve]"` + `laya-serve` |
+| `ollama` | local decision model (`JEV_LOCAL_MODEL`, default `d3:4b-nvfp4`, 97% on `plans/systemone-cases.json`) | Ollama ≥ 0.40, `ollama pull d3:4b-nvfp4` — free, ~1.4 s, 4 GB: load one model at a time on 16 GB |
 | `typesafe` | real Jev, direct | `TYPESAFE_API_KEY` from [console.typesafe.ai](https://console.typesafe.ai) |
 | `openrouter` | Jev via `/api/v1/systemone` | OpenRouter credits (Jev is not a `:free` model) |
 
