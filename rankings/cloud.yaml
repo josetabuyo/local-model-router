@@ -3919,6 +3919,52 @@
 #   ollama.com/library/d3/tags + ollama.com/library/d3 -- 2026-10-31;
 #   ollama.com/search?c=decision -- 2026-10-31;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-10-31.
+# NOTE 2026-11-01: Daily audit -- ONE REMOVAL. Live parallel chat-completion
+#   probes on BATTERY (35%, discharging) under caffeinate -i -s; walls all
+#   <= 45s (no sleep artifacts). OpenRouter /auth/key free_model_daily_
+#   requests 0/50 at start (~11 :free probes spent).
+#   REMOVED poolside/laguna-s-2.1:free (coding + code_debug): OpenRouter 404
+#   "no longer available on OpenRouter: no provider serves this model". It
+#   is gone from the paid catalog too (no poolside id left on OR). This is
+#   a real EOL, not a 429. cohere/north-mini-code:free (200 0.9s) is now the
+#   OR coding/code_debug option. NIM still serves the smaller
+#   poolside/laguna-xs-2.1 (200 "48" 0.9s), which is not added yet (redundant
+#   with north-mini-code; candidate if a second OR-free coding fallback is
+#   needed).
+#   minimaxai/minimax-m3.1-flash (slot 0) 200 "48" 1.1s, pin day 4. Other
+#   200 "48": NIM nemotron-3.5-super-vl-120b-a12b 1.0s; Groq gpt-oss-120b
+#   0.6s, gpt-oss-20b 0.6s, qwen/qwen3.8-27b 0.4s; Gemini 3.5-flash 1.5s,
+#   3.1-flash-lite 10.1s (503 streak ended); OR nemotron-3.5-super-vl:free
+#   0.7s, nano-omni:free 0.8s, north-mini-code:free 0.9s.
+#   gemma-4-31b-it:free 429 (37th day, kept), gemma-4-26b-a4b-it:free 429
+#   (kept).
+#   NIM openai/gpt-oss-20b HTTP 000 at --max-time 45 2/2 (genuine timeout,
+#   day 1 of a hang). Kept per the hang-streak practice: remove only after a
+#   multi-day streak. Groq gpt-oss-20b covers the same model.
+#   WATCH: stepfun-ai/step-5-preview 000/45s then 200 19.9s (day 4, slow and
+#   flaky); mistralai/mistral-large-4-1t-a52b 200 1.1s (day 3, 4/4 clean);
+#   nemotron-3-ultra-550b-a55b:free 200 6.2s (clean day 24, user decision
+#   pending); recursive/flint-v1.0:free 503 3/3 across 2 days (capacity,
+#   kept, still no independent score).
+#   Catalogs: NIM 85 (same count as 10-31); OR :free 16 -> 14
+#   (laguna-s-2.1:free dropped, plus one other id not snapshotted; /tmp was
+#   wiped by the 10-31 reset; every id in today's list was already known);
+#   typesafe/jev-router still pricing -1, no :free.
+#   Web: no verifiable open-weight release or new free provider (search
+#   returned only SEO roundups).
+#   Local: Ollama v0.40.13 is still the latest stable, and the server is UP
+#   (brew service restarted 10-31). /v1/systemone on d3:4b-nvfp4 with
+#   plans/jev-example.json returned 200 in 5.9s, cold load included
+#   (department=technical 0.98, sane frustration score); unloaded afterwards
+#   with `ollama stop`. Decision catalog: d3 updated 2d ago (the known MLX
+#   tags). Newly seen: perplexity pplx-decider (27B, Qwen3.8-27B fine-tune;
+#   smallest tag 27b-q4_K_M is 17 GB) -> DISCARDED, does not fit 16 GB. No
+#   published scores. DEFAULT_LOCAL_MODEL unchanged (d3:4b-nvfp4).
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 --
+#   2026-11-01; ollama.com/search?c=decision + ollama.com/library/
+#   pplx-decider/tags -- 2026-11-01; api.github.com/repos/ollama/ollama/
+#   releases -- 2026-11-01.
 
 categories:
 
@@ -4058,13 +4104,10 @@ categories:
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
       source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: poolside/laguna-s-2.1:free
-      swe_bench_multilingual: 78.5
-      terminal_bench_2_1: 70.2
-      context_window: 1000000
-      note: "New 2026-07-21. 118B MoE, 8B active, thinking mode on. Beats models 10x its size on agentic coding; best OpenRouter free-tier coding option found so far. Use thinking mode — non-thinking drops Terminal-Bench to 60.4."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    # NOTE 2026-11-01: poolside/laguna-s-2.1:free removed -- OpenRouter 404
+    #   "no longer available on OpenRouter: no provider serves this model";
+    #   gone from the :free AND paid catalog. north-mini-code:free follows.
+    #   Source: own live probe against openrouter.ai -- 2026-11-01
     - provider: openrouter
       model: cohere/north-mini-code:free
       context_window: 256000
@@ -4332,13 +4375,10 @@ categories:
       note: "Replaces llama-3.1-8b-instant, deprecated by Groq 2026-08-16; gpt-oss-20b is Groq's official migration target."
       source: "console.groq.com/docs/deprecations — verified 2026-08-12"
     # ── OpenRouter (free tier) ─────────────────────────────────────────────
-    - provider: openrouter
-      model: poolside/laguna-s-2.1:free
-      swe_bench_multilingual: 78.5
-      terminal_bench_2_1: 70.2
-      context_window: 1000000
-      note: "New 2026-07-21. 118B MoE, 8B active, thinking mode on. Beats models 10x its size on agentic coding/debugging; best OpenRouter free-tier option found so far."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-23"
+    # NOTE 2026-11-01: poolside/laguna-s-2.1:free removed -- OpenRouter 404
+    #   "no longer available on OpenRouter: no provider serves this model";
+    #   gone from the :free AND paid catalog. north-mini-code:free follows.
+    #   Source: own live probe against openrouter.ai -- 2026-11-01
     - provider: openrouter
       model: cohere/north-mini-code:free
       context_window: 256000
