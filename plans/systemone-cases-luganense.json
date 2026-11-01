@@ -1,0 +1,30 @@
+{
+  "_note": "Casos reales del router de Luganense 'Orquestador Vendedor' (node_1783192962168), pasados por Pulpo el 2026-11-01, etiquetas corregidas a mano. Benchmark de clasificación solamente: Luganense corre en Vercel y no llega a modelos locales. Descripciones de las rutas escritas por LocalModels (no son el prompt de prod). El caso 'no, ese no es' es ambiguo: se espera noticias (el fallback).",
+  "questions": {
+    "ruta": {
+      "type": "choice",
+      "instructions": "Qué tipo de ayuda pide un vecino de Villa Lugano en este mensaje",
+      "criteria": {
+        "servicio": "Necesita que alguien venga a arreglar, instalar o reparar algo: plomero, gasista, electricista, técnico, albañil, cerrajero",
+        "comercio": "Busca un negocio o local del barrio, o su teléfono, dirección o contacto: ferretería, kiosco, almacén, farmacia",
+        "producto": "Quiere comprar un producto o artículo concreto, sin importar en qué negocio",
+        "noticias": "Pregunta por novedades o sucesos del barrio (cortes, perdidos, eventos) o el mensaje no es una necesidad clara"
+      }
+    }
+  },
+  "cases": [
+    {"state": "no me funciona el calefon", "expected": {"ruta": "servicio"}},
+    {"state": "un plomero por favor, para Timoteo Gordillo 4946", "expected": {"ruta": "servicio"}},
+    {"state": "se me rompio un caño", "expected": {"ruta": "servicio"}},
+    {"state": "Tengo que arreglar una cocina", "expected": {"ruta": "servicio"}},
+    {"state": "Hola, tengo un problema con el gas y también una pérdida de agua en casa, necesito ayuda", "expected": {"ruta": "servicio"}},
+    {"state": "Hola, qué se sabe del corte de luz en Lugano", "expected": {"ruta": "noticias"}},
+    {"state": "hola sabes algo de un perro perdido? busco un perro blanco que se me perdió en lugano", "expected": {"ruta": "noticias"}},
+    {"state": "Hola, necesito comprar unos focos LED para mi casa", "expected": {"ruta": "producto"}},
+    {"state": "busco una ferretería", "expected": {"ruta": "comercio"}},
+    {"state": "Hola, ¿podés decirme el teléfono de Kiosco Don Jorge?", "expected": {"ruta": "comercio"}},
+    {"state": "quiero tener el contacto de una ferreteria para poder llamarlos", "expected": {"ruta": "comercio"}},
+    {"state": "no, en realidad lo urgente es la pérdida de agua, necesito un plomero", "expected": {"ruta": "servicio"}},
+    {"state": "no, ese no es", "expected": {"ruta": "noticias"}}
+  ]
+}
