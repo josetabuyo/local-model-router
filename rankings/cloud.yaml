@@ -3965,6 +3965,37 @@
 #   2026-11-01; ollama.com/search?c=decision + ollama.com/library/
 #   pplx-decider/tags -- 2026-11-01; api.github.com/repos/ollama/ollama/
 #   releases -- 2026-11-01.
+# NOTE 2026-11-02: Daily audit -- checked, NO CHANGES. Live parallel chat-
+#   completion probes on BATTERY (78%, discharging) under caffeinate -s -i;
+#   walls all <= 61s (no sleep artifacts). OpenRouter /auth/key free_model_
+#   daily_requests 0/50 at start (~7 :free probes spent).
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 5) 4s, nemotron-3.5-
+#   super-vl-120b-a12b 2s, openai/gpt-oss-20b 33s (yesterday's 000 hang
+#   ended after 1 day -> kept, slow); Groq gpt-oss-120b, gpt-oss-20b,
+#   qwen/qwen3.8-27b ~1s; Gemini 3.5-flash 4s, 3.1-flash-lite 1s; OR
+#   nemotron-3.5-super-vl:free 4s, nano-omni:free 36s (slow),
+#   north-mini-code:free 2s. gemma-4-31b-it:free 429 (38th day, kept),
+#   gemma-4-26b-a4b-it:free 429 (kept) -- "Provider returned error".
+#   WATCH: mistralai/mistral-large-4-1t-a52b 200 "48" 2s (day 4, 5/5
+#   clean); poolside/laguna-xs-2.1 200 "48" 1s; stepfun-ai/step-5-preview
+#   000 at 60s (day 5, flaky -- not a candidate); nemotron-3-ultra-550b-
+#   a55b:free 200 "48" 2s (clean day 25, user decision pending);
+#   recursive/flint-v1.0:free 503 (3rd day of capacity errors, kept on
+#   watch, still no independent score).
+#   Catalogs: NIM 85 (same as 11-01), OR :free 14 (same; every id already
+#   known); typesafe/jev-router still pricing -1, no :free.
+#   Web: no verifiable open-weight release or new free provider (search
+#   returned only evergreen/SEO roundups through Aug 2026).
+#   Local: Ollama v0.40.13 still latest stable (GitHub releases). Server UP.
+#   /v1/systemone on d3:4b-nvfp4 with plans/jev-example.json 200 in 8s
+#   cold (technical 0.98), unloaded after. Decision catalog unchanged
+#   (clef, clef-flash, d1, d1-omni, d3, kev, laya, nimble, nimble-v3,
+#   pplx-decider, strands-decider, tev1 -- all known; d3 last tag update
+#   3 days ago). DEFAULT_LOCAL_MODEL unchanged (d3:4b-nvfp4).
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 --
+#   2026-11-02; ollama.com/search?c=decision -- 2026-11-02;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-02.
 
 categories:
 
