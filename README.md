@@ -308,6 +308,8 @@ See [`plans/jev-systemone.md`](plans/jev-systemone.md).
 
 ```bash
 GET /health                        # liveness check + available categories
+GET /status                        # router + Ollama + local decision model: installed, loaded (warm)
+POST /v1/warm                      # preload the local decision model; body {"keep_alive": "10m"} optional
 GET /v1/models                     # list all routable model identifiers
 GET /v1/router/rankings/{category} # full ranked list for a category
 GET /v1/router/cache               # cache stats (entries, max_entries, ttl_seconds)

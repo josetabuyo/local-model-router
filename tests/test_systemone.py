@@ -303,3 +303,58 @@ async def test_call_jev_laya_without_url_raises():
     with patch.dict(os.environ, {"LAYA_URL": ""}):
         with pytest.raises(ValueError, match="LAYA_URL"):
             await systemone.call_jev("laya", "auto", "state", QUESTIONS)
+
+
+# ── /status and /v1/warm ──────────────────────────────────────────────────────
+
+
+def _mock_ollama(loaded: bool, captured: dict | None = None):
+    real_client = httpx.AsyncClient
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        path = request.url.path
+        if path == "/api/version":
+            return httpx.Response(200, json={"version": "0.40.13"})
+        if path == "/api/tags":
+            return httpx.Response(200, json={"models": [{"name": "d3:4b-nvfp4"}]})
+        if path == "/api/ps":
+            return httpx.Response(200, json={"models": [{"name": "d3:4b-nvfp4", "expires_at": "T"}] if loaded else []})
+        if path == "/v1/systemone":
+            if captured is not None:
+                captured["body"] = json.loads(request.content)
+            return httpx.Response(200, json={"answers": {"w": {"type": "noul", "noul": 0.8}}})
+        return httpx.Response(404)
+
+    return lambda **kw: real_client(transport=httpx.MockTransport(handler))
+
+
+def test_status_reports_model_installed_and_warm():
+    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "d3:4b-nvfp4"}), \
+         patch("router.systemone.httpx.AsyncClient", _mock_ollama(loaded=True)):
+        r = client.get("/status")
+    assert r.status_code == 200
+    j = r.json()
+    assert j["router"]["up"] and j["ollama"] == {"up": True, "version": "0.40.13"}
+    assert j["model"] == {"name": "d3:4b-nvfp4", "installed": True}
+    assert j["warm"]["loaded"] is True
+
+
+def test_status_ollama_down():
+    real_client = httpx.AsyncClient
+
+    def boom(**kw):
+        return real_client(transport=httpx.MockTransport(lambda r: (_ for _ in ()).throw(httpx.ConnectError("x"))))
+    with patch("router.systemone.httpx.AsyncClient", boom):
+        j = client.get("/status").json()
+    assert j["ollama"]["up"] is False and j["model"]["installed"] is False and j["warm"]["loaded"] is False
+
+
+def test_warm_uses_router_model_and_keep_alive():
+    captured: dict = {}
+    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "d3:4b-nvfp4"}), \
+         patch("router.systemone.httpx.AsyncClient", _mock_ollama(loaded=False, captured=captured)):
+        r = client.post("/v1/warm", json={"keep_alive": "30m"})
+        r2 = client.post("/v1/warm")
+    assert r.json() == {"ok": True, "model": "d3:4b-nvfp4", "keep_alive": "30m"}
+    assert r2.json()["keep_alive"] == "10m"
+    assert captured["body"]["model"] == "d3:4b-nvfp4" and captured["body"]["keep_alive"] == "10m"

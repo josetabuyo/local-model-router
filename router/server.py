@@ -247,6 +247,27 @@ async def health():
     return {"status": "ok", "categories": registry.categories()}
 
 
+@app.get("/status")
+async def status():
+    """Router + Ollama + local decision model (installed / loaded) — for LAS's /route/status."""
+    return {"router": {"up": True}, **(await systemone.local_status())}
+
+
+@app.post("/v1/warm")
+async def warm(request: Request):
+    """Preload the local decision model; body {"keep_alive": "10m"} is optional."""
+    try:
+        body = await request.json()
+    except ValueError:
+        body = {}
+    keep_alive = body.get("keep_alive") if isinstance(body, dict) else None
+    try:
+        return {"ok": True, **(await systemone.warm(keep_alive))}
+    except (httpx.HTTPError, ValueError) as e:
+        return JSONResponse(status_code=503, content={"ok": False, "error": str(e)[:200],
+                                                      "model": systemone.local_model()})
+
+
 @app.get("/v1/models")
 async def list_models():
     return {

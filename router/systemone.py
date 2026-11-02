@@ -162,6 +162,51 @@ async def call_jev(provider: str, model: str, state: str, questions: dict, timeo
         return resp.json()
 
 
+# ── Local model status / warm-up (clients never need to know the d3 tag) ──────
+
+DEFAULT_WARM_KEEP_ALIVE = "10m"
+
+
+def local_model() -> str:
+    return os.getenv("JEV_LOCAL_MODEL", DEFAULT_LOCAL_MODEL).strip()
+
+
+async def local_status() -> dict:
+    """Ollama reachability, whether the local decision model is installed, and whether it is loaded."""
+    model = local_model()
+    out = {"ollama": {"up": False, "version": None}, "model": {"name": model, "installed": False},
+           "warm": {"loaded": False, "expires_at": None}}
+    try:
+        async with httpx.AsyncClient(timeout=3.0) as client:
+            out["ollama"] = {"up": True, "version": (await client.get(f"{OLLAMA_BASE}/api/version")).json().get("version")}
+            tags = (await client.get(f"{OLLAMA_BASE}/api/tags")).json().get("models", [])
+            out["model"]["installed"] = any(m.get("name") == model for m in tags)
+            for m in (await client.get(f"{OLLAMA_BASE}/api/ps")).json().get("models", []):
+                if m.get("name") == model:
+                    out["warm"] = {"loaded": True, "expires_at": m.get("expires_at")}
+    except (httpx.HTTPError, ValueError):
+        pass
+    return out
+
+
+async def warm(keep_alive: str | None = None) -> dict:
+    """Load the local decision model with a one-token System One call and keep it resident.
+
+    d3 has only the `decision` capability, so Ollama's /api/generate load trick
+    is rejected; a minimal /v1/systemone call with keep_alive is the way.
+    """
+    model, ka = local_model(), keep_alive or os.getenv("JEV_WARM_KEEP_ALIVE", DEFAULT_WARM_KEEP_ALIVE)
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(
+            f"{OLLAMA_BASE}/v1/systemone",
+            json={"model": model, "keep_alive": ka, "state": "warm",
+                  "questions": {"w": {"type": "noul", "instructions": "ok"}}},
+            timeout=TIMEOUTS["ollama"],
+        )
+        resp.raise_for_status()
+    return {"model": model, "keep_alive": ka}
+
+
 # ── Emulation via a chat model ────────────────────────────────────────────────
 
 
