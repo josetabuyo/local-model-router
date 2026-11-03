@@ -11,3 +11,7 @@ def _clear_router_cache():
     cache.clear()
     yield
     cache.clear()
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "default_order: run with the real JEV_PROVIDER_ORDER default instead of the pinned d3-era order")

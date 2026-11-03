@@ -12,6 +12,14 @@ from router.server import app
 
 client = TestClient(app)
 
+
+@pytest.fixture(autouse=True)
+def _d3_era_order(request, monkeypatch):
+    """Cascade-mechanics tests below were written for laya → ollama(d3) → cloud; pin that
+    order so they keep testing the mechanics. Tests marked `default_order` see the real default."""
+    if "default_order" not in request.keywords:
+        monkeypatch.setenv("JEV_PROVIDER_ORDER", "laya,ollama,typesafe,openrouter")
+
 QUESTIONS = {
     "department": {
         "type": "choice",
@@ -189,15 +197,18 @@ def test_parse_emulation_rejects_score_out_of_range():
 # ── local Ollama decision models (Ollama >= 0.35 /v1/systemone) ───────────────
 
 
+@pytest.mark.default_order
 def test_provider_chain_default_order_and_env_gating():
     with patch.dict(os.environ, {"TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "or", "LAYA_URL": ""}, clear=False):
-        os.environ.pop("JEV_LOCAL_MODEL", None)
-        os.environ.pop("JEV_PROVIDER_ORDER", None)
-        assert systemone.provider_chain() == [("ollama", "d3:4b-nvfp4"), ("openrouter", "jev-1.13")]
+        for k in ("JEV_LOCAL_MODEL", "JEV_PROVIDER_ORDER", "JEV_CHAT_MODEL"):
+            os.environ.pop(k, None)
+        # 2026-11-03: one resident model — qwen answers decisions, d3 is out of the default chain
+        assert systemone.provider_chain() == [("ollama-chat", "qwen3.5:4b"), ("openrouter", "jev-1.13")]
     with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "nimble", "TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": "",
                                  "JEV_PROVIDER_ORDER": "typesafe,ollama"}):
         assert systemone.provider_chain() == [("typesafe", "jev-latest"), ("ollama", "nimble")]
-    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "", "TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": "", "LAYA_URL": ""}):
+    with patch.dict(os.environ, {"JEV_LOCAL_MODEL": "", "JEV_CHAT_MODEL": "", "TYPESAFE_API_KEY": "",
+                                 "OPENROUTER_API_KEY": "", "LAYA_URL": ""}):
         assert systemone.provider_chain() == []
 
 
@@ -247,7 +258,6 @@ def test_ollama_down_falls_through_to_cloud_jev():
 def test_laya_is_first_when_url_set():
     with patch.dict(os.environ, {"LAYA_URL": "http://127.0.0.1:9022", "JEV_LOCAL_MODEL": "tev1:4b-q4_K_M",
                                  "TYPESAFE_API_KEY": "ts", "OPENROUTER_API_KEY": ""}):
-        os.environ.pop("JEV_PROVIDER_ORDER", None)
         assert systemone.provider_chain() == [("laya", "auto"), ("ollama", "tev1:4b-q4_K_M"), ("typesafe", "jev-latest")]
 
 
@@ -272,7 +282,6 @@ def test_laya_down_falls_through_to_ollama():
         return dict(JEV_RESPONSE)
     with patch.dict(os.environ, {"LAYA_URL": "http://127.0.0.1:9022", "JEV_LOCAL_MODEL": "tev1:4b-q4_K_M"}), \
          patch("router.systemone.call_jev", new=fake):
-        os.environ.pop("JEV_PROVIDER_ORDER", None)
         resp = client.post("/v1/systemone", json=BODY)
     body = resp.json()
     assert body["x_router"]["resolved"] == "ollama/tev1:4b-q4_K_M"
@@ -358,3 +367,64 @@ def test_warm_uses_router_model_and_keep_alive():
     assert r.json() == {"ok": True, "model": "d3:4b-nvfp4", "keep_alive": "30m"}
     assert r2.json()["keep_alive"] == "10m"
     assert captured["body"]["model"] == "d3:4b-nvfp4" and captured["body"]["keep_alive"] == "10m"
+
+
+# ── ollama-chat: decisions with the resident chat model ───────────────────────
+
+
+def test_decision_schema_constrains_choice_and_score():
+    sch = systemone.decision_schema(QUESTIONS)
+    assert sch["properties"]["department"]["properties"]["choice"]["enum"] == list(QUESTIONS["department"]["criteria"])
+    assert sch["properties"]["frustration"]["properties"]["score"]["enum"] == list(range(len(QUESTIONS["frustration"]["criteria"])))
+    assert sch["properties"]["is_urgent"] == {"type": "number"}
+    assert set(sch["required"]) == set(QUESTIONS)
+
+
+def test_calibrate_choices_uses_token_probabilities():
+    import math
+    q = {"agent": {"type": "choice", "instructions": "x", "criteria": {"AppBlanca": "a", "Wavi": "b", "System": "c"}}}
+    content = '{"agent": {"choice": "AppBlanca", "confidence": 0.95}}'
+    pre, val, post = '{"agent": {"choice": "', "AppBlanca", '", "confidence": 0.95}}'
+    toks = [{"token": pre, "logprob": 0.0},
+            {"token": "App", "logprob": math.log(0.8), "top_logprobs": [{"token": "App", "logprob": math.log(0.8)},
+                                                                       {"token": "W", "logprob": math.log(0.15)},
+                                                                       {"token": "la", "logprob": math.log(0.05)}]},
+            {"token": "Blanca", "logprob": math.log(0.9)},
+            {"token": post, "logprob": 0.0}]
+    assert "".join(t["token"] for t in toks) == content
+    answers = systemone.parse_emulation(content, q)
+    systemone.calibrate_choices(answers, q, content, toks)
+    a = answers["agent"]
+    assert abs(a["confidence"] - 0.72) < 1e-6
+    assert abs(a["probabilities"]["Wavi"] - 0.28) < 1e-6 and a["probabilities"]["System"] == 0.0
+
+
+def test_calibrate_choices_noop_when_tokens_do_not_line_up():
+    q = {"agent": {"type": "choice", "instructions": "x", "criteria": {"A": "a", "B": "b"}}}
+    content = '{"agent": {"choice": "A", "confidence": 0.9}}'
+    answers = systemone.parse_emulation(content, q)
+    systemone.calibrate_choices(answers, q, content, [{"token": "nope", "logprob": 0.0}])
+    assert answers["agent"]["confidence"] == 0.9
+
+
+@pytest.mark.default_order
+def test_ollama_chat_answers_tagged_local_not_fallback():
+    real_client = httpx.AsyncClient
+    captured = {}
+
+    def handler(request):
+        captured["body"] = json.loads(request.content)
+        content = json.dumps({"department": {"choice": "technical", "confidence": 0.9},
+                              "frustration": {"score": 1, "confidence": 0.8}, "is_urgent": 0.7})
+        return httpx.Response(200, json={"message": {"content": content}, "prompt_eval_count": 10, "eval_count": 5})
+
+    with patch.dict(os.environ, {"LAYA_URL": "", "TYPESAFE_API_KEY": "", "OPENROUTER_API_KEY": ""}), \
+         patch("router.systemone.httpx.AsyncClient", lambda **kw: real_client(transport=httpx.MockTransport(handler))):
+        for k in ("JEV_PROVIDER_ORDER", "JEV_CHAT_MODEL"):
+            os.environ.pop(k, None)
+        body = client.post("/v1/systemone", json={"state": "s", "questions": QUESTIONS}).json()
+    assert body["answers"]["department"]["choice"] == "technical"
+    assert body["x_router"]["resolved"] == "ollama-chat/qwen3.5:4b"
+    assert body["x_router"]["local"] is True and body["x_router"]["fallback_used"] is False
+    assert captured["body"]["model"] == "qwen3.5:4b" and captured["body"]["think"] is False
+    assert captured["body"]["format"]["properties"]["department"]["properties"]["choice"]["enum"]

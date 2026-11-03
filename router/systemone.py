@@ -49,6 +49,7 @@ back into the Jev answer shape. Answers are tagged ``x_router.emulated: true``
 — probabilities come from an LLM, not from a calibrated System One model.
 """
 import json
+import math
 import os
 import re
 
@@ -68,10 +69,14 @@ DEFAULT_MODELS: dict[str, str] = {
 }
 DEFAULT_LOCAL_MODEL = "d3:4b-nvfp4"      # 4.0 GB on Ollama >= 0.40 (MLX); don't co-load with a 7-9B chat model on 16 GB
 DEFAULT_LAYA_MODEL = "auto"              # laya-serve picks english / multilingual per request
-DEFAULT_PROVIDER_ORDER = "laya,ollama,typesafe,openrouter"
-LOCAL_PROVIDERS = ("laya", "ollama")
+DEFAULT_CHAT_MODEL = "qwen3.5:4b"        # 3.2 GB resident: one model for agent, tools AND decisions on 16 GB
+DEFAULT_CHAT_KEEP_ALIVE = "30m"
+# 2026-11-03: José chose ONE resident model (qwen3.5:4b) — d3 ("ollama") stays available
+# via JEV_PROVIDER_ORDER but is out of the default chain so it never co-loads with qwen.
+DEFAULT_PROVIDER_ORDER = "laya,ollama-chat,typesafe,openrouter"
+LOCAL_PROVIDERS = ("laya", "ollama", "ollama-chat")
 # Local first-call latency includes loading the model; cloud Jev answers in <1s.
-TIMEOUTS: dict[str, float] = {"laya": 30.0, "ollama": 90.0, "typesafe": 30.0, "openrouter": 30.0}
+TIMEOUTS: dict[str, float] = {"laya": 30.0, "ollama": 90.0, "ollama-chat": 90.0, "typesafe": 30.0, "openrouter": 30.0}
 
 VALID_TYPES = ("noul", "boolean", "choice", "score")
 
@@ -112,6 +117,7 @@ def provider_chain() -> list[tuple[str, str]]:
     available = {
         "laya": DEFAULT_LAYA_MODEL if os.getenv("LAYA_URL", "").strip() else None,
         "ollama": local_model or None,
+        "ollama-chat": chat_model() or None,
         "typesafe": DEFAULT_MODELS["typesafe"] if os.getenv("TYPESAFE_API_KEY") else None,
         "openrouter": DEFAULT_MODELS["openrouter"] if os.getenv("OPENROUTER_API_KEY") else None,
     }
@@ -131,6 +137,8 @@ def model_for(provider: str, default: str, requested: str | None) -> str:
 
 async def call_jev(provider: str, model: str, state: str, questions: dict, timeout: float | None = None) -> dict:
     """POST one System One request to a real provider; raises on HTTP/network error."""
+    if provider == "ollama-chat":
+        return await call_chat_decision(model, state, questions, timeout)
     headers = {"User-Agent": "local-model-router/1.0"}
     if provider == "laya":
         base = os.getenv("LAYA_URL", "").strip().rstrip("/")
@@ -162,13 +170,121 @@ async def call_jev(provider: str, model: str, state: str, questions: dict, timeo
         return resp.json()
 
 
-# ── Local model status / warm-up (clients never need to know the d3 tag) ──────
+# ── Local decisions with a chat model (ollama-chat) ───────────────────────────
+
+
+def chat_model() -> str:
+    return os.getenv("JEV_CHAT_MODEL", DEFAULT_CHAT_MODEL).strip()
+
+
+def chat_keep_alive() -> str:
+    return os.getenv("JEV_CHAT_KEEP_ALIVE", DEFAULT_CHAT_KEEP_ALIVE)
+
+
+def decision_schema(questions: dict) -> dict:
+    """JSON schema that constrains the chat model to valid Jev answers (choice keys as an enum)."""
+    props: dict = {}
+    for name, q in questions.items():
+        if q["type"] in ("noul", "boolean"):
+            props[name] = {"type": "number"}
+        elif q["type"] == "choice":
+            props[name] = {"type": "object", "required": ["choice", "confidence"], "properties": {
+                "choice": {"type": "string", "enum": list(q["criteria"].keys())}, "confidence": {"type": "number"}}}
+        else:
+            props[name] = {"type": "object", "required": ["score", "confidence"], "properties": {
+                "score": {"type": "integer", "enum": list(range(len(q["criteria"])))}, "confidence": {"type": "number"}}}
+    return {"type": "object", "properties": props, "required": list(questions)}
+
+
+async def call_chat_decision(model: str, state: str, questions: dict, timeout: float | None = None) -> dict:
+    """Answer System One questions with a local chat model via Ollama /api/chat + JSON-schema format."""
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(f"{OLLAMA_BASE}/api/chat", json={
+            "model": model, "stream": False, "think": False, "keep_alive": chat_keep_alive(),
+            "format": decision_schema(questions),
+            "logprobs": True, "top_logprobs": 10,
+            "options": {"num_ctx": 8192, "temperature": 0},
+            "messages": build_emulation_messages(state, questions),
+        }, timeout=timeout or TIMEOUTS["ollama-chat"])
+        resp.raise_for_status()
+        data = resp.json()
+    content = (data.get("message") or {}).get("content", "")
+    answers = parse_emulation(content, questions)
+    calibrate_choices(answers, questions, content, data.get("logprobs") or [])
+    return {
+        "model": model,
+        "answers": answers,
+        "usage": {"input_tokens": data.get("prompt_eval_count", 0), "output_tokens": data.get("eval_count", 0)},
+    }
+
+
+def calibrate_choices(answers: dict, questions: dict, content: str, logprobs: list[dict]) -> None:
+    """Replace the chat model's self-reported choice confidence with token probabilities.
+
+    A 4B chat model says ~0.95 even when wrong, so a pending/top-3 rule never
+    fires. With Ollama's logprobs: confidence = joint probability of the chosen
+    key's tokens; the rest of the mass goes to the other keys by the first
+    value token's top_logprobs (renormalised over tokens that start a valid
+    key; keys sharing that token split it). Leaves answers as-is when the
+    tokens can't be lined up.
+    """
+    if not logprobs:
+        return
+    starts, pos = [], 0
+    for t in logprobs:
+        starts.append(pos)
+        pos += len(t.get("token", ""))
+    if pos != len(content):
+        return
+    for name, q in questions.items():
+        if q["type"] != "choice" or name not in answers:
+            continue
+        m = re.search(r'"' + re.escape(name) + r'"\s*:\s*\{\s*"choice"\s*:\s*"', content)
+        if not m:
+            continue
+        chosen, keys = answers[name]["choice"], list(q["criteria"].keys())
+        begin, end = m.end(), m.end() + len(chosen)
+        idx = [i for i, st in enumerate(starts) if st < end and st + len(logprobs[i].get("token", "")) > begin]
+        if not idx or starts[idx[0]] != begin:
+            continue
+        joint = math.exp(sum(logprobs[i].get("logprob", 0.0) for i in idx))
+        first = {}
+        for alt in logprobs[idx[0]].get("top_logprobs", []):
+            tok = alt.get("token", "")
+            hits = [k for k in keys if tok and k.startswith(tok)]
+            for k in hits:
+                first[k] = first.get(k, 0.0) + math.exp(alt.get("logprob", -99)) / len(hits)
+        total = sum(first.values())
+        probs = {k: 0.0 for k in keys}
+        others = [k for k in keys if k != chosen]
+        rest = 1.0 - joint
+        mass = sum(first.get(k, 0.0) for k in others)
+        for k in others:
+            probs[k] = rest * (first.get(k, 0.0) / mass) if mass > 0 else rest / max(1, len(others))
+        probs[chosen] = joint
+        answers[name]["confidence"] = joint
+        answers[name]["probabilities"] = probs
+        answers[name]["calibrated"] = bool(total)
+
+
+# ── Local model status / warm-up (clients never need to know the model tag) ───
 
 DEFAULT_WARM_KEEP_ALIVE = "10m"
 
 
 def local_model() -> str:
+    """The local model that answers /v1/systemone first (what /status and /v1/warm report)."""
+    for provider, model in provider_chain():
+        if provider in ("ollama", "ollama-chat"):
+            return model
     return os.getenv("JEV_LOCAL_MODEL", DEFAULT_LOCAL_MODEL).strip()
+
+
+def _local_kind() -> str:
+    for provider, _ in provider_chain():
+        if provider in ("ollama", "ollama-chat"):
+            return provider
+    return "ollama"
 
 
 async def local_status() -> dict:
@@ -190,19 +306,27 @@ async def local_status() -> dict:
 
 
 async def warm(keep_alive: str | None = None) -> dict:
-    """Load the local decision model with a one-token System One call and keep it resident.
+    """Load the local decision model and keep it resident.
 
-    d3 has only the `decision` capability, so Ollama's /api/generate load trick
-    is rejected; a minimal /v1/systemone call with keep_alive is the way.
+    A chat model loads with an empty /api/generate; d3 has only the `decision`
+    capability (Ollama rejects /api/generate), so it gets a one-token
+    /v1/systemone call instead.
     """
-    model, ka = local_model(), keep_alive or os.getenv("JEV_WARM_KEEP_ALIVE", DEFAULT_WARM_KEEP_ALIVE)
+    model, kind = local_model(), _local_kind()
+    default_ka = chat_keep_alive() if kind == "ollama-chat" else os.getenv("JEV_WARM_KEEP_ALIVE", DEFAULT_WARM_KEEP_ALIVE)
+    ka = keep_alive or default_ka
     async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            f"{OLLAMA_BASE}/v1/systemone",
-            json={"model": model, "keep_alive": ka, "state": "warm",
-                  "questions": {"w": {"type": "noul", "instructions": "ok"}}},
-            timeout=TIMEOUTS["ollama"],
-        )
+        if kind == "ollama-chat":
+            resp = await client.post(f"{OLLAMA_BASE}/api/generate",
+                                     json={"model": model, "keep_alive": ka, "options": {"num_ctx": 8192}},
+                                     timeout=TIMEOUTS["ollama-chat"])
+        else:
+            resp = await client.post(
+                f"{OLLAMA_BASE}/v1/systemone",
+                json={"model": model, "keep_alive": ka, "state": "warm",
+                      "questions": {"w": {"type": "noul", "instructions": "ok"}}},
+                timeout=TIMEOUTS["ollama"],
+            )
         resp.raise_for_status()
     return {"model": model, "keep_alive": ka}
 
