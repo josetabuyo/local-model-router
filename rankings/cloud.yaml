@@ -3996,6 +3996,42 @@
 #   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 --
 #   2026-11-02; ollama.com/search?c=decision -- 2026-11-02;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-02.
+# NOTE 2026-11-03: Daily audit -- checked, NO RANKING CHANGES. Live parallel
+#   chat-completion probes on AC power (100%, charged) under caffeinate -s -i.
+#   OpenRouter /auth/key free_model_daily_requests 0/50 at start (~9 :free
+#   probes spent).
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 6) 3s, nemotron-3.5-
+#   super-vl-120b-a12b 1s; Groq gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b
+#   <1s; Gemini 3.5-flash 1s, 3.1-flash-lite 2s; OR nemotron-3.5-super-vl:free
+#   1s, nano-omni:free 8s, north-mini-code:free 1s. gemma-4-31b-it:free 429
+#   (39th day, kept), gemma-4-26b-a4b-it:free 429 (kept).
+#   NIM openai/gpt-oss-20b 000 at 60s and again at 121s (retry) -- hang is
+#   back (2 of last 3 days, 200 at 33s on 11-02). Kept: Mac on AC, not a
+#   sleep artifact, but not a 404/410 either; if it hangs 3 more days, demote
+#   it behind the Groq gpt-oss-20b entries.
+#   WATCH: poolside/laguna-xs-2.1:free now 404 "no longer available on
+#   OpenRouter" and gone from the :free catalog -- dropped from watch (it was
+#   never ranked; same family as laguna-s-2.1, EOL 11-01).
+#   mistralai/mistral-large-4-1t-a52b 200 "48" 27s (day 5, 6/6 clean, slow
+#   today); stepfun-ai/step-5-preview 000 at 60s (day 6, flaky -- not a
+#   candidate); nemotron-3-ultra-550b-a55b:free 200 1s (clean day 26, user
+#   decision pending); recursive/flint-v1.0:free 503 (4th day of capacity
+#   errors, still no independent score).
+#   Catalogs: NIM 85 (unchanged), OR :free 14 (every id already known);
+#   typesafe/jev-router still pricing -1, no :free.
+#   Web: no verifiable open-weight release or new free provider (only
+#   SEO roundups, latest dated 2026-10-22).
+#   Local: Ollama v0.40.13 still latest stable; v0.40.14-rc0 (pre-release,
+#   2026-11-03) -- openai sampler-defaults + MLX top-k fixes, nothing that
+#   changes a pin; wait for stable. /v1/systemone on d3:4b-nvfp4 with
+#   plans/jev-example.json 200 in 9s cold (technical 0.98), unloaded after.
+#   Decision catalog unchanged (clef, clef-flash, d1, d1-omni, d3, kev, laya,
+#   nimble, nimble-v3, pplx-decider, strands-decider, tev1).
+#   DEFAULT_LOCAL_MODEL unchanged (d3:4b-nvfp4).
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 --
+#   2026-11-03; ollama.com/search?c=decision -- 2026-11-03;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-03.
 
 categories:
 
