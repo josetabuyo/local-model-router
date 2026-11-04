@@ -75,3 +75,17 @@ con LLM en la nube, local y gratis).
 Idea siguiente: destilar — usar las respuestas de la emulación (o de Jev
 real) como etiquetas para el fine-tune de Laya con su script MPS
 (`notebooks/laya_finetune_typed_decisions_mps.py`), y volver a medir.
+
+## Reparto de Monkey 2026-11-04
+
+Desde el 04-11, Monkey centraliza los guardados de Instagram (`~/Development/Monkey/projects/ruteo-info/`)
+y reparte a cada agente lo que le sirve. Lo que dicen los posts son afirmaciones del autor, sin verificar.
+
+| Qué | Lectura LocalModels |
+|---|---|
+| GLM-5.3-Flash (MoE 321B, ~50 tok/s en 2× RTX 3090 usadas) [reel](https://www.instagram.com/reel/DfA-E54hVil/) | Referencia de hardware, igual que AirLLM/Strata. No entra en la Mac. |
+| Nemotron 3 Super (NVIDIA, 120B) [reel](https://www.instagram.com/reel/DW3Dj2ijmTy/) | No entra en 16 GB. En la nube ya está seguido (`nvidia/nemotron-3-super-120b-a12b:free`, `rankings/cloud.yaml`). |
+| Modelo abierto de 30B de Meta [post](https://www.instagram.com/p/Db3rxsMGX3i/) | ~17 GB en 4 bits; el presupuesto acá es ~3 GB (un solo modelo residente, qwen3.5:4b). Sumar al comparador si aparece gratis en NIM u OpenRouter. |
+| "Los jueces IA no son confiables" (Stanford) [reel](https://www.instagram.com/reel/Da0FGiZxhez/) | El benchmark no usa un modelo como juez: las respuestas se revisan a mano (`benchmark/tasks.py`). Confirma el criterio actual. |
+| Harness Zero (Google + Peking) [reel](https://www.instagram.com/reel/DebyP1JRRnE/), cordis harness (DeepSeek) [reel](https://www.instagram.com/reel/DeJxZaOxyxv/) | Pendiente: leer los papers y ver qué tareas o métricas copiar. |
+| Unlimited OCR (Baidu, 3B) [reel](https://www.instagram.com/reel/Devme4XIiqc/), vía Pulpo para el nodo `document_vision` | Pendiente del OK de José: para probarlo hay que bajar qwen3.5:4b, porque no co-residen en ~3 GB. |
