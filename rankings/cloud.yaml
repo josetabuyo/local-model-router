@@ -4032,6 +4032,46 @@
 #   openrouter.ai, generativelanguage.googleapis.com, localhost:11434 --
 #   2026-11-03; ollama.com/search?c=decision -- 2026-11-03;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-03.
+# NOTE 2026-11-04: Daily audit -- checked, NO RANKING CHANGES. Live parallel
+#   chat-completion probes on AC power (100%, charged) under caffeinate -s -i,
+#   wall 61s. OpenRouter /auth/key free_model_daily_requests 0/50 at start
+#   (7 :free probes spent).
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 7) 0.9s, nemotron-3.5-
+#   super-vl-120b-a12b 1s; Groq gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b
+#   <1.2s; Gemini 3.5-flash 5s, 3.1-flash-lite 3s; OR nemotron-3.5-super-vl:
+#   free 1s, nano-omni:free 1s, north-mini-code:free 1s. gemma-4-31b-it:free
+#   and gemma-4-26b-a4b-it:free 429 (quota, kept).
+#   NIM openai/gpt-oss-20b 000 at 60s and again at 120s (retry) -- 3 of the
+#   last 4 days. Day 1 of the 3-day demotion countdown set on 11-03; kept.
+#   WATCH: mistralai/mistral-large-4-1t-a52b 200 6s (day 6, 7/7 clean);
+#   stepfun-ai/step-5-preview 200 37s (day 7, slow/flaky -- not a candidate);
+#   nemotron-3-ultra-550b-a55b:free 200 2s (clean day 27, user decision
+#   pending); recursive/flint-v1.0:free 503 (5th day of capacity errors).
+#   Catalogs: NIM 85 (unchanged), OR :free 14 (every id already known);
+#   typesafe/jev-router still pricing -1, no :free. Snapshots saved in
+#   /tmp/scout-1104/ (nim.txt, or-free.txt, or-all.txt).
+#   Web: no verifiable open-weight release or new free provider dated
+#   November (only roundups, latest 2026-10-22).
+#   Local: Ollama v0.40.14 is now STABLE (2026-11-03): OpenAI-compatible
+#   endpoints stop overriding packaged sampler defaults (clients that send no
+#   temperature/top_p now get the model's own values, not 1.0) + faster MLX
+#   top-k. Router clients of /v1/chat/completions on qwen3.5:4b may see
+#   different sampling after upgrading; installed is still 0.40.13. v0.40.15-
+#   rc0 (pre-release) adds MiMo V2.6 support.
+#   NEW decision model: pplx-decider-flash (Perplexity, 4B on Qwen3.5-4B,
+#   distilled from pplx-decider, Apache 2.0, /v1/systemone compatible).
+#   Vendor score Decision Index 0.3 58.88 (pplx-decider 68.09; d3 4B 52.6 per
+#   the d3 card). Tags: 4b-nvfp4 4.6 GB, 4b/4b-mxfp8 5.6 GB, 4b-mlx-bf16
+#   9.1 GB. 4b-nvfp4 fits the ~5 GB budget, but it is 0.6 GB bigger than
+#   d3:4b-nvfp4. Watch item / candidate for the opt-in d3 slot. Not pinned
+#   (vendor-only score; the 11-03 decision is one resident qwen3.5:4b).
+#   Not benchmarked locally, to avoid memory pressure on the busy 16 GB Mac.
+#   DEFAULT_LOCAL_MODEL unchanged (d3:4b-nvfp4).
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-04;
+#   ollama.com/library/pplx-decider-flash -- 2026-11-04;
+#   ollama.com/search?c=decision -- 2026-11-04;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-04.
 
 categories:
 
