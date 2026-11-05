@@ -3,7 +3,7 @@
 <!-- GENERADO por scripts/render_models.py desde rankings/*.yaml — no editar a mano.
      Regenerar: uv run scripts/render_models.py -->
 
-Actualizado: 2026-11-04 · Máquina: Apple Silicon, 16 GB RAM.
+Actualizado: 2026-11-05 · Máquina: Apple Silicon, 16 GB RAM.
 Fuente de verdad: `rankings/cloud.yaml` (cloud, con el log diario de auditorías
 de `/model-scout` en sus `NOTE`) y `rankings/local.yaml` (benchmarks propios de Ollama).
 
@@ -54,10 +54,7 @@ se midió el 2026-10-01 con thinking activado: correcto en 7/8 tareas pero con
 
 | Modelo | Categorías donde gana (slot 0) | tok/s (medido) | Nota |
 |---|---|---|---|
-| `qwen2.5:7b` | reasoning, summarization, math, multilingual | 22.1 |  |
-| `qwen3.5:9b` | instruction, context | 13.7 |  |
-| `deepseek-r1:8b` | — | 20.9 |  |
-| `qwen2.5-coder:7b` | coding, code_debug | 13.4 |  |
+| `qwen3.5:4b` | reasoning, coding, summarization, instruction, math, multilingual, code_debug, context | 27.8 |  |
 
 ## 5. Modelos de decisión (Jev-style, `POST /v1/systemone`)
 

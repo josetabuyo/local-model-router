@@ -4073,6 +4073,69 @@
 #   ollama.com/search?c=decision -- 2026-11-04;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-04.
 
+# NOTE 2026-11-05: Daily audit -- checked, NO RANKING CHANGES. Live parallel
+#   chat-completion probes on AC power (80%, not charging) under caffeinate
+#   -s -i, wall 120s (all of it the NIM gpt-oss-20b timeout). OpenRouter
+#   /auth/key free_model_daily_requests 0/50 at start, 5/50 after (7 :free
+#   probes; the two 429s did not count).
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 8) 0.8s, nemotron-3.5-
+#   super-vl-120b-a12b 0.9s; Groq gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b
+#   <0.5s; Gemini 3.5-flash 2s, 3.1-flash-lite 1.3s; OR nemotron-3.5-super-
+#   vl:free 2.3s, nano-omni:free 0.6s, north-mini-code:free 1s.
+#   gemma-4-31b-it:free and gemma-4-26b-a4b-it:free 429 (quota, kept).
+#   NIM openai/gpt-oss-20b 000 at 120s (1 probe, AC power). Day 2 of the
+#   3-day demotion countdown set on 11-03; kept. One more hang on 11-06 means
+#   demoting it behind Groq gpt-oss-20b.
+#   WATCH: mistralai/mistral-large-4-1t-a52b 200 0.9s (day 7, 8/8 clean);
+#   stepfun-ai/step-5-preview 200 1.2s (day 8, fast today after 37s on 11-04,
+#   still flaky overall); nemotron-3-ultra-550b-a55b:free 200 1.5s (clean day
+#   28, user decision pending); recursive/flint-v1.0:free 200 1.4s (back
+#   after 5 days of capacity errors).
+#   Catalogs vs 11-04: NIM 85 identical. OR :free 14 -> 12:
+#   thinkingmachines/inkling:free and inkling-small:free gone (no impact, out
+#   of the ranking since 08-27, they returned 403). OR full +ricursiveai/
+#   ripple-65b-preview (created 11-04, paid $0.20/$0.60 per M, 1M context,
+#   BF16, tool calling; no benchmarks, no weights found on HF under that
+#   author, not free -> not evaluated further). typesafe/jev-router still
+#   pricing -1, no :free. Groq 11 (snapshot saved, no 11-04 list to diff).
+#   Snapshots in /tmp/scout-1105/.
+#   Kimi K3.1 Pro follow-up (OR paid id since 10-24, unverified then): now
+#   verified. moonshotai/Kimi-K3.1-Pro, 2.8T/104B active, HF repo created
+#   11-02 (weights public, Kimi K3.1 Pro License, terms not read). AA 46 on
+#   Intelligence Index v5.0.1, far above slot 0, but NOT FREE: $2/$10 per M on
+#   OR and Kimi's API, Ollama only as paid :cloud, absent from NIM. Watch: it
+#   becomes a slot-0 candidate if it lands on NIM free, like Kimi K3 did.
+#   DISCREPANCY: AA's page still says "proprietary, weights not publicly
+#   available" while HF has the weights; AA's text probably predates 11-02.
+#   AA index is now labelled v5.0.1 (no changelog found). MiniMax M3.1 Flash
+#   29 and Mistral Large 4 26 unchanged, so the 10-29 ordering stands.
+#   LMArena not consulted today.
+#   Web: no verifiable open-weight release or new free provider dated
+#   November from search (roundups only); Kimi and Ripple came from HF/OR.
+#   Local: Ollama v0.40.14 still latest stable, installed 0.40.13 (upgrade
+#   pending; it rewrites the plist, see OLLAMA_MAX_LOADED_MODELS). v0.40.15-
+#   rc1 pre-release. Router /v1/systemone with plans/jev-example.json 200 in
+#   7.2s via ollama-chat/qwen3.5:4b, no fallback.
+#   NEW decision model: autotrust-jev (AutoTrust, JEV-9B on Qwen3.5-9B, Apache
+#   2.0, /v1/systemone compatible). Vendor-only: yes/no AUROC 0.996, rating
+#   MAE 0.103. Smallest tag 9b-nvfp4 8.0 GB, over the ~5 GB budget ->
+#   discarded for this Mac.
+#   NEW local chat: mimo-v2.6 (Xiaomi, Distill-Qwen-9B, MIT). Vendor-only: SWE
+#   Pro 32.0 -> 44.6, Terminal Bench 2.1 27.0 -> 37.1 vs Qwen3.5-9B. 6.6-8.7 GB,
+#   support landed in the 0.40.15 pre-release. Too big next to the 11-03 one-
+#   resident qwen3.5:4b decision -> watch only, not pulled.
+#   pplx-decider-flash unchanged (watch). DEFAULT_LOCAL_MODEL unchanged
+#   (d3:4b-nvfp4), but that tag was uninstalled on 11-04: the opt-in d3 path
+#   needs `ollama pull d3:4b-nvfp4` before use.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-05;
+#   huggingface.co/moonshotai/Kimi-K3.1-Pro -- 2026-11-05;
+#   artificialanalysis.ai/models/kimi-k3-1-pro, /models/minimax-m3-1-flash,
+#   /models/mistral-large-4, /leaderboards/models -- 2026-11-05;
+#   ollama.com/library/{autotrust-jev,kimi-k3.1-pro,mimo-v2.6} -- 2026-11-05;
+#   openrouter.ai/ricursiveai/ripple-65b-preview -- 2026-11-05;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-05.
+
 categories:
 
   reasoning:
