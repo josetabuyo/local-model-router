@@ -1,0 +1,261 @@
+[
+ {
+  "name": "LocalAgentSociety",
+  "description": "Agent society: ports, voices, widget, mic, messaging",
+  "sessions": [
+   {
+    "sid": "claude-18523-8c2586",
+    "runtime": "claude",
+    "title": "Botonera flotante panel amigos",
+    "isDefault": true
+   },
+   {
+    "sid": "pulpo-43482-0de65b",
+    "runtime": "pulpo",
+    "title": "pulpo las",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "Garantido",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "NeuroFlow",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Forti",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Pulpo",
+  "description": "Flows conversacionales: bots de Telegram y chat web",
+  "sessions": [
+   {
+    "sid": "claude-10796-25a309",
+    "runtime": "claude",
+    "title": "Bot pulpo: CLI local de bots",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "HomeControl",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Wavi",
+  "description": "WhatsApp Web automation CLI: read and send chats",
+  "sessions": [
+   {
+    "sid": "claude-14106-ba69c6",
+    "runtime": "claude",
+    "title": "",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "Minis App Acces",
+  "description": "Access-control mobile app for Ministry building guards",
+  "sessions": []
+ },
+ {
+  "name": "System",
+  "description": "Mac health monitor: CPU, RAM, load and port hygiene",
+  "sessions": []
+ },
+ {
+  "name": "Teli",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Robotics",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "LocalModels",
+  "description": "OpenAI-compatible router: local Ollama + free cloud LLMs",
+  "sessions": [
+   {
+    "sid": "claude-7780-2c56c8",
+    "runtime": "claude",
+    "title": "Auditoría diaria model-scout 11-06",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "Luganense",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "BeyondRead",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Fabi",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "GIAR",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "TechVentas",
+  "description": "Harness para hablar con ARCA: facturas y consultas",
+  "sessions": []
+ },
+ {
+  "name": "e-learning",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "RuGIAR",
+  "description": "G1 humanoid RL: train policies, drive sim/real robot",
+  "sessions": []
+ },
+ {
+  "name": "LitoralMovil",
+  "description": "Litoral Móvil: AWS data lake and ARCA sales validator",
+  "sessions": []
+ },
+ {
+  "name": "MachElectronics",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "DataLake",
+  "description": "Data Lake de Litoral Móvil en AWS: Sprint 4, integración de SAP y PRETUPS",
+  "sessions": [
+   {
+    "sid": "claude-8927-28283b",
+    "runtime": "claude",
+    "title": "",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "Vortexia",
+  "description": "MQTT broker and cross-machine relay for agents",
+  "sessions": []
+ },
+ {
+  "name": "RelayRobotics",
+  "description": "",
+  "sessions": [
+   {
+    "sid": "claude-62192-ec1aff",
+    "runtime": "claude",
+    "title": "Puente ba-mac ↔ uy-mac (Relay)",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "bau",
+  "description": "Fixes puntuales y soporte productivo reactivo de Relay",
+  "sessions": []
+ },
+ {
+  "name": "coach",
+  "description": "Organizo el conocimiento y acompaño el aprendizaje de José",
+  "sessions": []
+ },
+ {
+  "name": "dev-simulator",
+  "description": "Relay simulator, local stack and Sim QA in CI",
+  "sessions": []
+ },
+ {
+  "name": "billing",
+  "description": "José's personal billing: Payoneer, BILL, invoices",
+  "sessions": []
+ },
+ {
+  "name": "relay-reviewer",
+  "description": "Reviso PRs en CI y superviso a los otros agentes.",
+  "sessions": []
+ },
+ {
+  "name": "Monkey",
+  "description": "Tareas personales, recreativas, laborales secundarias y creativas",
+  "sessions": [
+   {
+    "sid": "claude-60884-bee284",
+    "runtime": "claude",
+    "title": "",
+    "isDefault": true
+   },
+   {
+    "sid": "claude-59271-17164a",
+    "runtime": "claude",
+    "title": "Cotidiano: turnos, preguntas rápidas",
+    "isDefault": false
+   },
+   {
+    "sid": "claude-12975-f79aea",
+    "runtime": "claude",
+    "title": "Pasaporte + visa USA — familia",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "Team Knowledge",
+  "description": "Maintains Relay team documentation and knowledge.",
+  "sessions": []
+ },
+ {
+  "name": "dev-relay-brain",
+  "description": "Construyo relay-brain, el agente de Relay en Slack.",
+  "sessions": []
+ },
+ {
+  "name": "dev-relay-agents",
+  "description": "Base común de los agentes Relay: relay-context y tools",
+  "sessions": []
+ },
+ {
+  "name": "VisitasPSR",
+  "description": "Visitas PSR con NFC para Distribución de Litoral Móvil",
+  "sessions": []
+ },
+ {
+  "name": "AppDelSur",
+  "description": "App móvil del club de rugby Del Sur: bienvenida, login, cuestionario",
+  "sessions": []
+ },
+ {
+  "name": "summon-restock",
+  "description": "Summon y Restock del piloto Analog.io (SSMC, m2137)",
+  "sessions": []
+ },
+ {
+  "name": "AppBlanca",
+  "description": "App rosa que transcribe en vivo lo que le hablan a Blanca",
+  "sessions": [
+   {
+    "sid": "claude-68346-036c0c",
+    "runtime": "claude",
+    "title": "",
+    "isDefault": true
+   }
+  ]
+ }
+]
