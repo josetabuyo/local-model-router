@@ -313,7 +313,8 @@ def compare(paths: list[Path]) -> None:
     print(f"{'':22}" + "".join(f"{r['started'][:16]:>18}" for r in rows))
     for label, get in [("versión bot", lambda r: r["version"]), ("motor", lambda r: r.get("engine") or "?"), ("modelo", lambda r: r["model"] or "?"),
                        ("pass rate", lambda r: r["summary"]["pass_rate"]), ("todas las corridas", lambda r: r["summary"]["pass_all_runs"]),
-                       ("críticos", lambda r: sum(r["summary"]["critical"].values())), ("p50 s", lambda r: r["summary"]["latency_p50_s"])]:
+                       ("críticos", lambda r: sum(r["summary"]["critical"].values())), ("p50 s", lambda r: r["summary"]["latency_p50_s"]),
+                       ("ms/1k tok (carga)", lambda r: r["summary"].get("model_ms_per_1k_prompt_tokens", "-"))]:
         print(f"{label:22}" + "".join(f"{str(get(r)):>18}" for r in rows))
     for t in tags:
         print(f"{t:22}" + "".join(f"{str(r['summary']['by_tag'].get(t, '-')):>18}" for r in rows))
@@ -390,6 +391,7 @@ def main(argv: list[str] | None = None) -> int:
               "Commitealos o usá --allow-dirty.", file=sys.stderr)
         return 2
     started = datetime.now().isoformat(timespec="seconds")
+    load_start = round(os.getloadavg()[0], 2)
     turns: list[dict] = []
     model = None
     for c in cases:
@@ -408,7 +410,11 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"     respuesta: {res['answer'][:200]!r}\n     acciones: {[a_.get('tool') for a_ in res['actions']]}", file=sys.stderr)
 
     summary = summarize(turns, cases)
-    report = {"suite": suite["name"], "agent": suite.get("agent"), "version": version, "engine": engine, "model": model, "started": started,
+    summary["load_avg_end"] = round(os.getloadavg()[0], 2)
+    us = [t["usage"] for t in turns if t.get("usage") and t["usage"].get("prompt_tokens")]
+    if us:  # model speed, independent of how many calls a version makes: compare it to see machine load
+        summary["model_ms_per_1k_prompt_tokens"] = round(1000 * sum(u.get("model_ms") or 0 for u in us) / sum(u["prompt_tokens"] for u in us))
+    report = {"suite": suite["name"], "load_avg_start": load_start, "agent": suite.get("agent"), "version": version, "engine": engine, "model": model, "started": started,
               "runs": a.runs, "society_source": society_src, "summary": summary, "society": society, "turns": turns}
     print(json.dumps({k: summary[k] for k in summary if k != "per_case"}, ensure_ascii=False, indent=1))
     if not a.no_save:
