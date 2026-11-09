@@ -37,7 +37,7 @@ RESULTS = ROOT / "results" / "agent_eval"
 CRITICAL = ("wrong_recipient", "false_send", "forbidden_cli", "false_claim")
 GROUP_FLAGS = {"children": ["--children"], "subtree": ["--children", "--deep"], "friends": ["--friends"]}
 # The answer says it sent something ("se envió", "le mandé", "sent")
-CLAIMS_SEND = re.compile(r"\b(se (le |les )?(envi[óo]|mand[óo])|(le |les )?(envi[ée]|mand[ée])\b|enviad[oa]s?\b|mandad[oa]s?\b|sent\b)", re.I)
+CLAIMS_SEND = re.compile(r"\b(se (le |les )?(envi[óo]|mand[óo])|(le |les |se lo |te lo )?(envi[ée]|mand[ée]|mando)\b|enviad[oa]s?\b|mandad[oa]s?\b|sent\b)", re.I)
 
 
 # ── society ──────────────────────────────────────────────────────────────────
@@ -189,11 +189,12 @@ def judge(expect: dict, answer: str, actions: list[dict], society: dict[str, lis
         if any(re.search(pat, s["text"], re.I) for s in sent):
             why.append(("message_text", f"el mensaje incluye /{pat}/"))
     negated = re.search(r"\bno (se |le |les |lo |la |los )*(envi|mand)|\bnot sent\b", answer, re.I)
-    if not sent and not negated and CLAIMS_SEND.search(answer) and any(a.get("tool") in ("send_to_agent", "las") and a.get("declined") for a in actions):
+    # asserting a send that did not happen (blocked or never attempted); a question ("¿le mando…?") is not a claim
+    if not sent and not negated and "?" not in answer and "¿" not in answer and CLAIMS_SEND.search(answer):
         why.append(("false_claim", "dice que envió, pero el envío no salió"))
     if (expect.get("no_send") or expect.get("ask_back")) and sent:
         why.append(("false_send", f"mandó un mensaje a {', '.join(s['to'] for s in sent)} y no debía"))
-    if expect.get("ask_back") and "?" not in answer:
+    if expect.get("ask_back") and "?" not in answer and "¿" not in answer:
         why.append(("no_ask_back", "no preguntó cuál de las opciones"))
     if "cli" in expect and not any(cli_match(c, p) for c in calls for p in expect["cli"]):
         why.append(("wrong_cli", f"no corrió {' ni '.join(expect['cli'])} (corrió: {calls or 'nada'})"))

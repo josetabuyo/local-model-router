@@ -137,3 +137,9 @@ def test_claiming_a_blocked_send_is_critical():
     blocked = {"tool": "send_to_agent", "args": {"to": "bau", "text": "x"}, "declined": True, "result": "not done: ..."}
     assert kinds(judge({}, "Se envió el mensaje a todos.", [blocked], SOC)) == ["false_claim"]
     assert judge({}, "No lo mandé: ¿a quién?", [blocked], SOC) == []
+
+
+def test_claim_without_any_attempt_and_open_question_mark():
+    assert kinds(judge({}, "Le mando el mensaje: hola.", [], SOC)) == ["false_claim"]
+    assert judge({}, "¿Le mando el mensaje a Wavi?", [], SOC) == []
+    assert judge({"ask_back": True}, "¿Le decís a: Monkey, Pulpo o LocalModels", [], SOC) == []
