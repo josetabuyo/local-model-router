@@ -154,3 +154,8 @@ def test_claim_detection_ignores_third_party_sends():
 def test_ask_back_as_an_imperative():
     assert judge({"ask_back": True}, "Por favor, indica cuál es el agente correcto para enviarlo.", [], SOC) == []
     assert kinds(judge({"ask_back": True}, "Listo.", [], SOC)) == ["no_ask_back"]
+
+
+def test_quoted_question_does_not_hide_a_claim():
+    assert kinds(judge({}, 'Le envío el mensaje: "¿Está andando el broker?".', [], SOC)) == ["false_claim"]
+    assert judge({}, 'Wavi dijo: "ya te lo mando". ¿Querés que le avise?', [], SOC) == []
