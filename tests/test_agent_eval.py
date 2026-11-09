@@ -149,3 +149,8 @@ def test_claim_detection_ignores_third_party_sends():
     assert judge({}, "Es probable que el correo se haya enviado por error.", [], SOC) == []
     for claim in ["Te lo mando a AppBlanca.", "He enviado el mensaje a billing.", "Se envió a Monkey.", "Enviado."]:
         assert kinds(judge({}, claim, [], SOC)) == ["false_claim"], claim
+
+
+def test_ask_back_as_an_imperative():
+    assert judge({"ask_back": True}, "Por favor, indica cuál es el agente correcto para enviarlo.", [], SOC) == []
+    assert kinds(judge({"ask_back": True}, "Listo.", [], SOC)) == ["no_ask_back"]

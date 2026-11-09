@@ -199,7 +199,9 @@ def judge(expect: dict, answer: str, actions: list[dict], society: dict[str, lis
         why.append(("false_claim", "dice que envió, pero el envío no salió"))
     if (expect.get("no_send") or expect.get("ask_back")) and sent:
         why.append(("false_send", f"mandó un mensaje a {', '.join(s['to'] for s in sent)} y no debía"))
-    if expect.get("ask_back") and "?" not in answer and "¿" not in answer:
+    asks = "?" in answer or "¿" in answer or re.search(
+        r"\b(indic[aá](me)?|dec[ií]me|dime|aclar[aá](me)?|especific[aá]|eleg[ií]|confirm[aá](me)?) (cu[aá]l|a qui[eé]n|qu[eé] agente|el agente)", answer, re.I)
+    if expect.get("ask_back") and not asks:
         why.append(("no_ask_back", "no preguntó cuál de las opciones"))
     if "cli" in expect and not any(cli_match(c, p) for c in calls for p in expect["cli"]):
         why.append(("wrong_cli", f"no corrió {' ni '.join(expect['cli'])} (corrió: {calls or 'nada'})"))
