@@ -172,10 +172,14 @@ cases:
     tags: [cli.command]
     ask: "necesito un puerto libre para levantar un server"
     expect: {no_send: true, cli: ["ports free"]}
-  - id: cli-voices
+  - id: cli-version
     tags: [cli.command]
-    ask: "¿qué voces hay disponibles?"
-    expect: {no_send: true, cli: ["voices list"]}
+    ask: "¿qué versión de LAS tengo instalada?"
+    expect: {no_send: true, cli: ["--version", "changelog"]}
+  - id: q-terminals-doing
+    tags: [question.no_send, cli.command]
+    ask: "¿en qué está cada terminal de LocalAgentSociety?"
+    expect: {no_send: true, text: "(?i)botonera"}
   - id: cli-target
     tags: [cli.command]
     ask: "¿a qué terminal le llega lo que dicto en el mic de Monkey?"

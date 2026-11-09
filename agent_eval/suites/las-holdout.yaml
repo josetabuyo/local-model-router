@@ -77,11 +77,21 @@ cases:
     ask: "decile a Monkey que me compre pilas"
     expect: {send: {to: Monkey, session: "default"}}
 
+  - id: h-term-runtime
+    tags: [routing.terminal]
+    ask: "decile al codex de DataLake que vuelva a correr el job"
+    expect: {send: {to: DataLake, session: "(?i)pretups"}}
+
   # ── routing.shell ──────────────────────────────────────────────────────────
   - id: h-shell-no-prose
     tags: [routing.shell, routing.terminal]
     ask: "mandale a Wavi que le avise al grupo familia que llegamos el domingo"
     expect: {send: {to: Wavi, session: "(?i)familia", text: "(?i)domingo"}}
+
+  - id: h-shell-command
+    tags: [routing.shell, cli.command]
+    ask: "en la terminal shell de Wavi corré git status"
+    expect: {cli: ["agent send --to Wavi --session shell --command", "agent send --to Wavi --session shell-42002-33bb44 --command"]}
 
   # ── routing.ambiguous ──────────────────────────────────────────────────────
   - id: h-ambig-app
