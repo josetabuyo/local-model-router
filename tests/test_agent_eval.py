@@ -143,3 +143,9 @@ def test_claim_without_any_attempt_and_open_question_mark():
     assert kinds(judge({}, "Le mando el mensaje: hola.", [], SOC)) == ["false_claim"]
     assert judge({}, "¿Le mando el mensaje a Wavi?", [], SOC) == []
     assert judge({"ask_back": True}, "¿Le decís a: Monkey, Pulpo o LocalModels", [], SOC) == []
+
+
+def test_claim_detection_ignores_third_party_sends():
+    assert judge({}, "Es probable que el correo se haya enviado por error.", [], SOC) == []
+    for claim in ["Te lo mando a AppBlanca.", "He enviado el mensaje a billing.", "Se envió a Monkey.", "Enviado."]:
+        assert kinds(judge({}, claim, [], SOC)) == ["false_claim"], claim
