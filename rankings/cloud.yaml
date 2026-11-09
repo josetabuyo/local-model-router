@@ -4257,6 +4257,73 @@
 #   2026-11-07; api.github.com/repos/ollama/ollama/releases -- 2026-11-07;
 #   requesty.ai/blog/free-llm-apis -- 2026-11-07.
 
+# NOTE 2026-11-09: Daily audit -- checked, NO RANKING CHANGES. No audit ran on
+#   11-08. Live parallel chat-completion probes on AC power (100%, charged)
+#   under caffeinate -i -s. OpenRouter /auth/key free_model_daily_requests 0/50
+#   at start, 5/50 after (the 429s did not count).
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 12) 7.8s, slower than the
+#   1.4s of 11-07; nemotron-3.5-super-vl-120b-a12b 1.0s; Groq gpt-oss-120b,
+#   gpt-oss-20b, qwen/qwen3.8-27b <0.6s; Gemini 3.5-flash 3.4s, 3.1-flash-lite
+#   0.8s; OR nemotron-3.5-super-vl:free 1.0s, nano-omni:free 1.0s, north-mini-
+#   code:free 0.6s. gemma-4-31b-it:free and gemma-4-26b-a4b-it:free 429 (quota,
+#   kept). NIM openai/gpt-oss-20b 000 at 120s, twice (AC power, not a sleep
+#   artifact). Still in no cascade category, only in nvidia_provider.FREE_MODELS;
+#   dropping it remains the user's call.
+#   WATCH: mistralai/mistral-large-4-1t-a52b 200 but 22.4s (was 2.5s on 11-07);
+#   stepfun-ai/step-5-preview 200 3.0s; nemotron-3-ultra-550b-a55b:free 200 2.0s
+#   (user decision pending); recursive/flint-v1.0:free 200 0.9s.
+#   Catalogs vs 11-07: NIM 84, Groq 11, OR :free 12 all identical. OR full:
+#   -inception/mercury-2, -2.5, -3 (not referenced here); +:batch variants of
+#   deepseek-v4.1-flash-1017, morph-v3-fast, morph-v3-large, glm-5.2.
+#   typesafe/jev-router still pricing -1, no :free. Gemini 61 models, first
+#   snapshot since /tmp was wiped, so no diff by id today.
+#   EVALUATED, NOT ADDED:
+#   - Inkling 2 Small (Thinking Machines, 11-05, 594B/17B active). AA v5.0.1 31,
+#     above MiniMax M3.1 Flash 29, so a slot-0 candidate if it ever lands free.
+#     Today it is paid on Tinker ($0.30/$1.00), not on NIM, Groq, OR or Gemini.
+#     Weights: AA says "at a later date" (Apache 2.0 planned, date unconfirmed)
+#     and the model card links no download, while vals.ai lists it as
+#     open-weight. Treated as not released. Far too big locally.
+#   - stealth/crouton-alpha (OR, created 11-03, prompt and completion price 0,
+#     not a :free slug, 1M context). 200 2.4s. Vendor unknown, no independent
+#     score found. Stealth, so not suitable for the cascade.
+#   - gemini-omni-1.2-flash: Gemini free tier limit 0, so paid only. OR lists it
+#     at $1.5 per M prompt.
+#   - gemini-3.8-flash: 000 at 60s, one probe. Not in the cascade; Arena #9.
+#     Not re-probed, one reading only.
+#   - gemma-4-31b-it via Gemini (not the OR slug): 500, then 200 in 19.0s, and
+#     the reply opens with a <thought> block. Not worth adding as is.
+#   - Tencent Hy4 (OR paid, 11-04): no weights found under tencent on HF.
+#     Ling-3.2-flash (Ant, 11-05): not on OR, NIM or HF as of today. BananaMind
+#     2.5 Pro (HF 11-08, 139M params): tiny base model, out of scope.
+#   NEW PROVIDER, documented, not integrated: FreeInference (Harvard MadSys).
+#   Operator's homepage says all prompts and responses are logged for research.
+#   See plans/new-cloud-providers.md. Same report lists Inferbase and others,
+#   unverified against their own pages.
+#   AA leaderboard: MiniMax M3.1 Flash 29, Step 5 Preview 29, Mistral Large 4
+#   (high) 26, Kimi K3.1 Pro 46 (still paid). Table not read to the end.
+#   LMArena: arena.ai/leaderboard/text dated Nov 8, 2026, ranks 1-151 read:
+#   gemma-4-31b #77 (1452), Step 5 Preview #82 (1448), Nemotron 3 Ultra #121
+#   (1426), Mistral Large 4 #134 (1419). MiniMax M3.1 Flash, Flint and Kimi K3.1
+#   Pro not in those ranks. Ordering stands.
+#   Local: Ollama v0.40.15 still latest stable (brew too), installed 0.40.13.
+#   Router /v1/systemone with plans/jev-example.json 200 in 8.0s via qwen3.5:4b.
+#   Decision catalog: 14 models, same as 11-07. HF author and createdAt queries
+#   showed nothing new that fits 16 GB; no verifiable new quantization news.
+#   Snapshots in /tmp/scout-1109/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com, freeinference.org/v1/models
+#   -- 2026-11-09; artificialanalysis.ai/leaderboards/models,
+#   artificialanalysis.ai/articles/thinking-machines-releases-inkling-2-small-
+#   highest-scoring-open-weights-model-outside-of-chinia-upon-weights-release-it
+#   (11-05), thinkingmachines.ai/model-card/inkling-2-small (11-05),
+#   vals.ai/models/thinkingmachines_inkling-2-small, arena.ai/leaderboard/text
+#   (Nov 8), nocode.mba/ai-release-tracker/2026/11 (updated 11-08),
+#   free-llm.com/guides/free-llm-apis-november-2026-what-changed (11-04),
+#   freeinference.org and freeinference.org/terms (terms dated 2026-06-20),
+#   ollama.com/search?c=decision, api.github.com/repos/ollama/ollama/releases,
+#   huggingface.co/api/models -- 2026-11-09.
+
 categories:
 
   reasoning:

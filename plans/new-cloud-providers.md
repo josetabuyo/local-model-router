@@ -309,3 +309,33 @@ TypeSafe (System One). OpenRouter lo sirve en `POST /api/v1/systemone`
 pago y nuestra key es free-tier con 0 créditos → 403 "Key limit exceeded".
 La vía directa (`console.typesafe.ai`, login Google/email, sin tarjeta según
 blogs) está viva. Integración completa y estado en `plans/jev-systemone.md`.
+
+## FreeInference (Harvard MadSys) — EVALUADO 2026-11-09, NO RECOMENDADO COMO CASCADE
+
+API gratis compatible con OpenAI (`https://freeinference.org/v1`) y con Anthropic
+(`/anthropic`). Patrocinada por NVIDIA y Harvard SEAS, según su homepage.
+
+- **Verificado en vivo (2026-11-09):** `GET /v1/models` responde sin key y lista
+  al menos `qwen3.6-35b`. No probé inferencia porque requiere crear una key.
+- **Según free-llm.com (secundaria, sin confirmar en la fuente):** registro con
+  email, sin tarjeta; modelos glm-5.3-flash, deepseek-v4-flash, minimax-m3
+  (1M de contexto) y qwen3.6-35b. La homepage no publica lista de modelos.
+- **Límites:** "generous quota" sin número; pueden cambiar sin aviso.
+- **Datos, el punto que decide:** la homepage dice "All prompts and responses are
+  logged for research purposes. Anonymized data derived from requests may be
+  open-sourced to support research". Los términos (2026-06-20) dicen que la
+  sanitización no es garantía y que algunos pedidos pueden ir a terceros. No
+  publica plazo de retención ni tiene página de privacidad aparte.
+- **Uso previsto:** "for open-source, research and education". Se declara
+  experimental y sin garantía de servicio.
+
+Recomendación: no meterlo en el cascade, porque el router atiende tráfico de
+agentes de José y de Pulpo y todos esos prompts quedarían registrados. Sirve,
+como mucho, para un benchmark puntual con prompts no sensibles. Pasos si José
+lo quiere igual: crear la key (`FREEINFERENCE_API_KEY`), sumar un provider con el
+patrón de `groq_provider.py` y dejarlo último, sólo por opt-in.
+
+Otros del mismo informe, sin verificar en sus páginas y sin integrar: Inferbase
+(5.000 pedidos/mes, $0,50/día, sin tarjeta), AnyAPI (100K tokens/día), Zro,
+Gonka Broker (pide móvil verificado), OpenTyphoon (Typhoon 2.5). Fuente:
+free-llm.com/guides/free-llm-apis-november-2026-what-changed (2026-11-04).
