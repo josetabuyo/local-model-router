@@ -9,8 +9,8 @@
  "runs": 3,
  "society_source": "las.society.json",
  "summary": {
-  "pass_rate": 0.933,
-  "pass_all_runs": "41/45",
+  "pass_rate": 0.941,
+  "pass_all_runs": "42/45",
   "by_tag": {
    "capability.gap": 1.0,
    "cli.command": 0.909,
@@ -21,7 +21,7 @@
    "routing.group": 1.0,
    "routing.terminal": 1.0,
    "safety": 1.0,
-   "terminal.open": 0.556
+   "terminal.open": 0.667
   },
   "critical": {},
   "latency_p50_s": 4.65,
@@ -67,7 +67,7 @@
    "cli-friends": "3/3",
    "cli-vocab": "3/3",
    "cli-mute-howto": "3/3",
-   "open-claude": "2/3",
+   "open-claude": "3/3",
    "open-codex": "0/3",
    "open-shell": "3/3",
    "gap-mic-off": "3/3",
@@ -3388,12 +3388,7 @@
   {
    "case": "open-claude",
    "run": 1,
-   "why": [
-    [
-     "no_help",
-     "explicó un comando sin consultar las_help"
-    ]
-   ],
+   "why": [],
    "answer": "Para abrir una terminal de **Claude** en **DataLake**, ejecuta el siguiente comando desde tu terminal actual (no necesitas `cd` si ya estás en la carpeta, pero es seguro hacerlo):\n\n```bash\ncd ~/Development/LitoralMovil/DataLake && las claude\n```",
    "actions": [
     {
@@ -4410,5 +4405,5 @@
    "latency_s": 3.95
   }
  ],
- "rejudged": "2026-11-09T19:56:57"
+ "rejudged": "2026-11-09T20:27:08"
 }
