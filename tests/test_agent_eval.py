@@ -173,3 +173,8 @@ def test_cli_match_flags_any_order_and_engine_command():
     a = {"tool": "send_to_agent", "args": {"to": "Wavi", "text": "git status", "session": "shell"}, "declined": False,
          "result": "done (dry-run, not really run): las agent send --from L --to Wavi --command --session shell git status"}
     assert judge({"cli": ["agent send --to Wavi --session shell --command"]}, "", [a], SOC) == []
+
+
+def test_engine_verify_with_real_help_counts_as_consulted():
+    v = {"tool": "verify", "args": {}, "result": "$ las codex --help\nUsage: las codex ..."}
+    assert judge({"help_first": True}, "corré las codex en ~/Development/wavi", [v], SOC) == []
