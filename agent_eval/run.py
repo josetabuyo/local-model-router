@@ -346,6 +346,10 @@ def main(argv: list[str] | None = None) -> int:
         frozen = json.loads(fixture.read_text())
         society, society_src = as_sessions(frozen), fixture.name
         extra_env[suite.get("society_env", "PULPO_LAS_SOCIETY_FILE")] = str(fixture)
+        if suite.get("shim_dir"):  # the CLI the agent queries answers from the same frozen world
+            import shutil
+            extra_env.update({"PATH": f"{SUITES.parent / suite['shim_dir']}:{os.environ['PATH']}",
+                              "AGENT_EVAL_SOCIETY": str(fixture), "AGENT_EVAL_REAL_LAS": shutil.which("las") or "las"})
     elif suite.get("society"):
         society, society_src = parse_sessions(subprocess.run(suite["society"], capture_output=True, text=True).stdout), "live"
     else:

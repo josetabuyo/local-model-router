@@ -31,6 +31,7 @@ engine_repo: /Users/josetabuyo/Development/pulpo/_     # commit (+dirty) saved w
 society: ["las", "agent", "sessions", "--all"]
 society_fixture: las-holdout.society.json
 society_env: PULPO_LAS_SOCIETY_FILE
+shim_dir: shims        # `las agent sessions` answers from the fixture too (agent_eval/shims/las)
 
 cases:
   # ── routing.agent (new phrasing) ───────────────────────────────────────────

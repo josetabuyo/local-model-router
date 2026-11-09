@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+"""`las` for evaluations: `agent sessions` answers from the frozen society (AGENT_EVAL_SOCIETY,
+same file the bot gets in its prompt), so the world the agent queries matches the one it was
+shown. Everything else goes to the real `las` (AGENT_EVAL_REAL_LAS)."""
+import json, os, sys
+
+args = sys.argv[1:]
+society_file = os.environ.get("AGENT_EVAL_SOCIETY")
+if society_file and args[:2] == ["agent", "sessions"] and "--help" not in args and "--use" not in args:
+    agents = json.load(open(society_file))
+    names = [a for a in args[2:] if not a.startswith("-")]
+    show_all = "--all" in args or not names
+    lines = []
+    for a in agents:
+        if not show_all and a["name"].lower() != names[0].lower():
+            continue
+        def row(s):
+            title = f'"{s["title"]}"' if s.get("title") else "(no title yet)"
+            return f'{s["sid"]:<28} {s.get("runtime", ""):<11} {title}' + ("  *default" if s.get("isDefault") else "")
+        if show_all:
+            if a.get("sessions"):
+                lines.append(a["name"])
+                lines += ["  " + row(s) for s in a["sessions"]]
+        else:
+            lines += [("* " if s.get("isDefault") else "  ") + row(s) for s in a.get("sessions", [])] or [f"{a['name']}: no connected sessions"]
+    print("\n".join(lines))
+    sys.exit(0)
+real = os.environ.get("AGENT_EVAL_REAL_LAS", "/Users/josetabuyo/.local/bin/las")
+os.execv(real, [real, *args])
