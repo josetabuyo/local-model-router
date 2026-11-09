@@ -267,13 +267,23 @@ def fill(argv: list[str], values: dict[str, str]) -> list[str]:
     return [re.sub(r"\{(\w+)\}", lambda m: values.get(m[1], m[0]), a) for a in argv]
 
 
-def ask(suite: dict, text: str, timeout: float = 300, extra_env: dict | None = None) -> dict:
+def ask(suite: dict, text: str, timeout: float = 300, extra_env: dict | None = None, history: list | None = None) -> dict:
+    """One turn. `history`: previous turns [{role, content}], passed with the suite's history_args."""
+    import tempfile
     vars_ = {**(suite.get("vars") or {}), "text": text}
+    argv = fill(suite["command"], vars_)
+    hist_file = None
+    if history:
+        hist_file = tempfile.NamedTemporaryFile("w", suffix=".json", delete=False)
+        json.dump(history, hist_file, ensure_ascii=False)
+        hist_file.close()
+        extra = fill(suite.get("history_args", ["--history", "{history}"]), {"history": hist_file.name})
+        argv = argv[:-1] + extra + argv[-1:]  # the request stays last
     env = {**os.environ, **{k: str(v) for k, v in (suite.get("env") or {}).items()}, **(extra_env or {})}
     env.pop("LAS_SOURCE", None)
     t0 = time.perf_counter()
     try:
-        p = subprocess.run(fill(suite["command"], vars_), cwd=suite.get("cwd"), env=env, stdin=subprocess.DEVNULL,
+        p = subprocess.run(argv, cwd=suite.get("cwd"), env=env, stdin=subprocess.DEVNULL,
                            capture_output=True, text=True, timeout=timeout)
         lines = [ln for ln in p.stdout.strip().splitlines() if ln.strip()]
         r = json.loads(lines[-1]) if lines else {}
@@ -284,6 +294,8 @@ def ask(suite: dict, text: str, timeout: float = 300, extra_env: dict | None = N
         r, err = {}, f"timeout {timeout}s"
     except json.JSONDecodeError:
         r, err = {}, f"la salida no es JSON: {p.stdout[-200:]}"
+    if hist_file:
+        os.unlink(hist_file.name)
     return {"answer": str(r.get("answer", "")), "actions": r.get("actions", []), "model": r.get("model"), "usage": r.get("usage"),
             "error": err, "latency_s": round(time.perf_counter() - t0, 2)}
 
@@ -428,7 +440,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"-  {c['id']:28} skip (falta la terminal que el caso necesita)", file=sys.stderr)
             continue
         for r in range(a.runs):
-            res = ask(suite, c["ask"], extra_env=extra_env)
+            res = ask(suite, c["ask"], extra_env=extra_env, history=c.get("history"))
             model = model or res["model"]
             why = [("error", res["error"])] if res["error"] else judge(c.get("expect", {}), res["answer"], res["actions"], society)
             turns.append({"case": c["id"], "run": r + 1, "why": why, **res})
