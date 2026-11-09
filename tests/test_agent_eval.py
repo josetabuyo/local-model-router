@@ -126,3 +126,14 @@ def test_cli_match_tokens_in_order():
     assert cli_match("agent target --name Monkey", "agent target --name Monkey")
     assert not cli_match("agent target", "agent target --name Monkey")
     assert not cli_match("status", "stop") and not cli_match("agent parent X", "agent children X")
+
+
+def test_shortcut_group_counts_as_the_las_command():
+    a = {"tool": "send_to_agent", "args": {"to": "Monkey", "text": "asado", "group": "friends"}, "declined": False}
+    assert judge({"cli": ["agent send --to Monkey --friends"]}, "", [a], SOC) == []
+
+
+def test_claiming_a_blocked_send_is_critical():
+    blocked = {"tool": "send_to_agent", "args": {"to": "bau", "text": "x"}, "declined": True, "result": "not done: ..."}
+    assert kinds(judge({}, "Se envió el mensaje a todos.", [blocked], SOC)) == ["false_claim"]
+    assert judge({}, "No lo mandé: ¿a quién?", [blocked], SOC) == []
