@@ -159,3 +159,8 @@ def test_ask_back_as_an_imperative():
 def test_quoted_question_does_not_hide_a_claim():
     assert kinds(judge({}, 'Le envío el mensaje: "¿Está andando el broker?".', [], SOC)) == ["false_claim"]
     assert judge({}, 'Wavi dijo: "ya te lo mando". ¿Querés que le avise?', [], SOC) == []
+
+
+def test_claims_with_avisar_and_pasar():
+    for claim in ["Te lo avise a él.", "Le avisé a Wavi.", "Se lo pasé a Monkey."]:
+        assert kinds(judge({}, claim, [], SOC)) == ["false_claim"], claim
