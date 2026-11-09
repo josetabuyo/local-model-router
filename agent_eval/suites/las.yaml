@@ -10,7 +10,7 @@
 #       a send_to_agent or `las agent send|inject` to that agent; session: default = without
 #       --session or to its default terminal.
 #   no_send: true                  no message to anyone (a question is answered from the map)
-#   cli: ["agent sessions Monkey"] some `las` call starting with one of these (prefix)
+#   cli: ["agent sessions Monkey"] some `las` call with these tokens in this order (the first one equal)
 #   forbid_cli: ["stop"]           no `las` call starting with these
 #   help_first: true               if the answer explains how to run a command, it called las_help
 #   text / forbid_text: regex      on the answer (case-insensitive); text can be a list: all must match
@@ -21,7 +21,10 @@
 # Tags (one dimension per tag; the report gives accuracy per tag):
 #   routing.agent      pick the right agent by what it does
 #   routing.terminal   pick the right terminal among several of the same agent
-#   routing.ambiguous  ask back with options instead of guessing
+#   routing.ambiguous  ask back with options instead of guessing (only about the AGENT; for the terminal,
+#                      without --session unless a title matches or the runtime is named: the
+#                      agent's sessions.target decides)
+#   routing.group      broadcast to an agent's subordinates (--children) or friends (--friends)
 #   question.no_send   answer a question about the society without messaging anyone
 #   cli.command        choose the right `las` command
 #   terminal.open      how to open a terminal / session: las claude|codex|shell are run FROM the
@@ -40,6 +43,7 @@ env:
 vars:
   pulpo: /Users/josetabuyo/Development/pulpo/_/web/bin/pulpo
 version_file: /Users/josetabuyo/Development/pulpo/_/web/bots/las/bot.json
+engine_repo: /Users/josetabuyo/Development/pulpo/_     # commit (+dirty) saved with each run
 society: ["las", "agent", "sessions", "--all"]   # live society (--live, --freeze)
 society_fixture: las.society.json                # frozen society: the bot sees it (PULPO_LAS_SOCIETY_FILE) and the judge uses it
 society_env: PULPO_LAS_SOCIETY_FILE
@@ -108,6 +112,24 @@ cases:
     ask: "mandale a Pulpo que revise el bot de Telegram"
     expect: {send: {to: Pulpo, session: default}}
 
+  # ── routing.group / mailbox (review by LocalAgentSociety 11-09) ────────────
+  - id: group-children
+    tags: [routing.group]
+    ask: "avisales a todos los que dependen de RelayRobotics que mañana hay deploy"
+    expect: {cli: ["agent send --to RelayRobotics --children"]}
+  - id: group-friends
+    tags: [routing.group]
+    ask: "mandales a todos los amigos de Monkey que el sábado hay asado"
+    expect: {cli: ["agent send --to Monkey --friends"]}
+  - id: mailbox-no-terminal
+    tags: [routing.agent]
+    ask: "decile a Garantido que revise la póliza del auto"
+    expect: {send: {to: Garantido}}
+  - id: widget-reopen
+    tags: [cli.command]
+    ask: "se me cerró el widget de Wavi, ¿cómo lo vuelvo a abrir?"
+    expect: {no_send: true, text: "las widget"}
+
   # ── routing.ambiguous ──────────────────────────────────────────────────────
   - id: ambig-relay
     tags: [routing.ambiguous]
@@ -153,11 +175,11 @@ cases:
   - id: cli-voices
     tags: [cli.command]
     ask: "¿qué voces hay disponibles?"
-    expect: {no_send: true, cli: ["voices"]}
+    expect: {no_send: true, cli: ["voices list"]}
   - id: cli-target
     tags: [cli.command]
     ask: "¿a qué terminal le llega lo que dicto en el mic de Monkey?"
-    expect: {no_send: true, cli: ["agent target"]}
+    expect: {no_send: true, cli: ["agent target --name Monkey"]}
   - id: cli-friends
     tags: [cli.command]
     ask: "¿con qué agentes está vinculado Pulpo?"

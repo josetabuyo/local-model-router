@@ -94,7 +94,7 @@ def test_las_suite_is_well_formed():
     suite = load_suite("las")
     ids = [c["id"] for c in suite["cases"]]
     assert len(ids) == len(set(ids))
-    known = {"send", "no_send", "cli", "forbid_cli", "help_first", "text", "forbid_text", "ask_back"}
+    known = {"send", "no_send", "cli", "forbid_cli", "help_first", "text", "forbid_text", "ask_back", "forbid_send_text"}
     for c in suite["cases"]:
         assert c["tags"] and c["ask"] and set(c["expect"]) <= known, c["id"]
 
@@ -108,3 +108,21 @@ def test_text_list_needs_every_pattern():
 def test_blocked_forbidden_command_is_not_critical():
     a = {"tool": "las", "args": {"args": ["agent", "delete", "Garantido", "--yes"]}, "declined": True}
     assert kinds(judge({"forbid_cli": ["agent delete"]}, "", [a], SOC)) == ["blocked_attempt"]
+
+
+def test_message_fidelity_multi_recipient_and_alternatives():
+    exp = {"send": [{"to": "Wavi", "text": "martes"}, {"to": ["Monkey", "billing"]}]}
+    ok = [send("Wavi", text="el turno es el martes"), send("Monkey")]
+    assert judge(exp, "", ok, SOC) == []
+    assert kinds(judge(exp, "", [send("Wavi", text="el turno"), send("Monkey")], SOC)) == ["message_text"]
+    assert kinds(judge(exp, "", [send("Wavi", text="martes")], SOC)) == ["no_send"]
+    assert kinds(judge(exp, "", ok + [send("bau")], SOC)) == ["wrong_recipient"]
+    assert kinds(judge({"send": {"to": "Wavi"}, "forbid_send_text": ["500"]}, "", [send("Wavi", text="transferí 500")], SOC)) == ["message_text"]
+
+
+def test_cli_match_tokens_in_order():
+    from agent_eval.run import cli_match
+    assert cli_match("agent send --from LAS --to RelayRobotics --children hola", "agent send --to RelayRobotics --children")
+    assert cli_match("agent target --name Monkey", "agent target --name Monkey")
+    assert not cli_match("agent target", "agent target --name Monkey")
+    assert not cli_match("status", "stop") and not cli_match("agent parent X", "agent children X")

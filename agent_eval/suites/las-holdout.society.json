@@ -1,0 +1,272 @@
+[
+ {
+  "name": "LocalAgentSociety",
+  "description": "Agent society: ports, voices, widget, mic, messaging",
+  "sessions": [
+   {
+    "sid": "claude-45001-ddeeff",
+    "runtime": "claude",
+    "title": "Panel general de widgets",
+    "isDefault": true
+   },
+   {
+    "sid": "pulpo-45002-112233",
+    "runtime": "pulpo",
+    "title": "pulpo las",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "Garantido",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "NeuroFlow",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Forti",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Pulpo",
+  "description": "Flows conversacionales: bots de Telegram y chat web",
+  "sessions": [
+   {
+    "sid": "claude-44001-99ee00",
+    "runtime": "claude",
+    "title": "Bot Luganense: menú de comercios",
+    "isDefault": true
+   },
+   {
+    "sid": "claude-44002-aabbcc",
+    "runtime": "claude",
+    "title": "Motor de agentes: tools y skills",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "HomeControl",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Wavi",
+  "description": "WhatsApp Web automation CLI: read and send chats",
+  "sessions": [
+   {
+    "sid": "claude-42001-11aa22",
+    "runtime": "claude",
+    "title": "Grupo familia: fotos y avisos",
+    "isDefault": true
+   },
+   {
+    "sid": "shell-42002-33bb44",
+    "runtime": "shell",
+    "title": "",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "Minis App Acces",
+  "description": "Access-control mobile app for Ministry building guards",
+  "sessions": []
+ },
+ {
+  "name": "System",
+  "description": "Mac health monitor: CPU, RAM, load and port hygiene",
+  "sessions": []
+ },
+ {
+  "name": "Teli",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Robotics",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "LocalModels",
+  "description": "OpenAI-compatible router: local Ollama + free cloud LLMs",
+  "sessions": [
+   {
+    "sid": "claude-46001-445566",
+    "runtime": "claude",
+    "title": "Router: modelo residente",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "Luganense",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "BeyondRead",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "Fabi",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "GIAR",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "TechVentas",
+  "description": "Harness para hablar con ARCA: facturas y consultas",
+  "sessions": []
+ },
+ {
+  "name": "e-learning",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "RuGIAR",
+  "description": "G1 humanoid RL: train policies, drive sim/real robot",
+  "sessions": []
+ },
+ {
+  "name": "LitoralMovil",
+  "description": "Litoral Móvil: AWS data lake and ARCA sales validator",
+  "sessions": []
+ },
+ {
+  "name": "MachElectronics",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "DataLake",
+  "description": "Data Lake de Litoral Móvil en AWS: Sprint 4, integración de SAP y PRETUPS",
+  "sessions": [
+   {
+    "sid": "claude-43001-55cc66",
+    "runtime": "claude",
+    "title": "Sprint 4: integración SAP",
+    "isDefault": true
+   },
+   {
+    "sid": "codex-43002-77dd88",
+    "runtime": "codex",
+    "title": "PRETUPS: cargas Glue fallidas",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "Vortexia",
+  "description": "MQTT broker and cross-machine relay for agents",
+  "sessions": []
+ },
+ {
+  "name": "RelayRobotics",
+  "description": "",
+  "sessions": []
+ },
+ {
+  "name": "bau",
+  "description": "Fixes puntuales y soporte productivo reactivo de Relay",
+  "sessions": []
+ },
+ {
+  "name": "coach",
+  "description": "Organizo el conocimiento y acompaño el aprendizaje de José",
+  "sessions": []
+ },
+ {
+  "name": "dev-simulator",
+  "description": "Relay simulator, local stack and Sim QA in CI",
+  "sessions": []
+ },
+ {
+  "name": "billing",
+  "description": "José's personal billing: Payoneer, BILL, invoices",
+  "sessions": [
+   {
+    "sid": "claude-47001-778899",
+    "runtime": "claude",
+    "title": "Facturas BILL de octubre",
+    "isDefault": true
+   }
+  ]
+ },
+ {
+  "name": "relay-reviewer",
+  "description": "Reviso PRs en CI y superviso a los otros agentes.",
+  "sessions": []
+ },
+ {
+  "name": "Monkey",
+  "description": "Tareas personales, recreativas, laborales secundarias y creativas",
+  "sessions": [
+   {
+    "sid": "claude-41001-a1b2c3",
+    "runtime": "claude",
+    "title": "",
+    "isDefault": true
+   },
+   {
+    "sid": "claude-41002-d4e5f6",
+    "runtime": "claude",
+    "title": "Mudanza: cajas, flete y mudadores",
+    "isDefault": false
+   },
+   {
+    "sid": "claude-41003-0a1b2c",
+    "runtime": "claude",
+    "title": "Cumpleaños de Blanca — regalo y torta",
+    "isDefault": false
+   }
+  ]
+ },
+ {
+  "name": "Team Knowledge",
+  "description": "Maintains Relay team documentation and knowledge.",
+  "sessions": []
+ },
+ {
+  "name": "dev-relay-brain",
+  "description": "Construyo relay-brain, el agente de Relay en Slack.",
+  "sessions": []
+ },
+ {
+  "name": "dev-relay-agents",
+  "description": "Base común de los agentes Relay: relay-context y tools",
+  "sessions": []
+ },
+ {
+  "name": "VisitasPSR",
+  "description": "Visitas PSR con NFC para Distribución de Litoral Móvil",
+  "sessions": []
+ },
+ {
+  "name": "AppDelSur",
+  "description": "App móvil del club de rugby Del Sur: bienvenida, login, cuestionario",
+  "sessions": []
+ },
+ {
+  "name": "summon-restock",
+  "description": "Summon y Restock del piloto Analog.io (SSMC, m2137)",
+  "sessions": []
+ },
+ {
+  "name": "AppBlanca",
+  "description": "App rosa que transcribe en vivo lo que le hablan a Blanca",
+  "sessions": []
+ }
+]

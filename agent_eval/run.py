@@ -82,6 +82,16 @@ def cli_calls(actions: list[dict], tool: str = "las", declined: bool | None = Fa
             if a.get("tool") == tool and (declined is None or bool(a.get("declined")) == declined)]
 
 
+def cli_match(call: str, pattern: str) -> bool:
+    """`pattern` tokens appear in `call` in order and the first one matches: "agent send --to X --children"
+    matches "agent send --from Y --to X --children hola"; "stop" does not match "status"."""
+    c, p = call.split(), pattern.split()
+    if not p or not c or c[0] != p[0]:
+        return False
+    it = iter(c)
+    return all(tok in it for tok in p)
+
+
 def resolve_session(agent_sessions: list[dict], ref: str) -> dict | None:
     """A session reference as the agent passed it (sid or runtime) → the session, if it exists."""
     for s in agent_sessions:
@@ -128,36 +138,47 @@ def judge(expect: dict, answer: str, actions: list[dict], society: dict[str, lis
     lower = {k.lower(): k for k in society}
 
     if "send" in expect:
-        want = expect["send"]
-        to = want["to"]
-        hit = [s for s in sent if s["to"].lower() == to.lower()]
-        if not hit:
-            others = sorted({s["to"] for s in sent})
-            why.append(("wrong_recipient" if others else "no_send", f"no le mandó a {to}" + (f" (mandó a {', '.join(others)})" if others else "")))
-        elif "session" in want:
-            sess = society.get(lower.get(to.lower(), to), [])
-            ok = False
-            for s in hit:
-                got = resolve_session(sess, s["session"]) if s["session"] else None
-                if want["session"] == "default":
-                    ok = ok or not s["session"] or bool(got and got["default"])
-                else:
-                    ok = ok or bool(got and re.search(want["session"], got["title"]))
-            if not ok:
-                why.append(("wrong_terminal", f"terminal equivocada: {[s['session'] or '(sin session)' for s in hit]}"))
-        extra = [s["to"] for s in sent if s["to"].lower() != to.lower()]
-        if hit and extra:
-            why.append(("wrong_recipient", f"además mandó a {', '.join(extra)}"))
+        wants = expect["send"] if isinstance(expect["send"], list) else [expect["send"]]
+        allowed: set[str] = set()
+        for want in wants:
+            names = want["to"] if isinstance(want["to"], list) else [want["to"]]  # any of these is right
+            allowed |= {n.lower() for n in names}
+            hit = [s for s in sent if s["to"].lower() in {n.lower() for n in names}]
+            if not hit:
+                why.append(("no_send", f"no le mandó a {' ni '.join(names)}"))
+                continue
+            if "session" in want:
+                ok = False
+                for s in hit:
+                    sess = society.get(lower.get(s["to"].lower(), s["to"]), [])
+                    got = resolve_session(sess, s["session"]) if s["session"] else None
+                    if want["session"] == "default":
+                        ok = ok or not s["session"] or bool(got and got["default"])
+                    else:
+                        ok = ok or bool(got and re.search(want["session"], got["title"]))
+                if not ok:
+                    why.append(("wrong_terminal", f"terminal equivocada: {[s['session'] or '(sin session)' for s in hit]}"))
+            for pat in ([want["text"]] if isinstance(want.get("text"), str) else want.get("text", [])):
+                if not any(re.search(pat, s["text"], re.I) for s in hit):
+                    why.append(("message_text", f"el mensaje a {hit[0]['to']} no dice /{pat}/: {hit[0]['text'][:80]!r}"))
+        extra = sorted({s["to"] for s in sent if s["to"].lower() not in allowed})
+        if extra:
+            why.append(("wrong_recipient", f"mandó a {', '.join(extra)}"))
+    if any(k == "wrong_recipient" for k, _ in why):  # sent to the wrong one: that is the error, not "did not send"
+        why = [w for w in why if w[0] != "no_send"]
+    for pat in expect.get("forbid_send_text", []):
+        if any(re.search(pat, s["text"], re.I) for s in sent):
+            why.append(("message_text", f"el mensaje incluye /{pat}/"))
     if (expect.get("no_send") or expect.get("ask_back")) and sent:
         why.append(("false_send", f"mandó un mensaje a {', '.join(s['to'] for s in sent)} y no debía"))
     if expect.get("ask_back") and "?" not in answer:
         why.append(("no_ask_back", "no preguntó cuál de las opciones"))
-    if "cli" in expect and not any(c == p or c.startswith(p + " ") for c in calls for p in expect["cli"]):
+    if "cli" in expect and not any(cli_match(c, p) for c in calls for p in expect["cli"]):
         why.append(("wrong_cli", f"no corrió {' ni '.join(expect['cli'])} (corrió: {calls or 'nada'})"))
     for p in expect.get("forbid_cli", []):
-        if any(c == p or c.startswith(p + " ") for c in calls):
+        if any(cli_match(c, p) for c in calls):
             why.append(("forbidden_cli", f"corrió {p} (prohibido)"))
-        elif any(c == p or c.startswith(p + " ") for c in cli_calls(actions, declined=True)):
+        elif any(cli_match(c, p) for c in cli_calls(actions, declined=True)):
             why.append(("blocked_attempt", f"intentó {p}; lo frenó el motor (pide un humano)"))
     if expect.get("help_first") and re.search(r"\blas \w", answer) and not any(a.get("tool") == "las_help" for a in actions):
         why.append(("no_help", "explicó un comando sin consultar las_help"))
@@ -170,6 +191,16 @@ def judge(expect: dict, answer: str, actions: list[dict], society: dict[str, lis
 
 
 # ── running ──────────────────────────────────────────────────────────────────
+
+def engine_version(repo: str | None) -> str | None:
+    """Commit of the agent engine's repo, +dirty if it has uncommitted changes under its code."""
+    if not repo:
+        return None
+    head = subprocess.run(["git", "-C", repo, "rev-parse", "--short", "HEAD"], capture_output=True, text=True).stdout.strip()
+    dirty = subprocess.run(["git", "-C", repo, "status", "--porcelain", "--", "web/lib", "web/bots", "web/cli", "web/bin"],
+                           capture_output=True, text=True).stdout.strip()
+    return f"{head}+dirty" if dirty else head or None
+
 
 def load_suite(name: str) -> dict:
     path = Path(name) if name.endswith(".yaml") else SUITES / f"{name}.yaml"
@@ -232,6 +263,7 @@ def summarize(turns: list[dict], cases: list[dict]) -> dict:
         "critical": dict(crit),
         "latency_p50_s": statistics.median(lat),
         "latency_p95_s": lat[min(len(lat) - 1, int(0.95 * len(lat)))],
+        "under_10s": round(sum(t["latency_s"] < 10 for t in ran) / len(ran), 3) if ran else None,
         "tool_calls_mean": round(statistics.mean(len(t["actions"]) for t in ran), 2) if ran else None,
         **usage_means(ran),
         "skipped": [c["id"] for c in cases if per_case.get(c["id"]) == "skip"],
@@ -251,7 +283,7 @@ def compare(paths: list[Path]) -> None:
     rows = [json.loads(p.read_text()) for p in paths]
     tags = sorted({t for r in rows for t in r["summary"]["by_tag"]})
     print(f"{'':22}" + "".join(f"{r['started'][:16]:>18}" for r in rows))
-    for label, get in [("versión bot", lambda r: r["version"]), ("modelo", lambda r: r["model"] or "?"),
+    for label, get in [("versión bot", lambda r: r["version"]), ("motor", lambda r: r.get("engine") or "?"), ("modelo", lambda r: r["model"] or "?"),
                        ("pass rate", lambda r: r["summary"]["pass_rate"]), ("todas las corridas", lambda r: r["summary"]["pass_all_runs"]),
                        ("críticos", lambda r: sum(r["summary"]["critical"].values())), ("p50 s", lambda r: r["summary"]["latency_p50_s"])]:
         print(f"{label:22}" + "".join(f"{str(get(r)):>18}" for r in rows))
@@ -267,6 +299,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--case", action="append", help="only these case ids (repeatable)")
     ap.add_argument("--dry-list", action="store_true")
     ap.add_argument("--no-save", action="store_true")
+    ap.add_argument("--allow-dirty", action="store_true", help="run even if the engine has uncommitted changes")
     ap.add_argument("--live", action="store_true", help="use the live society instead of the suite's frozen fixture")
     ap.add_argument("--freeze", action="store_true", help="write the live society to the suite's fixture and exit")
     ap.add_argument("--compare", nargs="+", metavar="RESULT.json")
@@ -295,7 +328,8 @@ def main(argv: list[str] | None = None) -> int:
         summary = summarize(turns, [c for c in suite["cases"] if c["id"] in {t["case"] for t in turns}])
         report = {**old, "summary": summary, "turns": turns, "rejudged": datetime.now().isoformat(timespec="seconds")}
         print(json.dumps({k: summary[k] for k in summary if k != "per_case"}, ensure_ascii=False, indent=1))
-        Path(a.rejudge).write_text(json.dumps(report, ensure_ascii=False, indent=1))
+        if not a.no_save:
+            Path(a.rejudge).write_text(json.dumps(report, ensure_ascii=False, indent=1))
         return 0
     if a.dry_list:
         for c in cases:
@@ -318,6 +352,11 @@ def main(argv: list[str] | None = None) -> int:
         society = {}
     vf = Path(suite["version_file"]) if suite.get("version_file") else None
     version = hashlib.sha256(vf.read_bytes()).hexdigest()[:10] if vf and vf.exists() else None
+    engine = engine_version(suite.get("engine_repo"))
+    if engine and engine.endswith("+dirty") and not a.allow_dirty:
+        print(f"el motor tiene cambios sin commitear ({engine}): el resultado no sería atribuible a una versión. "
+              "Commitealos o usá --allow-dirty.", file=sys.stderr)
+        return 2
     started = datetime.now().isoformat(timespec="seconds")
     turns: list[dict] = []
     model = None
@@ -337,7 +376,7 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"     respuesta: {res['answer'][:200]!r}\n     acciones: {[a_.get('tool') for a_ in res['actions']]}", file=sys.stderr)
 
     summary = summarize(turns, cases)
-    report = {"suite": suite["name"], "agent": suite.get("agent"), "version": version, "model": model, "started": started,
+    report = {"suite": suite["name"], "agent": suite.get("agent"), "version": version, "engine": engine, "model": model, "started": started,
               "runs": a.runs, "society_source": society_src, "summary": summary, "society": society, "turns": turns}
     print(json.dumps({k: summary[k] for k in summary if k != "per_case"}, ensure_ascii=False, indent=1))
     if not a.no_save:
