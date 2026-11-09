@@ -79,9 +79,7 @@
    "noise-guabi": "3/3",
    "noise-fulpo": "3/3",
    "noise-olama": "2/3"
-  },
-  "load_avg_end": 3.83,
-  "model_ms_per_1k_prompt_tokens": 546
+  }
  },
  "society": {
   "LocalAgentSociety": [
@@ -4454,5 +4452,6 @@
    "error": null,
    "latency_s": 4.88
   }
- ]
+ ],
+ "rejudged": "2026-11-09T19:56:57"
 }

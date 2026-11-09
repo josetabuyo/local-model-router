@@ -90,6 +90,9 @@ def as_cli(a: dict) -> str | None:
     if a.get("tool") == "las":
         return " ".join(str(x) for x in args.get("args", []))
     if a.get("tool") == "send_to_agent":
+        ran = re.search(r":\s*las (agent (send|inject) .*)", str(a.get("result") or ""))
+        if ran:  # the engine reports the command it actually built (it may add --command, --children…)
+            return ran[1]
         argv = ["agent", "send", "--to", str(args.get("to", ""))]
         if args.get("session"):
             argv += ["--session", str(args["session"])]
@@ -106,15 +109,37 @@ def cli_calls(actions: list[dict], tool: str = "las", declined: bool | None = Fa
     return [c for a in actions if (declined is None or bool(a.get("declined")) == declined) and (c := as_cli(a)) is not None]
 
 
-def cli_match(call: str, pattern: str) -> bool:
-    """`pattern` tokens appear in `call` in order and the first one matches: "agent send --to X --children"
-    matches "agent send --from Y --to X --children hola"; "stop" does not match "status"."""
-    c, p = call.split(), pattern.split()
-    if not p or not c or c[0] != p[0]:
-        return False
-    it = iter(c)
-    return all(tok in it for tok in p)
+def _parse(tokens: list[str]) -> tuple[list[str], dict[str, str | None]]:
+    """las args → (leading words, {flag: value or None}). A flag takes the next token as its value
+    unless that token is another flag."""
+    words, flags, i = [], {}, 0
+    while i < len(tokens) and not tokens[i].startswith("-"):
+        words.append(tokens[i]); i += 1
+    while i < len(tokens):
+        t = tokens[i]
+        if t.startswith("-"):
+            nxt = tokens[i + 1] if i + 1 < len(tokens) and not tokens[i + 1].startswith("-") else None
+            flags[t] = nxt
+            i += 2 if nxt is not None else 1
+        else:
+            i += 1
+    return words, flags
 
+
+def cli_match(call: str, pattern: str) -> bool:
+    """`pattern` is a las command: its leading words are a prefix of the call's, and each of its flags is
+    in the call (with the same value when the pattern gives one), in any order. "agent send --to X
+    --children" matches "agent send --from Y --children --to X hola"; "stop" does not match "status"."""
+    cw, cf = _parse(call.split())
+    pw, pf = _parse(pattern.split())
+    if not pw or cw[:len(pw)] != pw:
+        return False
+    for flag, value in pf.items():
+        if flag not in cf:
+            return False
+        if value is not None and value != cf[flag] and not (flag == "--session" and (cf[flag] or "").startswith(value)):
+            return False
+    return True
 
 def resolve_session(agent_sessions: list[dict], ref: str) -> dict | None:
     """A session reference as the agent passed it (sid or runtime) → the session, if it exists."""

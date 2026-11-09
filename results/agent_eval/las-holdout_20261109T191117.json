@@ -80,9 +80,7 @@
    "h-noise-datalake": "0/3",
    "h-noise-techventas": "3/3",
    "h-noise-system": "3/3"
-  },
-  "load_avg_end": 4.47,
-  "model_ms_per_1k_prompt_tokens": 496
+  }
  },
  "society": {
   "LocalAgentSociety": [
@@ -3655,5 +3653,6 @@
    "error": null,
    "latency_s": 10.34
   }
- ]
+ ],
+ "rejudged": "2026-11-09T19:56:57"
 }

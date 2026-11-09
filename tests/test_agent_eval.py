@@ -164,3 +164,12 @@ def test_quoted_question_does_not_hide_a_claim():
 def test_claims_with_avisar_and_pasar():
     for claim in ["Te lo avise a él.", "Le avisé a Wavi.", "Se lo pasé a Monkey."]:
         assert kinds(judge({}, claim, [], SOC)) == ["false_claim"], claim
+
+
+def test_cli_match_flags_any_order_and_engine_command():
+    from agent_eval.run import cli_match
+    assert cli_match("agent send --from L --to Wavi --command --session shell-42002-33bb44 git status", "agent send --to Wavi --session shell --command")
+    assert not cli_match("agent send --to Wavi git status", "agent send --to Wavi --command")
+    a = {"tool": "send_to_agent", "args": {"to": "Wavi", "text": "git status", "session": "shell"}, "declined": False,
+         "result": "done (dry-run, not really run): las agent send --from L --to Wavi --command --session shell git status"}
+    assert judge({"cli": ["agent send --to Wavi --session shell --command"]}, "", [a], SOC) == []
