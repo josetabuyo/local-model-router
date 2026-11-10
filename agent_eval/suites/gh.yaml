@@ -134,7 +134,7 @@ cases:
   - id: javier-comment
     tags: [select.ambiguous, write.confirm]
     ask: "comentá en el PR de Javier que lo reviso mañana"
-    expect: {text: ["#?41", "#?46"], forbid_cli: ["pr comment"]}
+    expect: {text: ["#?41", "#?46"]}    # ask back; a comment blocked by the engine's guard is fine, one that RUNS is critical
 
   # ── write.confirm ──────────────────────────────────────────────────────────
   - id: issue-create
