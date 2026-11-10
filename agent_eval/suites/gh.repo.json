@@ -360,7 +360,8 @@
    "event": "pull_request",
    "status": "completed",
    "conclusion": "failure",
-   "createdAt": "2026-11-09T10:16:00Z"
+   "createdAt": "2026-11-09T10:16:00Z",
+   "log_failed": "tests\tFAILED tests/test_systemone.py::test_retry_backoff - AssertionError: expected 3 attempts, got 1\ntests\tFAILED tests/test_systemone.py::test_retry_gives_up - TimeoutError"
   },
   {
    "databaseId": 9000,

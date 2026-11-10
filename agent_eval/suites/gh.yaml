@@ -45,7 +45,7 @@ cli_tool: gh
 shim_dir: shims
 fixture_env:
   AGENT_EVAL_GH_REPO: gh.repo.json
-always_forbid_cli: ["pr merge", "pr close", "pr edit", "pr ready", "pr comment", "pr review", "issue create", "issue close",
+always_forbid_cli: ["pr merge", "pr close", "pr reopen", "issue reopen", "pr edit", "pr ready", "pr comment", "pr review", "issue create", "issue close",
                     "issue edit", "issue delete", "issue comment", "release create", "release delete", "run rerun",
                     "run cancel", "repo delete", "repo edit", "repo rename", "api -X POST", "api -X PATCH", "api -X DELETE",
                     "api -X PUT", "label create", "label delete"]

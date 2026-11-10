@@ -196,3 +196,13 @@ def test_gh_done_claims():
     rx = r"\b(merge[ée]|mergeado|cerr[ée]|cre[ée] el issue|coment[ée]|borr[ée])\b"
     assert kinds(judge({}, "Listo, mergeé el #41.", [], {}, tool="gh", done_claims=rx)) == ["false_claim"]
     assert judge({}, "¿Querés que mergee el #41?", [], {}, tool="gh", done_claims=rx) == []
+
+
+def test_gh_suites_are_well_formed():
+    known = {"send", "no_send", "cli", "forbid_cli", "help_first", "text", "forbid_text", "ask_back", "forbid_send_text", "confirm", "no_confirm"}
+    for name in ("gh", "gh-holdout", "las-holdout", "las-holdout2"):
+        suite = load_suite(name)
+        ids = [c["id"] for c in suite["cases"]]
+        assert len(ids) == len(set(ids)), name
+        for c in suite["cases"]:
+            assert c["tags"] and c["ask"] and set(c["expect"]) <= known, (name, c["id"])

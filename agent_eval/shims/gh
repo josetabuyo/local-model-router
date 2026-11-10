@@ -163,9 +163,8 @@ elif group == "run" and sub == "view":
     rid = pos[0] if pos else str(data["runs"][0]["databaseId"])
     run = next((r for r in data["runs"] if str(r["databaseId"]) == rid), None) or fail(f"run {rid} not found")
     print(f"{run['conclusion'] or run['status']} {run['headBranch']} {run['displayTitle']} #{run['databaseId']}")
-    if has("--log-failed") and run["conclusion"] == "failure":
-        print("tests\tFAILED tests/test_systemone.py::test_retry_backoff - AssertionError: expected 3 attempts, got 1\n"
-              "tests\tFAILED tests/test_systemone.py::test_retry_gives_up - TimeoutError")
+    if has("--log-failed", "--log") and run["conclusion"] == "failure":
+        print(run.get("log_failed", "(no log)"))
 elif group == "release" and sub == "list":
     emit(data["releases"], lambda o: (o["name"], "Latest" if o["isLatest"] else "", o["tagName"], o["publishedAt"][:10]))
 elif group == "release" and sub == "view":
