@@ -1,0 +1,176 @@
+#!/usr/bin/env python3
+"""`gh` for evaluations: answers READ commands from a frozen repo (AGENT_EVAL_GH_REPO, a JSON like
+agent_eval/suites/gh.repo.json), so cases are reproducible and offline. `--help` goes to the real gh
+(static text). Any write command fails loudly: in dry-run the engine must never get here, and if it
+does, the eval sees an error instead of touching GitHub.
+
+Covered: repo view · pr list/view/checks/status/diff · issue list/view · run list/view ·
+release list/view · api (GET of a few paths). Flags: --json, --state, --author (@me), --label,
+-L/--limit, --search (merged:>=DATE, is:open…), --comments, --sort."""
+import json
+import os
+import sys
+
+REAL = os.environ.get("AGENT_EVAL_REAL_GH", "/opt/homebrew/bin/gh")
+args = sys.argv[1:]
+if "--help" in args or "-h" in args or not args or args[0] in ("help", "--version", "version"):
+    os.execv(REAL, [REAL, *args])
+
+data = json.load(open(os.environ["AGENT_EVAL_GH_REPO"]))
+me = data.get("me", "")
+
+
+def opt(*names, default=None):
+    for n in names:
+        for i, a in enumerate(args):
+            if a == n and i + 1 < len(args):
+                return args[i + 1]
+            if a.startswith(n + "="):
+                return a.split("=", 1)[1]
+    return default
+
+
+def has(*names):
+    return any(a in names for a in args)
+
+
+def positional():
+    out, skip = [], False
+    takes = {"--json", "--state", "-s", "--author", "-A", "--label", "-l", "-L", "--limit", "--search", "-S", "--sort", "-R", "--repo", "--jq", "-q", "--status", "-b", "--branch", "-X", "--method"}
+    for a in args[2:]:
+        if skip:
+            skip = False
+            continue
+        if a in takes:
+            skip = True
+            continue
+        if not a.startswith("-"):
+            out.append(a)
+    return out
+
+
+def fail(msg, code=1):
+    print(msg, file=sys.stderr)
+    sys.exit(code)
+
+
+def emit(items, fields_default):
+    fields = opt("--json")
+    if fields is not None:
+        keys = [f.strip() for f in fields.split(",") if f.strip()]
+        pick = lambda o: {k: o.get(k) for k in keys}
+        print(json.dumps([pick(o) for o in items] if isinstance(items, list) else pick(items), ensure_ascii=False, indent=1))
+    else:
+        rows = items if isinstance(items, list) else [items]
+        for o in rows:
+            print("\t".join(str(fields_default(o))) if not isinstance(fields_default(o), (list, tuple)) else "\t".join(map(str, fields_default(o))))
+        if isinstance(items, list) and not items:
+            print("no results")
+
+
+repo_flag = opt("-R", "--repo")
+if repo_flag and repo_flag.lower() != data["repo"]["nameWithOwner"].lower():
+    fail(f"eval shim: repo {repo_flag} not in the frozen fixture (only {data['repo']['nameWithOwner']})", 1)
+
+group, sub = (args + ["", ""])[:2]
+WRITE = {("pr", s) for s in ("create", "merge", "close", "reopen", "edit", "ready", "comment", "review", "checkout", "lock")} | \
+        {("issue", s) for s in ("create", "close", "reopen", "edit", "delete", "comment", "transfer", "pin", "lock")} | \
+        {("release", s) for s in ("create", "delete", "edit", "upload")} | {("run", s) for s in ("rerun", "cancel", "delete")} | \
+        {("repo", s) for s in ("create", "delete", "edit", "rename", "archive", "fork", "sync")} | {("label", s) for s in ("create", "delete", "edit")}
+if (group, sub) in WRITE or (group == "api" and (opt("-X", "--method", default="GET") or "GET").upper() != "GET"):
+    fail(f"eval shim: write command `gh {' '.join(args)}` must never run in an evaluation", 3)
+
+
+def filt(items):
+    state = (opt("--state", "-s") or "open").lower()
+    if state != "all":
+        items = [o for o in items if o["state"].lower() == state]
+    author = opt("--author", "-A")
+    if author:
+        author = me if author == "@me" else author
+        items = [o for o in items if o["author"]["login"].lower() == author.lower()]
+    label = opt("--label", "-l")
+    if label:
+        items = [o for o in items if any(lb["name"] == label for lb in o.get("labels", []))]
+    search = opt("--search", "-S") or ""
+    for term in search.split():
+        if term.startswith("merged:>="):
+            items = [o for o in items if o["state"] == "MERGED" and o["updatedAt"][:10] >= term.split(">=")[1]]
+        elif term in ("is:merged",):
+            items = [o for o in items if o["state"] == "MERGED"]
+    items = sorted(items, key=lambda o: o.get("createdAt", ""), reverse=True)
+    lim = opt("-L", "--limit")
+    return items[: int(lim)] if lim and lim.isdigit() else items
+
+
+def find(items, ref, kind):
+    ref = (ref or "").lstrip("#")
+    for o in items:
+        if str(o["number"]) == ref or o.get("headRefName") == ref:
+            return o
+    fail(f"GraphQL: Could not resolve to a {kind} with the number of {ref}.", 1)
+
+
+pos = positional()
+if group == "repo" and sub == "view":
+    r = data["repo"]
+    emit(r, lambda o: (o["nameWithOwner"], o["description"]))
+elif group == "pr" and sub == "list":
+    emit(filt(data["prs"]), lambda o: (f"#{o['number']}", o["title"], o["headRefName"], o["state"] + (" (draft)" if o.get("isDraft") else ""), o["author"]["login"]))
+elif group == "pr" and sub in ("view", "diff"):
+    pr = find(data["prs"], pos[0] if pos else data.get("current_branch"), "PullRequest")
+    if sub == "diff":
+        print(f"diff --git a/README.md b/README.md\n(+{pr['additions']} -{pr['deletions']})")
+    elif opt("--json") is not None:
+        emit(pr, None)
+    else:
+        print(f"{pr['title']} #{pr['number']}\n{pr['state']} • {pr['author']['login']} wants to merge into {pr['baseRefName']} from {pr['headRefName']}\n"
+              f"Labels: {', '.join(l['name'] for l in pr['labels']) or '-'} • Review: {pr['reviewDecision'] or 'none'} • Mergeable: {pr['mergeable']}\n"
+              f"Reviewers requested: {', '.join(r['login'] for r in pr['reviewRequests']) or '-'}\n\n{pr['body']}")
+elif group == "pr" and sub == "checks":
+    pr = find(data["prs"], pos[0] if pos else data.get("current_branch"), "PullRequest")
+    if not pr["checks"]:
+        print("no checks reported")
+    for c in pr["checks"]:
+        print(f"{c['name']}\t{c['state'].lower()}\t{c.get('description', '')}")
+elif group == "pr" and sub == "status":
+    cur = data.get("current_branch")
+    mine = [p for p in data["prs"] if p["state"] == "OPEN" and p["author"]["login"] == me]
+    print(f"Current branch\n  {next((f'#{p['number']} {p['title']} [{cur}]' for p in data['prs'] if p['headRefName'] == cur), 'There is no pull request associated with ' + cur)}")
+    print("Created by you\n" + ("\n".join(f"  #{p['number']} {p['title']}" for p in mine) or "  none"))
+    req = [p for p in data["prs"] if p["state"] == "OPEN" and any(r["login"] == me for r in p["reviewRequests"])]
+    print("Requesting a code review from you\n" + ("\n".join(f"  #{p['number']} {p['title']}" for p in req) or "  none"))
+elif group == "issue" and sub == "list":
+    emit(filt(data["issues"]), lambda o: (f"#{o['number']}", o["title"], ", ".join(l["name"] for l in o["labels"]), o["createdAt"][:10]))
+elif group == "issue" and sub == "view":
+    it = find(data["issues"], pos[0] if pos else "", "Issue")
+    if opt("--json") is not None:
+        emit(it, None)
+    else:
+        print(f"{it['title']} #{it['number']}\n{it['state']} • {it['author']['login']} • {len(it['comments'])} comments\n\n{it['body']}")
+        if has("--comments", "-c"):
+            for c in it["comments"]:
+                print(f"\n{c['author']['login']} ({c['createdAt'][:10]}):\n{c['body']}")
+elif group == "run" and sub == "list":
+    runs = data["runs"]
+    st = opt("--status", "-s")
+    if st:
+        runs = [r for r in runs if st in (r["conclusion"], r["status"])]
+    lim = opt("-L", "--limit")
+    runs = runs[: int(lim)] if lim and lim.isdigit() else runs
+    emit(runs, lambda o: (o["status"], o["conclusion"] or "-", o["displayTitle"], o["name"], o["headBranch"], o["event"], o["databaseId"]))
+elif group == "run" and sub == "view":
+    rid = pos[0] if pos else str(data["runs"][0]["databaseId"])
+    run = next((r for r in data["runs"] if str(r["databaseId"]) == rid), None) or fail(f"run {rid} not found")
+    print(f"{run['conclusion'] or run['status']} {run['headBranch']} {run['displayTitle']} #{run['databaseId']}")
+    if has("--log-failed") and run["conclusion"] == "failure":
+        print("tests\tFAILED tests/test_systemone.py::test_retry_backoff - AssertionError: expected 3 attempts, got 1\n"
+              "tests\tFAILED tests/test_systemone.py::test_retry_gives_up - TimeoutError")
+elif group == "release" and sub == "list":
+    emit(data["releases"], lambda o: (o["name"], "Latest" if o["isLatest"] else "", o["tagName"], o["publishedAt"][:10]))
+elif group == "release" and sub == "view":
+    tag = pos[0] if pos else next(r["tagName"] for r in data["releases"] if r["isLatest"])
+    rel = next((r for r in data["releases"] if r["tagName"] == tag), None) or fail(f"release not found: {tag}")
+    emit(rel, lambda o: (o["name"], o["tagName"], o["publishedAt"][:10]))
+else:
+    fail(f"eval shim: `gh {' '.join(args)}` is not covered by the frozen repo", 4)
