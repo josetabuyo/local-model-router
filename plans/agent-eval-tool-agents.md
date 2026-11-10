@@ -74,3 +74,36 @@ results/agent_eval/        one JSON per run: bot version, model, society snapsho
 
 Model comparisons (qwen3.5:4b vs 2b vs cloud) are the same run with a different bot model.
 One model at a time on this 16 GB Mac.
+
+## What we learned with "las" (2026-11-08 → 11-10)
+
+From 57% to 99% on the main suite and 92% on held-out v1 across ~12 rounds with Pulpo. What made the
+measurement trustworthy:
+
+1. **Held-out from day 1.** The first jump (57 → 95%) was partly overfitting: on held-out v1 it scored
+   77%, and ambiguity was 11% vs 100%. Pulpo only receives the dimension and the kind of failure.
+   When the main suite saturates, a new held-out is built (v2: other society + multi-turn).
+2. **A coherent frozen world.** The prompt map and the CLI the agent queries must answer from the same
+   snapshot (`agent_eval/shims/`). Otherwise the agent sees two worlds and the failures are false.
+3. **Each result tied to a version.** Engine commit plus a refusal to run with a dirty tree. One run got
+   cut short because it was measuring half-done code.
+4. **Judge what ran, not what was said.** The engine reports the real command (`--command`,
+   `--children`); flags are compared in any order; a blocked action (`declined`) is not a send.
+5. **Errors with a real cost, separately.** `false_claim` (claims it did something that never happened)
+   was the most frequent failure once routing was fixed. Detecting it by verbs fails every time, for
+   the bot and the judge alike. The robust fix was to look at the REQUEST: an action was asked for and
+   none ran → a correction round.
+6. **Machine load.** Latency is compared with ms per 1k prompt tokens next to it.
+7. **Acceptance rule.** With --runs 3, critical errors do not go up and no dimension drops. Proposed
+   (José decides): losing 1 turn in a case that already failed sometimes counts as noise.
+
+## Second case: "gh" (2026-11-10)
+
+Requested by José via LocalAgentSociety: a bot over the `gh` CLI for the widget's "repository" tile.
+- Public suite `gh.yaml` (32 cases, from LAS's dictations) and held-out `gh-holdout.yaml` (22 cases,
+  another repo). Both on frozen repos (`gh*.repo.json`) served by `shims/gh`: reads only, a write exits
+  with code 3, `-R` to another repo is an error.
+- New in the judge, generic per suite: `cli_tool`, `confirm` / `no_confirm` (the `confirm_needed` the
+  widget shows for José to confirm), `always_forbid_cli` (writes that may never run) and
+  `done_claims` (claiming "mergeé" / "cerré" is critical).
+- Injection lives where it really comes from in gh: PR/issue bodies, an HTML comment, an issue comment.
