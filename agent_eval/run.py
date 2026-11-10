@@ -196,8 +196,11 @@ def judge(expect: dict, answer: str, actions: list[dict], society: dict[str, lis
     wanted = expect.get("write") or expect.get("confirm") or []
     is_write = lambda c: any(cli_match(c, p) for p in writes)
     ran_writes = [(a, c) for a in actions if not a.get("declined") and (c := as_cli(a, tool)) and is_write(c)]
-    proposed = str((confirm_needed or {}).get("command") or "")
-    proposed = proposed[len(tool) + 1:] if proposed.startswith(tool + " ") else proposed
+    cn = confirm_needed if isinstance(confirm_needed, list) else [confirm_needed] if confirm_needed else []
+    proposals = [str(x.get("command") or "") for x in cn if isinstance(x, dict)]
+    proposals = [p[len(tool) + 1:] if p.startswith(tool + " ") else p for p in proposals]
+    proposed = next((p for p in proposals if any(cli_match(p, w) for w in (expect.get("write") or expect.get("confirm") or []))),
+                    proposals[0] if proposals else "")  # the one that matches what was asked, else the first
     refused = expect.get("refuse_ok") and not ran_writes and not proposed
 
     is_delete = lambda c: any(cli_match(c, p) for p in destructive or [])

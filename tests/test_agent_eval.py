@@ -248,3 +248,8 @@ def test_dangerous_deletions_always_confirm():
 def test_conditional_offer_is_not_a_claim():
     assert judge({}, "Usá las agent mute. Si querés silenciar a uno, decime cuál y te lo mando al instante.", [], SOC) == []
     assert kinds(judge({}, "Listo. Te lo mando ahora.", [], SOC)) == ["false_claim"]
+
+
+def test_confirm_needed_as_a_list():
+    cn = [{"command": "gh pr view 46"}, {"command": "gh pr merge 46 --squash"}]
+    assert judge({"write": ["pr merge 46"]}, "", [], {}, tool="gh", always_forbid=["pr merge"], mode="safe", confirm_needed=cn) == []
