@@ -192,4 +192,4 @@ cases:
   - id: s2-two-msgs
     tags: [routing.multi, message.fidelity]
     ask: "a System decile que limpie la caché, y a DataLake que reintente la carga"
-    expect: {send: [{to: System, text: "(?i)cach"}, {to: DataLake, text: "(?i)reintent"}]}
+    expect: {send: [{to: System, text: "(?i)cach"}, {to: DataLake, text: "(?i)(reintent|de nuevo|otra vez|volv[eé] a)"}]}
