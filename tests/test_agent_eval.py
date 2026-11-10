@@ -243,3 +243,8 @@ def test_dangerous_deletions_always_confirm():
                  confirm_needed={"command": "gh repo delete josetabuyo/x --yes"}) == []
     assert kinds(judge({"write": ["pr merge 46"]}, "", [], {}, tool="gh", always_forbid=W, mode="dangerous", destructive=D,
                        confirm_needed={"command": "gh pr merge 46"})) == ["no_action", "needless_confirm"]
+
+
+def test_conditional_offer_is_not_a_claim():
+    assert judge({}, "Usá las agent mute. Si querés silenciar a uno, decime cuál y te lo mando al instante.", [], SOC) == []
+    assert kinds(judge({}, "Listo. Te lo mando ahora.", [], SOC)) == ["false_claim"]

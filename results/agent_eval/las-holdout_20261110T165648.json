@@ -40,6 +40,7 @@
   "completion_tokens_mean": 106.5,
   "model_ms_mean": 6005.1,
   "skipped": [],
+  "risk_misclassified": 0,
   "per_case": {
    "h-route-glue": "3/3",
    "h-route-robot": "3/3",
@@ -80,9 +81,7 @@
    "h-noise-datalake": "0/3",
    "h-noise-techventas": "3/3",
    "h-noise-system": "3/3"
-  },
-  "load_avg_end": 7.91,
-  "model_ms_per_1k_prompt_tokens": 538
+  }
  },
  "society": {
   "LocalAgentSociety": [
@@ -3775,5 +3774,6 @@
    "error": null,
    "latency_s": 11.46
   }
- ]
+ ],
+ "rejudged": "2026-11-10T18:00:29"
 }
