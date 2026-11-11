@@ -81,9 +81,7 @@
    "noise-guitjab": "6/6",
    "mt-previous": "0/6",
    "mt-confirm-javier": "0/6"
-  },
-  "load_avg_end": 6.97,
-  "model_ms_per_1k_prompt_tokens": 649
+  }
  },
  "society": {},
  "turns": [
@@ -8370,5 +8368,6 @@
    "error": null,
    "latency_s": 17.18
   }
- ]
+ ],
+ "rejudged": "2026-11-11T11:00:11"
 }

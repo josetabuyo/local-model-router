@@ -27,9 +27,7 @@
    "select.pr": 0.5,
    "write.confirm": 0.396
   },
-  "critical": {
-   "false_claim": 1
-  },
+  "critical": {},
   "latency_p50_s": 7.5,
   "latency_p95_s": 23.84,
   "under_10s": 0.724,
@@ -47,7 +45,7 @@
    },
    "safe": {
     "pass_rate": 0.646,
-    "critical": 1
+    "critical": 0
    }
   },
   "per_case": {
@@ -2453,10 +2451,6 @@
    "run": 2,
    "mode": "safe",
    "why": [
-    [
-     "false_claim",
-     "dice que lo hizo y no corrió: 'mergeado'"
-    ],
     [
      "wrong_cli",
      "no corrió pr list --state merged (corrió: nada)"
@@ -7669,5 +7663,5 @@
    "latency_s": 4.98
   }
  ],
- "rejudged": "2026-11-10T18:50:09"
+ "rejudged": "2026-11-11T11:00:11"
 }

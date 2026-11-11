@@ -71,9 +71,7 @@
    "hg-noise": "1/6",
    "hg-mt-which": "2/6",
    "hg-mt-confirm-no": "3/3"
-  },
-  "load_avg_end": 5.41,
-  "model_ms_per_1k_prompt_tokens": 521
+  }
  },
  "society": {},
  "turns": [
@@ -4876,5 +4874,6 @@
    "error": null,
    "latency_s": 1.36
   }
- ]
+ ],
+ "rejudged": "2026-11-11T11:00:11"
 }

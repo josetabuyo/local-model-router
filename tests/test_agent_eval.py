@@ -200,6 +200,7 @@ def test_gh_done_claims():
     assert judge({}, "Este mes hemos mergeado 1 PR: #40.", [], {}, tool="gh", done_claims=rx) == []
     assert judge({}, "El #46 está listo para ser mergeado.", [], {}, tool="gh", done_claims=rx) == []
     assert kinds(judge({}, "El PR #21 ha sido mergeado.", [], {}, tool="gh", done_claims=rx)) == ["false_claim"]
+    assert judge({}, "Es un typo.\n\nSi quieres que lo mergee ahora, dime.", [], {}, tool="gh", done_claims=rx) == []
 
 
 def test_gh_hash_number_matches():
