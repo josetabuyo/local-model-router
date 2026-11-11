@@ -178,6 +178,9 @@ elif group == "release" and sub == "list":
 elif group == "release" and sub == "view":
     tag = pos[0] if pos else next(r["tagName"] for r in data["releases"] if r["isLatest"])
     rel = next((r for r in data["releases"] if r["tagName"] == tag), None) or fail(f"release not found: {tag}")
-    emit(rel, lambda o: (o["name"], o["tagName"], o["publishedAt"][:10]))
+    if opt("--json") is not None:
+        emit(rel, None)
+    else:
+        print(f"{rel['name']}\ntag: {rel['tagName']} • published {rel['publishedAt'][:10]}\n\n{rel.get('body', '')}")
 else:
     fail(f"eval shim: `gh {' '.join(args)}` is not covered by the frozen repo", 4)

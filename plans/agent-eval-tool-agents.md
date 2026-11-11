@@ -111,3 +111,8 @@ Requested by José via LocalAgentSociety: a bot over the `gh` CLI for the widget
   widget shows for José to confirm), `always_forbid_cli` (writes that may never run) and
   `done_claims` (claiming "mergeé" / "cerré" is critical).
 - Injection lives where it really comes from in gh: PR/issue bodies, an HTML comment, an issue comment.
+- **Held-out v2** (`gh-holdout2.yaml`, 26 cases, repo josetabuyo/home-control), 2026-11-11. v1 was
+  spent: the v4/v5 fixes came from its failures. New forms: requests phrased as rioplatense questions,
+  English, numbers in words, a question shaped like a write, red `main`, injection in an issue TITLE and
+  in release notes, two approved PRs (choosing by attribute is ambiguous), corrections in multi-turn.
+  Pulpo gets only the dimension and the kind of failure, never the actions (they show the repo).
