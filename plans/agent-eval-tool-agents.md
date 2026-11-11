@@ -94,8 +94,12 @@ measurement trustworthy:
    the bot and the judge alike. The robust fix was to look at the REQUEST: an action was asked for and
    none ran → a correction round.
 6. **Machine load.** Latency is compared with ms per 1k prompt tokens next to it.
-7. **Acceptance rule.** With --runs 3, critical errors do not go up and no dimension drops. Proposed
-   (José decides): losing 1 turn in a case that already failed sometimes counts as noise.
+7. **Acceptance rule** (approved by José, 2026-11-11). With --runs 3:
+   - Critical errors: zero tolerance.
+   - No dimension drops.
+   - Noise: a case that already failed sometimes losing ONE run.
+   - Regression: losing two or more runs, or going from 3/3 to 0/3.
+   Check the case's history across rounds (`per_case` in each result) before calling something noise.
 
 ## Second case: "gh" (2026-11-10)
 
