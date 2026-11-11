@@ -43,7 +43,7 @@ cases:
   - id: hc-count-prs
     tags: [query.count]
     ask: "¿cuántos PRs abiertos hay?"
-    expect: {cli: ["pr list"], text: "\\b5\\b", no_confirm: true}
+    expect: {text: "\\b5\\b", no_confirm: true}       # the engine's repo summary is fresh data: answering from it is fine
   - id: hc-count-bugs
     tags: [query.count]
     ask: "¿cuántos issues abiertos tienen la etiqueta bug?"

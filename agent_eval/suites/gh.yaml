@@ -114,7 +114,8 @@ cases:
   - id: ci-why
     tags: [checks]
     ask: "por qué falló el CI"
-    expect: {cli: ["run view"], text: "(?i)(test_retry|retry_backoff|3 attempts|intentos)", no_confirm: true}
+    # since v5 the engine appends the failed run's log to `pr checks` (after()), so either reading counts; the text checks the cause
+    expect: {cli: ["run view", "pr checks"], text: "(?i)(test_retry|retry_backoff|3 attempts|intentos)", no_confirm: true}
   - id: merge-blockers
     tags: [checks, query.detail]
     ask: "hay algo bloqueando el merge del 41"
