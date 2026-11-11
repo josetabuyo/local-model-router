@@ -4323,6 +4323,62 @@
 #   freeinference.org and freeinference.org/terms (terms dated 2026-06-20),
 #   ollama.com/search?c=decision, api.github.com/repos/ollama/ollama/releases,
 #   huggingface.co/api/models -- 2026-11-09.
+# NOTE 2026-11-11: Daily audit -- checked, NO RANKING CHANGES. No audit ran on
+#   11-10. Cron run (no las/uv on PATH), AC power (battery 3%, charging),
+#   probes in parallel under caffeinate -i -s. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start, 5/50 after.
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 14) 8s;
+#   nemotron-3.5-super-vl-120b-a12b 1s; Groq gpt-oss-120b, gpt-oss-20b,
+#   qwen/qwen3.8-27b <=1s; Gemini 3.5-flash 2s, 3.1-flash-lite 4s; OR
+#   nemotron-3.5-super-vl:free 2s, nano-omni:free 1s, north-mini-code:free 1s,
+#   gemma-4-26b-a4b-it:free 1s. gemma-4-31b-it:free 429 (quota, kept).
+#   NIM openai/gpt-oss-20b 000 at 90s again (3rd audit in a row; only in
+#   nvidia_provider.FREE_MODELS, no cascade slot; dropping it is the user's call).
+#   WATCH: mistral-large-4-1t-a52b 200 but 41s (22s on 11-09, 2.5s on 11-07,
+#   getting slower); step-5-preview 200 5s.
+#   Catalogs vs 11-09: NIM 84 and Groq 11 identical. Gemini 61 -> 62
+#   (+models/gemini-4-carbon). OR :free 12 -> 13: +baidu/ernie-5.5-flash-
+#   preview:free, +thinkingmachines/inkling-2-small:free,
+#   -xingchen-agi/xing4.0-29b-a4b:free (old watch item, never in the cascade).
+#   OR full: +claude-fable-5.2, +gemini-4-carbon, +meta/muse-ember,
+#   +motif-3, +nex-n2.6, +kt/midm-k-3.0-pro, +ernie-light-dt-1.0-intl (all
+#   paid); -stealth/crouton-alpha, -minimax/minimax-m1,
+#   -qwen/qwen-2.5-7b-instruct (none referenced here).
+#   typesafe/jev-router still pricing -1, no :free.
+#   EVALUATED, NOT ADDED:
+#   - thinkingmachines/inkling-2-small:free (OR, created 11-09, 1M context, AA
+#     v5.0.1 31 > MiniMax M3.1 Flash 29, so the slot-0 candidate from 11-09).
+#     Direct API call 403: "only available on agentic harnesses. Try plugging
+#     it into a coding agent or productivity app listed on openrouter.ai/apps".
+#     The OR model page says the same and warns not to send confidential data.
+#     A plain chat-completions router is not such a harness, so it cannot sit
+#     in the cascade. Not working around the restriction (e.g. by faking app
+#     headers). WATCH: re-check if OR lifts the restriction.
+#   - baidu/ernie-5.5-flash-preview:free (OR, created 11-10, 280B MoE / 14B
+#     active, 1M context). 200 in 2s, correct answer ("391"), returns a
+#     reasoning field. No AA or LMArena score yet. Only Baidu's own numbers,
+#     for the Base checkpoint released 11-05; the post-trained model is "later".
+#     Preview. WATCH day 1, same treatment as earlier preview :free models.
+#   - gemini-4-carbon (Gemini API, listed from 11-10): 429 with free-tier
+#     quota "limit: 0", so paid only. Google's own blog (10-28) says access is
+#     limited at first. OR lists it at $2 / $10 per M.
+#   - meta/muse-ember (OR, 11-09): closed weights, paid ($0.10 / $0.50 per M).
+#   Local: Ollama v0.40.16 stable released 11-09 (brew still 0.40.15),
+#   installed 0.40.13; v0.40.17-rc0 out 11-10 (MLX concurrent generation).
+#   0.40.16 adds ripple-preview (65B dense, too big for 16 GB) and cuts
+#   Qwen3.8 Flash Next memory by ~27 GiB on Apple silicon. Nothing changes for
+#   the d1/d3/systemone pins; upgrading is optional.
+#   Router /v1/systemone with plans/jev-example.json 200 in 18s via qwen3.5:4b
+#   (8s on 11-09). Decision catalog: 14 models, same as 11-09.
+#   Snapshots in /tmp/scout-1111/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-11;
+#   openrouter.ai/thinkingmachines/inkling-2-small:free (11-11);
+#   letsdatascience.com/news/baidu-releases-ernie-55-flash-base-as-open-280b-moe-2ca582b4;
+#   blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-carbon/
+#   (10-28); thenewstack.io/meta-muse-ember-launch/;
+#   api.github.com/repos/ollama/ollama/releases; ollama.com/search?c=decision
+#   -- 2026-11-11.
 
 categories:
 
