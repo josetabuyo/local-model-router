@@ -116,3 +116,7 @@ Requested by José via LocalAgentSociety: a bot over the `gh` CLI for the widget
   English, numbers in words, a question shaped like a write, red `main`, injection in an issue TITLE and
   in release notes, two approved PRs (choosing by attribute is ambiguous), corrections in multi-turn.
   Pulpo gets only the dimension and the kind of failure, never the actions (they show the repo).
+- **Scope: CLI, not code** (José, 2026-11-11): "esto es para usar la cli, no para codificar". The gh bot
+  does not review code (qwen3.5:4b never will do it well): it hands it to a coding agent. It still
+  comments what is dictated, approves when asked, and reads diffs to describe them. Dimension
+  `review.delegate`: 2 public cases, 2 in held-out v2.

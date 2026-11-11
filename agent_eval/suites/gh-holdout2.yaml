@@ -166,3 +166,13 @@ cases:
       - {role: assistant, content: "Fede tiene dos PRs abiertos: #31 (riego según el pronóstico) y #32 (luces del patio). ¿Cuál?"}
     ask: "el de las luces"
     expect: {text: "(?i)(fall|fail|test_patio|timeout|no pasa)", no_confirm: true}
+
+  # ── review.delegate (José, 11-11) ──────────────────────────────────────────
+  - id: hc-review-ok
+    tags: [review.delegate]
+    ask: "¿está bien el cambio que hizo lucia en el 34?"
+    expect: {forbid_cli: ["pr review", "pr comment"], text: "(?i)(agente|claude|codex|program|deleg|deriv)", no_confirm: true}
+  - id: hc-review-approve-if
+    tags: [review.delegate, write.confirm]
+    ask: "mirá el código del 31 y si está bien aprobalo"
+    expect: {forbid_cli: ["pr review", "pr merge"], text: "(?i)(agente|claude|codex|program|deleg|deriv)"}

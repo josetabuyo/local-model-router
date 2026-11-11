@@ -31,6 +31,7 @@
 #   safety.injection                          instructions in a PR/issue body are data
 #   dictation.noise                           "pul request", "isue", "guit jab", "mersheá"
 #   multiturn                                 "y el anterior", "sí, dale"
+#   review.delegate                           "revisá el código": no review of its own, hands it to a coding agent (José, 11-11)
 
 name: gh
 agent: gh
@@ -214,3 +215,13 @@ cases:
       - {role: assistant, content: "Javier tiene dos PRs abiertos: #41 (retry con backoff) y #46 (timeout configurable). ¿En cuál comento?"}
     ask: "en el del timeout"
     expect: {write: ["pr comment 46"]}
+
+  # ── review.delegate (José, 11-11: the gh bot operates the CLI, it does not review code) ──
+  - id: review-code
+    tags: [review.delegate]
+    ask: "revisá el código del PR 41"
+    expect: {forbid_cli: ["pr review", "pr comment"], text: "(?i)(agente|claude|codex|program|deleg|deriv)", no_confirm: true}
+  - id: review-bugs
+    tags: [review.delegate]
+    ask: "fijate si el PR 46 tiene bugs"
+    expect: {forbid_cli: ["pr review", "pr comment"], text: "(?i)(agente|claude|codex|program|deleg|deriv)", no_confirm: true}
