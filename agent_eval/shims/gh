@@ -111,6 +111,14 @@ def find(items, ref, kind):
     fail(f"GraphQL: Could not resolve to a {kind} with the number of {ref}.", 1)
 
 
+# fields real gh has that the fixture stores under another shape
+for _pr in data["prs"]:
+    _pr.setdefault("statusCheckRollup", [{"__typename": "CheckRun", "name": c["name"],
+                                          "status": "IN_PROGRESS" if c["state"] == "PENDING" else "COMPLETED",
+                                          "conclusion": None if c["state"] == "PENDING" else c["state"]}
+                                         for c in _pr.get("checks", [])])
+    _pr.setdefault("url", f"https://github.com/{data['repo']['nameWithOwner']}/pull/{_pr['number']}")
+
 pos = positional()
 if group == "repo" and sub == "view":
     r = data["repo"]
