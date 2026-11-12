@@ -4380,6 +4380,48 @@
 #   api.github.com/repos/ollama/ollama/releases; ollama.com/search?c=decision
 #   -- 2026-11-11.
 
+# NOTE 2026-11-12: Daily audit -- checked, NO RANKING CHANGES. One systemone
+#   PROPOSAL (not wired). Cron run (no las/uv on PATH), BATTERY (100%,
+#   discharging), probes in parallel under caffeinate -i -d -u -s. OpenRouter
+#   /auth/key free_model_daily_requests 0/50 at start, 4/50 after.
+#   200 OK: NIM minimax-m3.1-flash (slot 0, pin day 15) 1s;
+#   nemotron-3.5-super-vl-120b-a12b 2s; Groq gpt-oss-120b, gpt-oss-20b,
+#   qwen/qwen3.8-27b 1s; Gemini 3.1-flash-lite 1s, 3.5-flash 1s (first
+#   reading 000 at 956s wall = sleep artifact, discarded, re-probe 200); OR
+#   nemotron-3.5-super-vl:free 1s, nano-omni:free 0s, north-mini-code:free
+#   1s. 429 (quota, kept): gemma-4-31b-it:free, gemma-4-26b-a4b-it:free.
+#   NIM openai/gpt-oss-20b 000 at 956s and 659s wall (both sleep artifacts on
+#   battery, not registered as hangs; 4th audit without a clean reading).
+#   WATCH: mistral-large-4-1t-a52b 404 once then 200 in 2s (transient; faster
+#   than 41s on 11-11); step-5-preview 200 4s; ernie-5.5-flash-preview:free
+#   200 2s (still no AA/LMArena score).
+#   Catalogs vs 11-11: NIM 84, Groq 11 and OR :free 13 identical. Gemini
+#   62 -> 63 (+models/gemini-decision-1). OR full: +moonshotai/kimi-k3.1-pro:
+#   batch, +unbiased/pareto-26.10-preview (paid); -bytedance-seed/seed-1.6,
+#   seed-1.6-flash, seed-2.0-code (none referenced here). typesafe/jev-router
+#   still pricing -1, no :free.
+#   NEW DECISION BACKEND -- gemini-decision-1 (Gemini Decisions API, launched
+#   11-11): POST v1beta/decisions, same noul/choice/score vocabulary as Jev,
+#   FREE tier on the existing GEMINI_API_KEY (200 RPM / 10k RPD). Own probes:
+#   jev-example 200 in 1.3s (technical 0.98, urgent 0.99); systemone-cases
+#   35/36 = 97% (= d3:4b-nvfp4 local, 10-31), luganense 13/13, p50 1.26s.
+#   Press says Jev 1.14 still edges it on Mind2Web-MM (+0.6pp) and When2Call
+#   (+2.1pp). This is a cascade change, so it is NOT wired: integration steps
+#   are in plans/gemini-decisions.md, waiting for the user's decision. Side
+#   note: press names "TypeSafe Jev 1.14"; DEFAULT_MODELS still pins
+#   jev-1.13 (not verifiable without TYPESAFE_API_KEY, left as is).
+#   Local: Ollama releases unchanged (v0.40.16 stable, v0.40.17-rc0), installed
+#   0.40.13. Router /v1/systemone (jev-example) 200 in 35s via
+#   ollama-chat/qwen3.5:4b (cold).
+#   Snapshots in /tmp/scout-1112/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-12;
+#   blog.google/innovation-and-ai/technology/developers-tools/gemini-decisions-api/
+#   (11-11); aistudio.google.com/docs/decisions-api and /docs/rate-limits;
+#   siliconangle.com/2026/11/11/google-enters-the-decision-model-market-with-gemini-decisions-api/;
+#   marktechpost.com/2026/11/11/google-gemini-decisions-api-gemini-decision-1/;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-12.
+
 categories:
 
   reasoning:
