@@ -4422,6 +4422,68 @@
 #   marktechpost.com/2026/11/11/google-gemini-decisions-api-gemini-decision-1/;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-12.
 
+# NOTE 2026-11-13: Daily audit -- NO RANKING CHANGES, one STRONG CANDIDATE
+#   waiting for the user. Manual run (no las on PATH), BATTERY (100%,
+#   discharging), probes in parallel under caffeinate -i -d -u -s. OpenRouter
+#   /auth/key free_model_daily_requests 0/50 at start (~8 used).
+#   200 OK, all answered "391": NIM minimax-m3.1-flash (slot 0, pin day 16)
+#   1s; nemotron-3.5-super-vl-120b-a12b 2s; Groq gpt-oss-120b, gpt-oss-20b,
+#   qwen/qwen3.8-27b 1s; Gemini 3.5-flash 1s, 3.1-flash-lite 2s; OR
+#   nemotron-3.5-super-vl:free, nano-omni:free, north-mini-code:free 1s.
+#   429 (quota, kept): gemma-4-31b-it:free, gemma-4-26b-a4b-it:free.
+#   NIM openai/gpt-oss-20b: first reading 000 at 936s wall (sleep artifact,
+#   discarded), re-probe 000 at 90s with 90s wall = a CLEAN hang reading.
+#   Still only in nvidia_provider.FREE_MODELS, no cascade slot; dropping it is
+#   the user's call (hung or unreadable in every audit since 11-09).
+#   WATCH: mistral-large-4-1t-a52b 936s artifact, then 200 in 5s;
+#   step-5-preview 200 1s; ernie-5.5-flash-preview:free 200 1s (still no
+#   independent score).
+#   Catalogs vs 11-12: Groq 11 identical. NIM 84 -> 83
+#   (-google/diffusiongemma-26b-a4b-it, never referenced here). Gemini 63 ->
+#   64 (+models/gemini-4-hydrogen). OR :free 13 -> 15 (+apodex/apodex-1.1-
+#   mini:free, +particle-ai/particle-1:free). OR full: +google/gemini-4-
+#   hydrogen (+:batch) $1.5/$7.5 per M, +inclusionai/ling-3.0-flash-fin and
+#   -sante (domain models), +thinkingmachines/inkling-2-small (paid, $0.3/$1).
+#   typesafe/jev-router still pricing -1, no :free.
+#   STRONG CANDIDATE -- gemini-4-hydrogen (Google, GA, released 11-12):
+#   200 in 3s on our existing GEMINI_API_KEY free tier, correct answer.
+#   AI Studio pricing lists the free tier as "Free of charge". AA Intelligence
+#   Index v5.0.1: 51 at default "high", 54 at xhigh -- vs 29 for our slot 0
+#   minimax-m3.1-flash, and above Kimi K3.1 Pro (46, paid). Terminal-Bench 4.1
+#   57% (Google); Terminal-Bench 4.0 54% (AA runs, per VentureBeat). No
+#   LMArena text score yet (Google cites #5 on Agent Arena). Caveats: free-tier
+#   RPM/RPD for this model is not published (only on the AI Studio dashboard);
+#   free-tier prompts ARE used to improve Google's products (same terms as the
+#   gemini-3.x entries already in the cascade); it is a thinking model, so
+#   check token use under low max_tokens before using it in instruction /
+#   multilingual. Promoting it to slot 0 of reasoning/coding/code_debug would
+#   reorder the cascade and has a one-day probe history (minimax had 7 clean
+#   days before its pin), so it is NOT wired: added only to
+#   gemini_provider.FREE_MODELS for benchmarking. User decides.
+#   EVALUATED, NOT ADDED:
+#   - particle-ai/particle-1:free (OR, created 10-28, :free new today, 1M
+#     context): agentic coding model post-trained on DeepSeek V4.1 Flash,
+#     press says ~45% fewer tokens. 200 1s, correct. No AA/LMArena score found.
+#     WATCH for coding.
+#   - apodex/apodex-1.1-mini:free (OR, created 10-01, :free new today):
+#     research/forecasting reasoning model. 429 on its first probe. No
+#     independent score. WATCH.
+#   Local: Ollama releases unchanged (v0.40.16 stable, v0.40.17-rc0), brew
+#   0.40.15, installed 0.40.13. Router /v1/systemone (jev-example) 200 in 20s
+#   via qwen3.5:4b (first try 000 at 957s wall = sleep artifact, discarded).
+#   Decision catalog: 14 models, same as 11-09. gemini-decision-1 proposal
+#   (plans/gemini-decisions.md) still waiting for the user.
+#   No verifiable November open-weight releases from the big labs found today.
+#   Snapshots in /tmp/scout-1113/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-13;
+#   blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-hydrogen/
+#   (11-12); venturebeat.com/technology/google-launches-gemini-4-hydrogen-a-faster-smarter-pricier-flash-successor
+#   (11-12); artificialanalysis.ai/models/gemini-4-hydrogen; aistudio.google.com/docs/pricing
+#   and /docs/rate-limits; tech-insider.org/it/particle-1-deepseek-v4-1-flash-45-meno-token-2026/;
+#   api.github.com/repos/ollama/ollama/releases; ollama.com/search?c=decision
+#   -- 2026-11-13.
+
 categories:
 
   reasoning:

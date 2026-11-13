@@ -11,6 +11,7 @@ GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/openai"
 FREE_MODELS = [
     "gemini-3.1-flash-lite",
     "gemini-3.5-flash",
+    "gemini-4-hydrogen",  # 2026-11-13: free tier, AA v5.0.1 51; benchmark-only, not in the cascade yet
 ]
 
 
