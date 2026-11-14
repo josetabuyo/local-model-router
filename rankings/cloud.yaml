@@ -4484,6 +4484,50 @@
 #   api.github.com/repos/ollama/ollama/releases; ollama.com/search?c=decision
 #   -- 2026-11-13.
 
+# NOTE 2026-11-14: Daily audit -- checked, NO RANKING CHANGES. Manual run
+#   (bare claude, LAS channel not armed), BATTERY (34%, discharging), probes in
+#   parallel under caffeinate -i -d -u -s. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start, 5/50 after.
+#   200 OK, all answered "391": NIM minimax-m3.1-flash (slot 0, pin day 17)
+#   4s; nemotron-3.5-super-vl-120b-a12b 1s; Groq gpt-oss-120b, gpt-oss-20b,
+#   qwen/qwen3.8-27b 1s; Gemini 3.1-flash-lite 1s, 3.5-flash 6s (first
+#   reading 000 at 942s wall = sleep artifact, discarded); OR
+#   nemotron-3.5-super-vl:free 1s, nano-omni:free 2s, north-mini-code:free 1s.
+#   429 (quota, kept): gemma-4-31b-it:free, gemma-4-26b-a4b-it:free.
+#   NIM openai/gpt-oss-20b: 000 at 942s and re-probe 000 at 1063s wall (both
+#   sleep artifacts on battery) -- no clean reading today. Still only in
+#   nvidia_provider.FREE_MODELS; dropping it remains the user's call.
+#   WATCH: gemini-4-hydrogen 200 5s (probe day 2, clean; free-tier RPD still
+#   not published, slot-0 promotion still the user's call); mistral-large-4
+#   200 2s; step-5-preview 200 2s; ernie-5.5-flash-preview:free 200 1s and
+#   particle-1:free 200 1s (neither has an independent score yet).
+#   Catalogs vs 11-13: NIM 83, Groq 11, Gemini 64 identical. OR :free 15 ->
+#   14: -apodex/apodex-1.1-mini:free (404 "no longer available", was a
+#   watch item only), -liquid/lfm-2.5-2.6b:free (and its paid twin; never
+#   slotted), +inclusionai/ling-3.2-flash:free. OR full 475 -> 471 (also
+#   -inclusionai/ling-3.0-flash-fin/-sante, domain models, unreferenced).
+#   typesafe/jev-router still pricing -1, no :free.
+#   EVALUATED, NOT ADDED:
+#   - inclusionai/ling-3.2-flash:free (OR, created 11-13; 560B/25B-active
+#     hybrid reasoning, text+image, 1M ctx): 200 3s, correct. Only
+#     vendor-reported scores (OmniDocBench, ZEROBench vs Opus 5); no AA
+#     index yet (AA lists Ling 3.1 Flash at 41). Free only for a
+#     promotional period, weights not on HF. WATCH -- could beat slot 0 (29)
+#     on reasoning if AA confirms, but a promo-only free tier is a poor pin.
+#   Local: Ollama releases unchanged (v0.40.16 stable, v0.40.17-rc0),
+#   installed 0.40.13. Ollama /v1/systemone with DEFAULT_LOCAL_MODEL
+#   d3:4b-nvfp4 -> 404 "not found" (uninstalled 11-04, known); router
+#   /v1/systemone (jev-example) 200 in 26s via qwen3.5:4b, then unloaded.
+#   Kimi K3.1 Pro (open weights on HF since 11-02) still not on NIM
+#   (only kimi-k2.6) and not :free on OR. No other verifiable November
+#   open-weight releases from the big labs found today.
+#   Snapshots in /tmp/scout-1114/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-14;
+#   orcarouter.ai/fr/blog/ling-3-2-flash-native-multimodal-release (vendor
+#   figures, secondhand); artificialanalysis.ai/models/creators/inclusionai;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-14.
+
 categories:
 
   reasoning:
