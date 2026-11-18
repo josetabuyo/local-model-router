@@ -13,6 +13,7 @@ FREE_MODELS = [
     "minimaxai/minimax-m3.1-flash",
     "nvidia/nemotron-3.5-super-vl-120b-a12b",
     "openai/gpt-oss-20b",
+    "moonshotai/kimi-k3.1-pro",  # 2026-11-18: new NIM free endpoint, AA v5 46; benchmark-only, not in the cascade yet
 ]
 
 
