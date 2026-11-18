@@ -1,0 +1,183 @@
+{
+ "suite": "gh",
+ "load_avg_start": 11.37,
+ "agent": "gh",
+ "version": "d5a2a0129d",
+ "engine": "5d77ab7",
+ "model": "qwen3.5:4b",
+ "started": "2026-11-16T22:56:26",
+ "runs": 1,
+ "society_source": "none",
+ "summary": {
+  "pass_rate": 0.75,
+  "pass_all_runs": "1/2",
+  "by_tag": {
+   "multiturn": 0.75,
+   "select.ambiguous": 1.0,
+   "select.pr": 0.5,
+   "write.confirm": 1.0
+  },
+  "critical": {},
+  "latency_p50_s": 7.13,
+  "latency_p95_s": 10.92,
+  "under_10s": 0.75,
+  "tool_calls_mean": 0.75,
+  "model_calls_mean": 1.8,
+  "prompt_tokens_mean": 11038.8,
+  "completion_tokens_mean": 66.2,
+  "model_ms_mean": 6358.2,
+  "skipped": [],
+  "risk_misclassified": 0,
+  "by_mode": {
+   "dangerous": {
+    "pass_rate": 0.5,
+    "critical": 0
+   },
+   "safe": {
+    "pass_rate": 1.0,
+    "critical": 0
+   }
+  },
+  "per_case": {
+   "mt-previous": "1/2",
+   "mt-confirm-javier": "2/2"
+  },
+  "load_avg_end": 59.02,
+  "model_ms_per_1k_prompt_tokens": 576
+ },
+ "society": {},
+ "turns": [
+  {
+   "case": "mt-previous",
+   "run": 1,
+   "mode": "safe",
+   "why": [],
+   "answer": "#42 docs: README con /status y /v1/warm, de josetabuyo (tuyo), en borrador (draft).",
+   "actions": [
+    {
+     "tool": "gh",
+     "args": {
+      "args": [
+       "pr",
+       "view",
+       "42"
+      ]
+     },
+     "result": "docs: README con /status y /v1/warm #42\nOPEN • josetabuyo wants to merge into main from docs-status\nLabels: docs • Review: none • Mergeable: MERGEABLE\nReviewers requested: -\n\nDocumenta los endpoints nuevos.",
+     "declined": false,
+     "risk": "read"
+    }
+   ],
+   "model": "qwen3.5:4b",
+   "usage": {
+    "steps": 1,
+    "model_calls": 2,
+    "prompt_tokens": 12637,
+    "completion_tokens": 66,
+    "model_ms": 10163
+   },
+   "confirm_needed": null,
+   "error": null,
+   "latency_s": 10.92
+  },
+  {
+   "case": "mt-previous",
+   "run": 1,
+   "mode": "dangerous",
+   "why": [
+    [
+     "wrong_cli",
+     "no corrió pr view 42 (corrió: nada)"
+    ]
+   ],
+   "answer": "El PR anterior a #44 es **#42**: \"docs: README con /status y /v1/warm\", de josetabuyo (tú), estado **draft**.",
+   "actions": [],
+   "model": "qwen3.5:4b",
+   "usage": {
+    "steps": 1,
+    "model_calls": 1,
+    "prompt_tokens": 6267,
+    "completion_tokens": 40,
+    "model_ms": 2026
+   },
+   "confirm_needed": null,
+   "error": null,
+   "latency_s": 2.6
+  },
+  {
+   "case": "mt-confirm-javier",
+   "run": 1,
+   "mode": "safe",
+   "why": [],
+   "answer": "He preparado el comentario para el PR #46 (\"fix(router): timeout configurable por proveedor\") de Javier:\n\n**Comentario:** \"Lo reviso mañana.\"\n\nNecesito tu confirmación para ejecutarlo.\nQueda esperando tu confirmación: `gh pr comment 46 --body 'Lo reviso mañana.'`.",
+   "actions": [
+    {
+     "tool": "gh",
+     "args": {
+      "args": [
+       "pr",
+       "comment",
+       "46",
+       "--body",
+       "Lo reviso mañana."
+      ]
+     },
+     "result": "not run: `gh pr comment 46 --body 'Lo reviso mañana.'` (write) is waiting for the user's confirmation (id 15f69ed3). Tell the user exactly what it would do and that it needs their confirmation. Do not say it was done.",
+     "declined": true,
+     "risk": "write"
+    }
+   ],
+   "model": "qwen3.5:4b",
+   "usage": {
+    "steps": 1,
+    "model_calls": 2,
+    "prompt_tokens": 12649,
+    "completion_tokens": 88,
+    "model_ms": 8505
+   },
+   "confirm_needed": {
+    "id": "15f69ed3",
+    "command": "gh pr comment 46 --body 'Lo reviso mañana.'",
+    "why": "comentá en el PR de Javier que lo reviso mañana\nJavier tiene dos PRs abiertos: #41 (retry con backoff) y #46 (timeout configurable). ¿En cuál comento?\nen el del timeout",
+    "risk": "write"
+   },
+   "error": null,
+   "latency_s": 8.99
+  },
+  {
+   "case": "mt-confirm-javier",
+   "run": 1,
+   "mode": "dangerous",
+   "why": [],
+   "answer": "He comentado en el PR #46 \"fix(router): timeout configurable por proveedor\" de Javier: \"Lo reviso mañana.\"",
+   "actions": [
+    {
+     "tool": "gh",
+     "args": {
+      "args": [
+       "pr",
+       "comment",
+       "46",
+       "--body",
+       "Lo reviso mañana."
+      ]
+     },
+     "result": "done: gh pr comment 46 --body Lo reviso mañana.",
+     "declined": false,
+     "risk": "write"
+    }
+   ],
+   "model": "qwen3.5:4b",
+   "usage": {
+    "steps": 1,
+    "model_calls": 2,
+    "prompt_tokens": 12602,
+    "completion_tokens": 71,
+    "model_ms": 4739
+   },
+   "confirm_needed": null,
+   "error": null,
+   "latency_s": 5.27
+  }
+ ]
+}
