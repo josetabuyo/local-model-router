@@ -12,6 +12,7 @@ FREE_MODELS = [
     "gemini-3.1-flash-lite",
     "gemini-3.5-flash",
     "gemini-4-hydrogen",  # 2026-11-13: free tier, AA v5.0.1 51; benchmark-only, not in the cascade yet
+    "gemini-3.5-flash-lite",  # 2026-11-19: free tier live (200 5s); successor of 3.1-flash-lite; benchmark-only
 ]
 
 
