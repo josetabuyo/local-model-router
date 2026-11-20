@@ -4737,6 +4737,46 @@
 #   artificialanalysis.ai/models/gemini-3-5-flash-lite;
 #   blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-3-6-flash-3-5-flash-lite-3-5-flash-cyber/;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-19.
+# NOTE 2026-11-20: Daily audit -- one CASCADE REMOVAL (no ranking reorder).
+#   Manual run (las/uv not on PATH -> exported ~/.local/bin; LAS channel not
+#   armed), AC POWER (100%, charged), probes in parallel under caffeinate -i
+#   -s. OpenRouter /auth/key free_model_daily_requests 0/50 at start (12 used
+#   by this audit).
+#   REMOVED: OR cohere/north-mini-code:free (coding + code_debug, last slot
+#   of the OR block) -> 404 "no longer available on OpenRouter: no provider
+#   serves this model" 2/2, gone from :free and paid catalog (same exit as
+#   laguna-s-2.1:free on 11-01, which this NOTE predicted). Both categories
+#   keep gemma-4-31b-it:free + nemotron-3.5-super-vl:free on OR. Was never in
+#   openrouter_provider.FREE_MODELS nor router/registry.py.
+#   OR thinkingmachines/inkling-2-small:free also gone: 404 "unavailable for
+#   free, paid version available" (it was harness-only 403 since 11-11;
+#   never referenced). Paid inkling-2-small stays at $0.30/M.
+#   SLOT 0 RECOVERED: NIM minimaxai/minimax-m3.1-flash 200 at 3s and 2s
+#   (after 89s/83s on 11-18/19). Keep watching; replacement no longer urgent.
+#   kimi-k3.1-pro (probe day 3): 200 but 54s and 78s -- slow today; the
+#   "clean several days" bar for a slot-0 swap is NOT met yet.
+#   gemini-4-hydrogen (probe day 8): 503 at 43s, then 200 at 50s -- first
+#   degraded day; promotion still pending the user.
+#   200 OK, all answered "391": NIM nemotron-3.5-super-vl-120b-a12b,
+#   mistral-large-4-1t-a52b, step-5-preview 1s; Groq gpt-oss-120b,
+#   gpt-oss-20b, qwen/qwen3.8-27b <1s; Gemini 3.1-flash-lite, 3.5-flash-lite
+#   1s, 3.5-flash 2s; OR nemotron-3.5-super-vl:free, nano-omni:free 1s;
+#   ernie-5.5-flash-preview:free, particle-1:free, ling-3.2-flash:free 1-2s
+#   (still no independent score). 429 (quota, kept): gemma-4-31b-it:free,
+#   gemma-4-26b-a4b-it:free.
+#   Catalogs vs 11-19: NIM 32 -> 33 (+fastino/gliner2-pii: a PII entity
+#   extractor, not a chat model -- irrelevant). Groq 11 identical. Gemini 65
+#   -> 66 (+genie-4, world/video model, not chat). OR :free 14 -> 12 (above).
+#   OR full 480 -> 477 (-llama-3.2-1b-instruct, -x-ai/grok-build-0.1,
+#   +pixtral-large-2502; all paid). typesafe/jev-router still paid.
+#   Local: Ollama v0.40.16 stable, v0.40.17-rc2 (pre); installed 0.40.13.
+#   Router :9002 /v1/systemone (jev-example) 200 in 9s via qwen3.5:4b
+#   (department technical 0.96). Web: no new free provider or verified
+#   open-weight release this week (roundups only rehash Kimi K3.1 Pro).
+#   Snapshots in /tmp/scout-1120/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-20;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-20.
 categories:
 
   reasoning:
@@ -4879,11 +4919,11 @@ categories:
     #   "no longer available on OpenRouter: no provider serves this model";
     #   gone from the :free AND paid catalog. north-mini-code:free follows.
     #   Source: own live probe against openrouter.ai -- 2026-11-01
-    - provider: openrouter
-      model: cohere/north-mini-code:free
-      context_window: 256000
-      note: "Coding-specialized Cohere model. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07). Uses hidden reasoning tokens before the answer — give it enough max_tokens headroom or it hits finish_reason=length with empty content."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # NOTE 2026-11-20: cohere/north-mini-code:free removed -- OpenRouter 404
+    #   "no longer available on OpenRouter: no provider serves this model"
+    #   (2/2 probes), gone from the :free AND paid catalog. No replacement
+    #   needed: gemma-4-31b-it:free and nemotron-3.5-super-vl:free remain.
+    #   Source: own live probe against openrouter.ai -- 2026-11-20
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
@@ -5150,11 +5190,11 @@ categories:
     #   "no longer available on OpenRouter: no provider serves this model";
     #   gone from the :free AND paid catalog. north-mini-code:free follows.
     #   Source: own live probe against openrouter.ai -- 2026-11-01
-    - provider: openrouter
-      model: cohere/north-mini-code:free
-      context_window: 256000
-      note: "Coding-specialized Cohere model. Replaces qwen3-next-80b-a3b-instruct:free (paid-only since ~2026-07). Uses hidden reasoning tokens before the answer — give it enough max_tokens headroom or it hits finish_reason=length with empty content."
-      source: "openrouter.ai/api/v1/models — verified 2026-07-21"
+    # NOTE 2026-11-20: cohere/north-mini-code:free removed -- OpenRouter 404
+    #   "no longer available on OpenRouter: no provider serves this model"
+    #   (2/2 probes), gone from the :free AND paid catalog. No replacement
+    #   needed: gemma-4-31b-it:free and nemotron-3.5-super-vl:free remain.
+    #   Source: own live probe against openrouter.ai -- 2026-11-20
     - provider: openrouter
       model: google/gemma-4-31b-it:free
       arena_elo: 1451
