@@ -4777,6 +4777,52 @@
 #   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-20;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-20.
+# NOTE 2026-11-21: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las/uv not on PATH -> exported ~/.local/bin; LAS channel not
+#   armed), AC POWER (100%, charged), probes in parallel under caffeinate -i
+#   -s. OpenRouter /auth/key free_model_daily_requests 0/50 at start (~9 used
+#   by this audit).
+#   SLOT 0 HEALTHY: NIM minimaxai/minimax-m3.1-flash 200 at 1s and 1s (day 2
+#   after recovery).
+#   kimi-k3.1-pro (probe day 4): 200 but 50s and 37s -- still slow; slot-0
+#   swap bar NOT met.
+#   gemini-4-hydrogen (probe day 9): HTTP 000 at 90s twice (curl timeout,
+#   Mac on AC, other probes fine in the same batch) -- second degraded day in
+#   a row (503/50s on 11-20). Not a real hang verdict yet (Gemini returns no
+#   error, just no bytes); promotion still pending the user, but this weakens
+#   the case for slot 0 until it is clean again.
+#   NIM stepfun-ai/step-5-preview: HTTP 000 at 90s, then 200 at 29s (slow,
+#   not dead). mistral-large-4-1t-a52b 200 but 42s (was 1s on 11-20).
+#   200 OK, all answered "391": NIM nemotron-3.5-super-vl-120b-a12b 1s;
+#   Groq gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b <1s; Gemini
+#   3.1-flash-lite, 3.5-flash-lite 1s, 3.5-flash 5s; OR
+#   nemotron-3.5-super-vl:free, nano-omni:free 1s, ernie-5.5-flash-preview:free
+#   1s, ling-3.2-flash:free 4s. 429 (quota, kept): gemma-4-31b-it:free,
+#   gemma-4-26b-a4b-it:free, particle-1:free (2/2; was 200 on 11-20).
+#   Catalogs vs 11-20: NIM 33 identical. Groq 11 identical. Gemini 66 -> 65
+#   (-deep-research-pro-preview-12-2025, agent, never used). OR :free 12 -> 11
+#   (-dots-studio/dots-3-note-preview:free, only ever mentioned in NOTEs,
+#   never in a category/FREE_MODELS). OR full: -meituan/longcat-2.0,
+#   -tencent/hy3-preview, +radixark/daisyrose-27b ($0.15/M, Qwen3.8-27B RL
+#   agent fine-tune), +thinkingmachines/inkling-2-mini ($0.10/M) -- both
+#   paid, no :free variant. typesafe/jev-router still not free (pricing -1 =
+#   router-priced).
+#   Local: Ollama v0.40.17 now STABLE (installed 0.40.13): adds
+#   inkling-2-mini (26B, 5.4B active, looped MoE; vendor-claimed SWE-Bench
+#   Verified 79.2%, no independent score yet) -- ~20 GB in every tag incl.
+#   nvfp4, so it does NOT fit the 16 GB box; ignore locally. Also "Ollama on
+#   Apple silicon now serves multiple requests at once" (relevant to the
+#   router + OLLAMA_MAX_LOADED_MODELS setup) -- upgrade is the user's call.
+#   tev1 tags unchanged (0.8b/4b, bf16/mlx/mxfp8/nvfp4/q8_0).
+#   Router :9002 /v1/systemone (jev-example) 200 in 8s via qwen3.5:4b
+#   (department technical 0.96). Web: no new free provider or verified
+#   open-weight release beyond what is already noted (roundups rehash Kimi
+#   K3.1 Pro, FreeInference etc. from 11-04/11-09).
+#   Snapshots in /tmp/scout-1121/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-21;
+#   github.com/ollama/ollama/releases/tag/v0.40.17 and
+#   ollama.com/library/inkling-2-mini/tags -- 2026-11-21.
 categories:
 
   reasoning:
