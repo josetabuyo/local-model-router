@@ -4823,6 +4823,41 @@
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-21;
 #   github.com/ollama/ollama/releases/tag/v0.40.17 and
 #   ollama.com/library/inkling-2-mini/tags -- 2026-11-21.
+# NOTE 2026-11-22: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las/uv not on PATH -> exported ~/.local/bin; LAS channel not
+#   armed), AC POWER (100%, charged), probes in parallel under caffeinate -i
+#   -s. OpenRouter /auth/key free_model_daily_requests 0/50 at start (7 used
+#   by this audit).
+#   SLOT 0 SLOW AGAIN: NIM minimaxai/minimax-m3.1-flash 200 but 45s and 44s
+#   (was 1s/1s on 11-21, 89s/83s on 11-18/19) -- flapping; still answers.
+#   kimi-k3.1-pro (probe day 5): 200 at 47s -- still slow; slot-0 swap bar
+#   NOT met.
+#   gemini-4-hydrogen (probe day 10): 503 UNAVAILABLE "currently experiencing
+#   high demand" at 4s and 3s -- third degraded day in a row (503/50s 11-20,
+#   000/90s 11-21). Now an explicit capacity error, not a hang. Promotion to
+#   slot 0 should stay on hold until it is clean for several days.
+#   200 OK, all answered "391": NIM nemotron-3.5-super-vl-120b-a12b 1s,
+#   step-5-preview 2s (recovered), mistral-large-4-1t-a52b 13s; Groq
+#   gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b 1s; Gemini 3.1-flash-lite 3s,
+#   3.5-flash-lite 1s, 3.5-flash 2s; OR nemotron-3.5-super-vl:free,
+#   nano-omni:free, ernie-5.5-flash-preview:free, particle-1:free 1s.
+#   429 (quota, kept): gemma-4-31b-it:free, gemma-4-26b-a4b-it:free,
+#   ling-3.2-flash:free.
+#   Catalogs vs 11-21: NIM 33, Groq 11, Gemini 65, OR :free 11 and OR full
+#   catalog all IDENTICAL. typesafe/jev-router still router-priced (-1).
+#   Local: Ollama latest stable still v0.40.17 (installed 0.40.13; upgrade
+#   is the user's call). tev1 tags unchanged. Router :9002 /v1/systemone
+#   (jev-example) 200 in 8s via qwen3.5:4b (department technical 0.96).
+#   Web: no new free provider or verified open-weight release; roundups
+#   rehash Kimi K3.1 Pro / DeepSeek V4.1 Flash 1017 / FreeInference (all
+#   already noted). free-llm.com 11-04 report mentions Hyperbolic relaunch
+#   ($1 credit after phone verification = credits, not a free tier) and an
+#   IteraCompute promo ending 11-24 (temporary) -- neither worth integrating.
+#   Snapshots in /tmp/scout-1122/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-22;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-22;
+#   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-22.
 categories:
 
   reasoning:
