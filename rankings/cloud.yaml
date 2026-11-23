@@ -4858,6 +4858,41 @@
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-22;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-22;
 #   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-22.
+# NOTE 2026-11-23: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las/uv/ollama not on PATH; LAS channel not armed), AC POWER
+#   (100%, charged), probes in parallel under caffeinate -i -s. OpenRouter
+#   /auth/key free_model_daily_requests 0/50 at start (8 used by this audit).
+#   SLOT 0 STILL SLOW: NIM minimaxai/minimax-m3.1-flash 200 but 22s and 30s
+#   (45s/44s on 11-22, 1s/1s on 11-21) -- flapping, still answers "391".
+#   kimi-k3.1-pro (probe day 6): 200 at 58s -- still slow; swap bar NOT met.
+#   gemini-4-hydrogen (probe day 11): 503 UNAVAILABLE "high demand" at 5s,
+#   then 200 "391" at 2s -- fourth day with at least one capacity error;
+#   promotion stays on hold until several clean days.
+#   200 OK, all answered "391": NIM nemotron-3.5-super-vl-120b-a12b 2s,
+#   step-5-preview 25s (slow again), mistral-large-4-1t-a52b 17s; Groq
+#   gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b 1s; Gemini 3.1-flash-lite 2s,
+#   3.5-flash-lite 1s, 3.5-flash 12s; OR nemotron-3.5-super-vl:free,
+#   nano-omni:free, particle-1:free 1s, ernie-5.5-flash-preview:free 2s.
+#   429 (quota, kept): gemma-4-31b-it:free, gemma-4-26b-a4b-it:free,
+#   ling-3.2-flash:free.
+#   Catalogs vs 11-22: NIM 33, Groq 11, Gemini 65 IDENTICAL. OR :free 11 ->
+#   12: dots-studio/dots-3-note-preview:free is BACK (dropped 11-21; 280B MoE
+#   / 16B active, 512k ctx; probe 200 "391" in 6s). free-llm.com says the
+#   free preview ends 2026-12-31 -> temporary, flapping listing, no public
+#   independent score found; not added to any category. typesafe/jev-router
+#   still router-priced (-1).
+#   Local: Ollama latest stable still v0.40.17 (installed 0.40.13; upgrade
+#   is the user's call). Router :9002 /v1/systemone (jev-example) 200 in 10s
+#   via qwen3.5:4b (department technical 0.96).
+#   Web: Meituan LongCat-2.5 (early Nov, MIT weights on HF) is the only
+#   release not already noted -- not present in NIM / Groq / OR catalogs
+#   (free or paid) today; watch item only. Free-LLM roundup otherwise rehashes
+#   Kimi K3.1 Pro, Muse Spark Open, MiniMax M3.1 Flash (all noted).
+#   Snapshots in /tmp/scout-1123/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-23;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-23;
+#   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-23.
 categories:
 
   reasoning:
