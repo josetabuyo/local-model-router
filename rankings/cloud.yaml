@@ -4893,6 +4893,47 @@
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-23;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-23;
 #   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-23.
+# NOTE 2026-11-24: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las/uv not on PATH -> exported ~/.local/bin; LAS channel not
+#   armed), AC POWER (100%, charged), probes in parallel under caffeinate -i
+#   -s. OpenRouter /auth/key free_model_daily_requests 0/50 at start (7 used
+#   by this audit).
+#   SLOT 0 WORSE: NIM minimaxai/minimax-m3.1-flash 200 "391" at 62s, then
+#   HTTP 000 at 90s (curl timeout, Mac on AC, rest of batch fine) -- 4th
+#   slow day in a row (45s/44s 11-22, 22s/30s 11-23). First timeout since
+#   recovery; NOT a hang verdict yet (one 200 today). If it times out on
+#   both probes tomorrow, propose a slot-0 swap to the user.
+#   kimi-k3.1-pro (probe day 7): 200 at 34s -- better but still slow.
+#   gemini-4-hydrogen (probe day 12): 503 "high demand" on BOTH probes (5s,
+#   4s) -- fifth degraded day; promotion stays on hold.
+#   200 OK, all answered "391": NIM nemotron-3.5-super-vl-120b-a12b 2s,
+#   mistral-large-4-1t-a52b 3s, step-5-preview 37s (slow); Groq
+#   gpt-oss-120b, gpt-oss-20b 1s, qwen/qwen3.8-27b 2s; Gemini
+#   3.1-flash-lite 2s, 3.5-flash-lite 3s, 3.5-flash 15s; OR
+#   nemotron-3.5-super-vl:free, nano-omni:free, particle-1:free 1s,
+#   ernie-5.5-flash-preview:free 2s. 429 (quota, kept):
+#   gemma-4-31b-it:free, gemma-4-26b-a4b-it:free, ling-3.2-flash:free.
+#   Catalogs vs 11-23: NIM 33 -> 32 (-nvidia/nemotron-3-embed-1b, embedding
+#   model, never referenced). Groq 11, Gemini 65, OR :free 12 IDENTICAL
+#   (dots-3-note-preview:free still listed, still not added). OR full:
+#   -moonshotai/kimi-k2, -kimi-k2-thinking, -xiaomi/mimo-v2.5-pro (paid, never
+#   referenced). typesafe/jev-router still router-priced (-1).
+#   Local: Ollama v0.40.18-rc0 (pre-release, 2026-11-24): MLX/Metal speedups
+#   for Inkling 2 + llama.cpp b12651 bump -- no new model that fits 16 GB;
+#   latest stable still v0.40.17 (installed 0.40.13; upgrade is the user's
+#   call). Router :9002 /v1/systemone (jev-example) 200 in 9s via qwen3.5:4b
+#   (department technical 0.96).
+#   Web: roundups rehash Kimi K3.1 Pro / Ripple-65B / LongCat-2.5 / Muse Spark
+#   (all noted). Only unnoted name: Upstage Solar Open 2 (250B-A15B hybrid
+#   MoE, secondary source only) -- not in NIM / Groq / OR catalogs (OR has
+#   paid upstage/solar-pro4, solar-mini4 only); watch item. No new free
+#   provider.
+#   Snapshots in /tmp/scout-1124/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-24;
+#   github.com/ollama/ollama/releases/tag/v0.40.18-rc0 -- 2026-11-24;
+#   thursdai.news/releases/2026-11 and pricepertoken.com/free-ai-api --
+#   2026-11-24.
 categories:
 
   reasoning:
