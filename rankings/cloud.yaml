@@ -4934,6 +4934,48 @@
 #   github.com/ollama/ollama/releases/tag/v0.40.18-rc0 -- 2026-11-24;
 #   thursdai.news/releases/2026-11 and pricepertoken.com/free-ai-api --
 #   2026-11-24.
+# NOTE 2026-11-25: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las not on PATH; LAS channel not armed), AC POWER (100%,
+#   charged), probes in parallel under caffeinate -s -i. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start (7 used by this audit).
+#   SLOT 0 STILL DEGRADED: NIM minimaxai/minimax-m3.1-flash 200 "391" at 72s,
+#   then HTTP 000 at 90s (curl timeout; same batch fine, Mac on AC) -- 5th
+#   slow day in a row, 2nd day with a timeout. Not "both probes timed out",
+#   so no automatic verdict, but slot-0 swap is now PROPOSED to the user
+#   (candidates already live & fast today: NIM mistral-large-4-1t-a52b 2s,
+#   Groq gpt-oss-120b 1s). No change pinned without approval.
+#   gemini-4-hydrogen (probe day 13): 200 on BOTH probes (5s, 8s) -- first
+#   clean day after 5 degraded days; promotion still pending user + needs
+#   a few more clean days.
+#   kimi-k3.1-pro (probe day 8): 200 at 34s (still slow).
+#   NIM nemotron-3.5-super-vl-120b-a12b: 503 "content safety screening is
+#   temporarily unavailable" (1s), then 200 at 19s -- transient NIM-side
+#   guardrail outage, kept.
+#   200 OK, all answered "391": NIM mistral-large-4-1t-a52b 2s,
+#   step-5-preview 3s; Groq gpt-oss-120b, gpt-oss-20b 1s, qwen/qwen3.8-27b
+#   2s; Gemini 3.5-flash-lite 1s, 3.5-flash 3s, 3.1-flash-lite 9s; OR
+#   nemotron-3.5-super-vl:free, nano-omni:free, particle-1:free 1s,
+#   ernie-5.5-flash-preview:free 2s. 429 (quota, kept):
+#   gemma-4-31b-it:free, gemma-4-26b-a4b-it:free, ling-3.2-flash:free.
+#   Catalogs vs 11-24: NIM 32 -> 30 (-google/gemma-4-31b-it NIM-hosted,
+#   -meta/muse-glimmer-30b; neither referenced -- we use the OR :free gemma).
+#   OR :free 12 -> 11 (-dots-studio/dots-3-note-preview:free, EOL again,
+#   never added). Groq 11, Gemini 65 IDENTICAL. OR full: -mistral-medium-3,
+#   -mistral-medium-3.1, -kimi-k2-0905, -xiaomi/mimo-v2.5; +upstage/
+#   solar-mini-4-5, +upstage/solar-pro-4-contributor, +xiaomi/
+#   mimo-v2.6-flash-mopd (all paid, none referenced). typesafe/jev-router
+#   still router-priced (-1).
+#   Local: Ollama v0.40.18 went STABLE (2026-11-24; same as rc0: Inkling 2
+#   Metal speedups + llama.cpp b12651) -- no new model that fits 16 GB;
+#   installed 0.40.13 (upgrade is the user's call). Router :9002
+#   /v1/systemone (jev-example) 200 in 9s via qwen3.5:4b (local, no fallback).
+#   Web: no new free provider, no new open-weight release beyond the noted
+#   watch items (Muse Spark Open, Kimi K3.1 Pro, Solar Open 2).
+#   Snapshots in /tmp/scout-1125/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-25;
+#   github.com/ollama/ollama/releases/tag/v0.40.18 -- 2026-11-25;
+#   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-25.
 categories:
 
   reasoning:
