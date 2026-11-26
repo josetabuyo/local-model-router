@@ -4976,6 +4976,39 @@
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-25;
 #   github.com/ollama/ollama/releases/tag/v0.40.18 -- 2026-11-25;
 #   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-25.
+# NOTE 2026-11-26: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las/uv not on PATH; LAS channel not armed), AC POWER (100%,
+#   charged), probes in parallel under caffeinate -s -i. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start (7 used by this audit).
+#   SLOT 0 RECOVERED: NIM minimaxai/minimax-m3.1-flash 200 "391" at 4s, then
+#   200 at 29s -- no timeout today after 5 slow days. The slot-0 swap
+#   proposed 11-25 stays pending the user's call (not urgent today).
+#   gemini-4-hydrogen (probe day 14): 200 at 2s, then 503 "high demand" at
+#   62s -- mixed again; promotion still pending user + needs clean days.
+#   gemini-3.5-flash: 503 "high demand" on BOTH probes (1s, 3s) -- Gemini
+#   capacity error, not EOL (model still in catalog), kept.
+#   kimi-k3.1-pro (probe day 9): 200 at 50s (still slow).
+#   NIM mistral-large-4-1t-a52b 200 at 21s (slower than 11-25's 2s).
+#   200 OK, all answered "391": NIM nemotron-3.5-super-vl-120b-a12b 15s,
+#   step-5-preview 2s; Groq gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b
+#   <1s; Gemini 3.1-flash-lite, 3.5-flash-lite 2s; OR
+#   nemotron-3.5-super-vl:free 15s, nano-omni:free, particle-1:free,
+#   ernie-5.5-flash-preview:free 1s. 429 (quota, kept):
+#   gemma-4-31b-it:free, gemma-4-26b-a4b-it:free, ling-3.2-flash:free.
+#   Catalogs vs 11-25: NIM 30, OR :free 11, Groq 11, Gemini 65 -- IDENTICAL.
+#   OR full: +4 mistralai/*:batch variants, +tngtech/deepseek-r1t2-chimera
+#   (paid), -unbiased/pareto-26.9/26.10/26.10-preview (none referenced).
+#   typesafe/jev-router still router-priced (-1).
+#   Local: Ollama v0.40.18 still latest stable (no new release since
+#   11-24); installed 0.40.13 (upgrade is the user's call). Router :9002
+#   /v1/systemone (jev-example) 200 in 10s via qwen3.5:4b (local).
+#   Web: no new free provider, no new open-weight release beyond the noted
+#   watch items (Kimi K3.1 Pro, DeepSeek V4.1 Flash, Muse Spark Open).
+#   Snapshots in /tmp/scout-1126/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-26;
+#   api.github.com/repos/ollama/ollama/releases -- 2026-11-26;
+#   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-26.
 categories:
 
   reasoning:
