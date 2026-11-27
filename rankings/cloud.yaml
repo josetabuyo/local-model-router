@@ -5009,6 +5009,40 @@
 #   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-26;
 #   api.github.com/repos/ollama/ollama/releases -- 2026-11-26;
 #   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-26.
+# NOTE 2026-11-27: Daily audit -- checked, NO ranking/cascade changes.
+#   Manual run (las/uv not on PATH; LAS channel not armed), AC POWER (100%,
+#   charged), probes in parallel under caffeinate -s -i. OpenRouter /auth/key
+#   free_model_daily_requests 0/50 at start (7 used by this audit).
+#   ALL referenced models alive (200 "391" or 429 quota) -- no EOL.
+#   SLOT 0 NIM minimaxai/minimax-m3.1-flash: 200 at 15s, then 14s -- 2nd
+#   day without timeout; slot-0 swap proposed 11-25 still pending the user.
+#   gemini-4-hydrogen (probe day 15): 200 on BOTH probes (18s, 5s) -- clean
+#   day 2 of the last 3; promotion still pending user.
+#   gemini-3.5-flash recovered: 200 at 9s, 10s (503x2 on 11-26).
+#   gemini-3.1-flash-lite: 200 but 75s (slow, single probe, kept).
+#   kimi-k3.1-pro (probe day 10): 200 at 85s (still slow, harness-only).
+#   200 OK <=3s: NIM nemotron-3.5-super-vl-120b-a12b, step-5-preview,
+#   mistral-large-4-1t-a52b; Groq gpt-oss-120b, gpt-oss-20b, qwen/qwen3.8-27b;
+#   Gemini 3.5-flash-lite; OR nemotron-3.5-super-vl:free, nano-omni:free,
+#   ernie-5.5-flash-preview:free. 429 (quota, kept): gemma-4-31b-it:free,
+#   gemma-4-26b-a4b-it:free, ling-3.2-flash:free, particle-1:free (first
+#   429 for particle-1; 200 on 11-25/26).
+#   Catalogs vs 11-26: NIM 30, OR :free 11, Groq 11, Gemini 65 -- IDENTICAL.
+#   OR full: +inclusionai/lingsante-3.1-air-vl (paid, medical VL), kimi-k2 /
+#   kimi-k2-0905 back (paid) -- none referenced. typesafe/jev-router still
+#   router-priced (-1).
+#   Local: Ollama v0.40.19-rc0 (2026-11-26, pre-release: Inkling 2 short-
+#   history speedups, MLX Engram buffer compaction, llama-server bump) -- no
+#   new model that fits 16 GB; latest stable still 0.40.18; installed 0.40.13
+#   (upgrade is the user's call). Router :9002 /v1/systemone (jev-example)
+#   200 in 9s via qwen3.5:4b (local).
+#   Web: no new free provider, no new open-weight release beyond the noted
+#   watch items (Kimi K3.1 Pro, LongCat-2.5, Muse Spark Open).
+#   Snapshots in /tmp/scout-1127/.
+#   Sources: own live probes against integrate.api.nvidia.com, api.groq.com,
+#   openrouter.ai, generativelanguage.googleapis.com -- 2026-11-27;
+#   github.com/ollama/ollama/releases/tag/v0.40.19-rc0 -- 2026-11-27;
+#   free-llm.com/guides/free-llm-apis-november-2026-what-changed -- 2026-11-27.
 categories:
 
   reasoning:
